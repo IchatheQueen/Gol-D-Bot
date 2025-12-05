@@ -2,6 +2,7 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import { blackMarketItems } from '../../data/blackMarketItems';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'bm',
@@ -19,7 +20,8 @@ const command: Command = {
 
         Object.values(blackMarketItems).forEach(item => {
             const price = item.currency === 'cash' ? `💵 ${item.price.toLocaleString()}` : `🌿 ${item.price.toLocaleString()}`;
-            const line = `[ID: **${item.id}**] ${item.name} - Price: ${price}\n└ ${item.description}\n`;
+            const emoji = resolveEmoji(client, item.emoji);
+            const line = `[ID: **${item.id}**] ${emoji} ${item.name} - Price: ${price}\n└ ${item.description}\n`;
 
             if (item.type === 'drug') drugs += line;
             else if (item.type === 'farming') farming += line;

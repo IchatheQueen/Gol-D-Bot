@@ -4,6 +4,7 @@ export interface BlackMarketItem {
     price: number;
     currency: 'cash' | 'weed' | 'opioid';
     description: string;
+    emoji?: string;
     type: 'drug' | 'farming' | 'counterfeit';
 }
 
