@@ -63,7 +63,6 @@ client.once(Events.ClientReady, async (c: any) => {
 
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (message.author.bot) return;
-    console.log(`Received message from ${message.author.tag}: ${message.content}`);
 
     // Check if user is blacklisted (silently ignore)
     if (await isBlacklisted(message.author.id)) {
@@ -100,7 +99,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             // Auto-clear after 30 seconds
             setTimeout(() => {
                 client.activeWalletDrops.delete(message.channel.id);
-            }, 30000);
+            }, 60000);
         }
         return;
     }
