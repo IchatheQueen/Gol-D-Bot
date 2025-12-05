@@ -23,7 +23,7 @@ const command: Command = {
 
         (client as any).activeWalletDrops.set(message.channel.id, { amount, timestamp: Date.now() });
 
-        await message.channel.send(`${scenario} \`~grab\` to quickly steal it.`);
+        await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
         await message.delete().catch(() => { }); // Delete the command message to keep it clean
     },
 };

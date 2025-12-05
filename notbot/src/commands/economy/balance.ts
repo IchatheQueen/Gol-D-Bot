@@ -1,6 +1,9 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getUser } from '../../database/economy';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
+import { Command } from '../../handlers/commandHandler';
+import { getUserColor } from '../../database/userColor';
+import { formatBigNumber } from '../../utils/bigNumbers';
 
 const command: Command = {
     name: 'balance',

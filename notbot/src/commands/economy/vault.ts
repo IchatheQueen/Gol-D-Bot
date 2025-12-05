@@ -1,3 +1,8 @@
+import { Message, Client, EmbedBuilder } from 'discord.js';
+import { getUser } from '../../database/economy';
+import { Command } from '../../handlers/commandHandler';
+import { getUserColor } from '../../database/userColor';
+import { formatBigNumber } from '../../utils/bigNumbers';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 const command: Command = {
@@ -35,7 +40,7 @@ const command: Command = {
         const creditValue = credits * 50000n;
 
         const embed = new EmbedBuilder()
-            .setTitle(`${target.username} (@${target.tag})'s Currency Vault`)
+            .setTitle(`${target.username} (@${target.username})'s Currency Vault`)
             .setDescription('Currencies in your vault cannot be attacked or stolen by other players.\n`~vault help` for more information')
             .setColor(getUserColor(message.author.id))
             .addFields(
