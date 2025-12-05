@@ -1,6 +1,9 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
+import { resolveEmoji } from '../../utils/resolveEmoji';
+import { items } from '../../data/items';
 import { getInventory } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
+import { getUserColor } from '../../database/userColor';
 
 const command: Command = {
     name: 'ammo',
@@ -10,18 +13,25 @@ const command: Command = {
 
         const inventory = await getInventory(userId);
 
-        const arrows = inventory.find(i => i.item_id === 'arrows')?.amount || 0n;
-        const pistol = inventory.find(i => i.item_id === 'pistol_bullets')?.amount || 0n;
-        const rifle = inventory.find(i => i.item_id === 'rifle_bullets')?.amount || 0n;
-        const propane = inventory.find(i => i.item_id === 'propane')?.amount || 0n;
+        const arrows = inventory.find(i => i.item_id === '8')?.amount || 0n;
+        const pistol = inventory.find(i => i.item_id === '6')?.amount || 0n;
+        const rifle = inventory.find(i => i.item_id === '10')?.amount || 0n;
+        const propane = inventory.find(i => i.item_id === '13')?.amount || 0n;
+
+        const arrowDef = items['8'];
+        const pistolDef = items['6'];
+        const rifleDef = items['10'];
+        const propaneDef = items['13'];
 
         const embed = new EmbedBuilder()
-            .setTitle(`@${message.author.username}'s Ammo`)
+            .setTitle(`${message.author.displayName} (@${message.author.username})'s Ammunition`)
             .setDescription(
-                `<:arrow:1446143653931384943> **Arrows** | ${arrows.toLocaleString()}\n` +
-                `<:pistol:1445995386031308890> **Pistol Bullets** | ${pistol.toLocaleString()}\n` +
-                `<:rifle:1445995242317942874> **Rifle Bullets** | ${rifle.toLocaleString()}\n` +
-                `⛽ **Propane** | ${propane.toLocaleString()}`
+                `\`~shoot <user>\` to use up your ammo\n` +
+                `\`~tipped\` to see your tipped arrows\n\n` +
+                `${resolveEmoji(client, arrowDef.emoji)} **${arrowDef.name}s** | ${arrows.toLocaleString()}\n` +
+                `${resolveEmoji(client, pistolDef.emoji)} **${pistolDef.name}s** | ${pistol.toLocaleString()}\n` +
+                `${resolveEmoji(client, rifleDef.emoji)} **${rifleDef.name}s** | ${rifle.toLocaleString()}\n` +
+                `${resolveEmoji(client, propaneDef.emoji)} **${propaneDef.name}** | ${propane.toLocaleString()}`
             )
             .setColor('#2f3136');
 
