@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, Message as DiscordMessage } from 'discord.js';
+import { Client, GatewayIntentBits, Events, Message as DiscordMessage, EmbedBuilder } from 'discord.js';
 import dotenv from 'dotenv';
 import db, { initDatabase } from './database/db';
 import { processShortcuts } from './utils/shortcuts';
