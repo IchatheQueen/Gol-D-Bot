@@ -47,7 +47,6 @@ const command: Command = {
             .setColor(getUserColor(message.author.id));
         await message.reply({ embeds: [embed] });
     },
-},
 };
 
 export default command;

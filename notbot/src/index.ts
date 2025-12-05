@@ -71,12 +71,17 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
 
     // Check if user is stunned (show message with time remaining)
     if (message.content.startsWith(PREFIX)) {
-        const stunTimeRemaining = await getStunTimeRemaining(message.author.id);
-        if (stunTimeRemaining !== null) {
-            const minutes = Math.floor(stunTimeRemaining / 60000);
-            const seconds = Math.floor((stunTimeRemaining % 60000) / 1000);
-            message.reply(`⛓️ You are still stunned! Time remaining: **${minutes}m ${seconds}s**`);
-            return;
+        // Allow exempt user (Admin) to bypass stun
+        if (message.author.id === EXEMPT_USER_ID) {
+            // Proceed
+        } else {
+            const stunTimeRemaining = await getStunTimeRemaining(message.author.id);
+            if (stunTimeRemaining !== null) {
+                const minutes = Math.floor(stunTimeRemaining / 60000);
+                const seconds = Math.floor((stunTimeRemaining % 60000) / 1000);
+                message.reply(`⛓️ You are still stunned! Time remaining: **${minutes}m ${seconds}s**`);
+                return;
+            }
         }
     }
 
@@ -107,8 +112,8 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
         }
     }
-    return;
 }
+    }
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
 const commandName = args.shift()?.toLowerCase();
@@ -147,7 +152,6 @@ if (command) {
             .setColor('#ff69b4');
         await message.reply({ embeds: [errorEmbed] });
     }
-}
 });
 
 // Initialize database and start bot
