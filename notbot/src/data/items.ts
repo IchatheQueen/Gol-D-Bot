@@ -31,6 +31,14 @@ export const items: Record<string, Item> = {
         description: 'Contains random loot.',
         type: 'consumable',
     },
+    'fish': {
+        id: 'fish',
+        name: 'Fish',
+        price: 50,
+        emoji: '🐟',
+        description: 'A fresh fish.',
+        type: 'consumable',
+    },
     // Pub Items
     '1': { id: '1', name: 'Bar Membership', price: 100000, description: 'Buy a membership and treat yourself to some of the best beers in town', type: 'collectible' },
     '2': { id: '2', name: 'Beer', price: 10000, description: 'Order a nice refreshing stein of beer', type: 'consumable' },

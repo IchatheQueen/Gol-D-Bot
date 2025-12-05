@@ -9,13 +9,13 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const embed = new EmbedBuilder()
             .setTitle('Commands')
-            .setDescription('Here is a list of all available commands:')
             .addFields(
-                { name: 'Economy', value: '`~balance`, `~deposit`, `~withdraw`, `~pay`, `~vault`, `~shop`, `~buy`, `~sell`, `~give`, `~bm`, `~exch`' },
-                { name: 'Games', value: '`~slots`, `~coinflip`, `~blackjack`, `~pub`' },
-                { name: 'Interactive', value: '`~pet`, `~attack`, `~hunt`, `~train`, `~target`, `~retreat`, `~protect`, `~dispense`, `~feed`, `~petshop`, `~gbuy`' },
-                { name: 'Items & Farming', value: '`~inv`, `~item`, `~use`, `~ammo`, `~briefcases`, `~open`, `~steal`, `~farm`, `~harvest`, `~smoke`, `~dose`' },
-                { name: 'Utility', value: '`~help`, `~stats`, `~ping`, `~id`, `~owner`, `~shortcuts`' }
+                { name: 'Economy', value: '`~balance`, `~pay`, `~vault`, `~grab`, `~steal`, `~buy`, `~bm`, `~exch`' },
+                { name: 'Games', value: '`~slots`, `~coinflip`, `~roll`, `~pub`, `~slotsprizes`' },
+                { name: 'Interactive', value: '`~cat`, `~pet`, `~petshop`, `~feed`, `~train`, `~protect`, `~hunt`, `~target`, `~attack`, `~retreat`' },
+                { name: 'Items & Combat', value: '`~ammo`, `~select`, `~shoot`, `~tipped`, `~open`, `~farm`, `~smoke`, `~dose`, `~drink`' },
+                { name: 'Premium', value: '`~dshop`, `~dcred`, `~dpay`, `~dbuy`, `~ditems`' },
+                { name: 'Utility', value: '`~help`, `~stats`, `~ping`, `~shortcuts`, `~id`' }
             )
             .setFooter({ text: 'Use ~help <command> for more info' });
 
