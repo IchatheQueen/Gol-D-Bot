@@ -159,14 +159,15 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             incrementCommandCount();
         } catch (error) {
             console.error(error);
-            const { EmbedBuilder } = require('discord.js');
+            // reused imported EmbedBuilder
             const errorEmbed = new EmbedBuilder()
                 .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
                 .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
                 .setColor('#ff69b4');
             await message.reply({ embeds: [errorEmbed] });
         }
-    });
+    }
+});
 
 // Initialize database and start bot
 async function main() {
