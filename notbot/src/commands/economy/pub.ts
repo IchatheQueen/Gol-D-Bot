@@ -30,13 +30,13 @@ const command: Command = {
         // Weapons
         let weaponsContent = '';
         weaponsContent += `👁️ Hint: After selecting a weapon, use \`~shoot <target>\` to attack your foe!\n`;
-        weaponsContent += `[ID: 6] 🔫 **Pistol Bullet** - Price: 🍺 1\n   └ Ammunition for pistols (All players have one! \`~select pistol\`)\n`;
+        weaponsContent += `[ID: 6] <:pistol:1445995386031308890> **Pistol Bullet** - Price: 🍺 1\n   └ Ammunition for pistols (All players have one! \`~select pistol\`)\n`;
         weaponsContent += `[ID: 7] 🏹 **Crossbow** - Price: 🍺 20,000\n   └ Select this weapon with \`~select crossbow\` (Starts with 3 Shots!)\n`;
-        weaponsContent += `[ID: 8] 🏹 **Arrow** - Price: 🍺 1,500\n   └ Ammunition for crossbows\n`;
+        weaponsContent += `[ID: 8] <:arrow:1446143653931384943> **Arrow** - Price: 🍺 1,500\n   └ Ammunition for crossbows\n`;
         weaponsContent += `[ID: 9] <:rifle:1445995242317942874> **Rifle** - Price: 🍺 27,000,000,000,000\n   └ Select this weapon with \`~select rifle\`\n`;
         weaponsContent += `[ID: 10] <:rifle:1445995242317942874> **Rifle Bullet** - Price: 🍺 3,000,000,000,000\n   └ Ammunition for rifles\n`;
         weaponsContent += `[ID: 11] 📢 **Speaker** - Price: 🍺 400,000,000,000,000\n   └ Shatters beer and knocks people unconscious (\`~select speaker\`)\n`;
-        weaponsContent += `[ID: 12] 🔥 **Flamethrower** - Price: 🍺 100,000,000,000,000,000,000\n   └ Burns others' crops but knocks you unconscious as well in the process (\`~select flame\`)\n`;
+        weaponsContent += `[ID: 12] <:flamethrower:1446143428290416670> **Flamethrower** - Price: 🍺 100,000,000,000,000,000,000\n   └ Burns others' crops but knocks you unconscious as well in the process (\`~select flame\`)\n`;
         weaponsContent += `[ID: 13] 🛢️ **Propane** - Price: 🍺 1,500,000,000,000,000,000\n   └ Ammunition for flamethrowers\n`;
 
         embed.addFields({ name: 'Weapons', value: weaponsContent });

@@ -39,13 +39,13 @@ export const items: Record<string, Item> = {
     '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
 
     // Weapons (Updated Prices/Currency)
-    '6': { id: '6', name: 'Pistol Bullet', price: 1, currency: 'beer', description: 'Ammunition for pistols (All players have one! ~select pistol)', type: 'consumable' },
+    '6': { id: '6', name: 'Pistol Bullet', price: 1, emoji: '1445995386031308890', currency: 'beer', description: 'Ammunition for pistols (All players have one! ~select pistol)', type: 'consumable' },
     '7': { id: '7', name: 'Crossbow', price: 20000, currency: 'beer', description: 'Select this weapon with ~select crossbow (Starts with 3 Shots!)', type: 'weapon' },
-    '8': { id: '8', name: 'Arrow', price: 1500, currency: 'beer', description: 'Ammunition for crossbows', type: 'consumable' },
+    '8': { id: '8', name: 'Arrow', price: 1500, emoji: '1446143653931384943', currency: 'beer', description: 'Ammunition for crossbows', type: 'consumable' },
     '9': { id: '9', name: 'Rifle', price: '27000000000000', emoji: '1445995242317942874', currency: 'beer', description: 'Select this weapon with ~select rifle', type: 'weapon' },
     '10': { id: '10', name: 'Rifle Bullet', price: '3000000000000', emoji: '1445995242317942874', currency: 'beer', description: 'Ammunition for rifles', type: 'consumable' },
     '11': { id: '11', name: 'Speaker', price: '400000000000000', currency: 'beer', description: 'Shatters beer and knocks people unconscious (~select speaker)', type: 'weapon' },
-    '12': { id: '12', name: 'Flamethrower', price: '100000000000000000000', currency: 'beer', description: 'Burns others\' crops but knocks you unconscious as well in the process (~select flame)', type: 'weapon' },
+    '12': { id: '12', name: 'Flamethrower', price: '100000000000000000000', emoji: '1446143428290416670', currency: 'beer', description: 'Burns others\' crops but knocks you unconscious as well in the process (~select flame)', type: 'weapon' },
     '13': { id: '13', name: 'Propane', price: '1500000000000000000', currency: 'beer', description: 'Ammunition for flamethrowers', type: 'consumable' },
     'laser': { id: 'laser', name: 'Laser', price: 0, description: 'Pet laser ability.', type: 'weapon' },
 

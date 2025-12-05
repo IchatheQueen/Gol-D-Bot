@@ -18,8 +18,8 @@ const command: Command = {
         const embed = new EmbedBuilder()
             .setTitle(`@${message.author.username}'s Ammo`)
             .setDescription(
-                `🏹 **Arrows** | ${arrows.toLocaleString()}\n` +
-                `🔫 **Pistol Bullets** | ${pistol.toLocaleString()}\n` +
+                `<:arrow:1446143653931384943> **Arrows** | ${arrows.toLocaleString()}\n` +
+                `<:pistol:1445995386031308890> **Pistol Bullets** | ${pistol.toLocaleString()}\n` +
                 `<:rifle:1445995242317942874> **Rifle Bullets** | ${rifle.toLocaleString()}\n` +
                 `⛽ **Propane** | ${propane.toLocaleString()}`
             )

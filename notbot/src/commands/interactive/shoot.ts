@@ -64,11 +64,11 @@ const command: Command = {
 
         // Weapon emojis
         const weaponEmojis: Record<string, string> = {
-            'pistol': '🔫',
+            'pistol': '<:pistol:1445995386031308890>',
             'rifle': '<:rifle:1445995242317942874>',
             'crossbow': '🏹',
             'speaker': '📢',
-            'flamethrower': '🔥',
+            'flamethrower': '<:flamethrower:1446143428290416670>',
         };
         const weaponEmoji = weaponEmojis[weaponId] || '🔫';
 
