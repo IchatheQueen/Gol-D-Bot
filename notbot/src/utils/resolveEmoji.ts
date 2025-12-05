@@ -14,6 +14,12 @@ export function resolveEmoji(plugin: Client, emojiKey?: string, fallback: string
     // Let's stick to: if it looks like unicode, it IS the fallback usually.
     // But the user might want to use 'pistol' as key.
 
+    // Check overrides first
+    const overrides = (plugin as any).emojiOverrides;
+    if (overrides && overrides.has(emojiKey)) {
+        return overrides.get(emojiKey);
+    }
+
     // Try finding by ID
     if (/^\d{17,19}$/.test(emojiKey)) {
         const emoji = plugin.emojis.cache.get(emojiKey);

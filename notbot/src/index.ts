@@ -10,6 +10,7 @@ dotenv.config();
 
 interface ExtendedClient extends Client {
     activeWalletDrops: Map<string, { amount: number; timestamp: number; claimedBy?: string }>;
+    emojiOverrides: Map<string, string>;
 }
 
 const client = new Client({
@@ -30,6 +31,7 @@ const userCooldowns = new Map<string, number>();
 
 // Store active wallet drop per channel (attach to client so grab command can access)
 client.activeWalletDrops = new Map<string, { amount: number; timestamp: number; claimedBy?: string }>();
+client.emojiOverrides = new Map<string, string>();
 
 import { loadCommands } from './handlers/commandHandler';
 
@@ -57,8 +59,22 @@ async function getStunTimeRemaining(userId: string): Promise<number | null> {
     return null;
 }
 
+// Load emoji overrides
+async function loadEmojiOverrides() {
+    try {
+        const result = await db.execute('SELECT * FROM emoji_overrides');
+        for (const row of result.rows) {
+            client.emojiOverrides.set(row.key as string, row.emoji as string);
+        }
+        console.log(`Loaded ${client.emojiOverrides.size} emoji overrides.`);
+    } catch (e) {
+        console.error('Failed to load emoji overrides:', e);
+    }
+}
+
 client.once(Events.ClientReady, async (c: any) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
+    await loadEmojiOverrides();
 });
 
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
@@ -112,7 +128,6 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
         }
     }
-
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase();

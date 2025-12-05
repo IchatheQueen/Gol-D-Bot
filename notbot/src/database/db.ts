@@ -114,6 +114,13 @@ export async function initDatabase() {
         )
     `);
 
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS emoji_overrides (
+            key TEXT PRIMARY KEY,
+            emoji TEXT
+        )
+    `);
+
     console.log('Database tables initialized!');
 }
 
