@@ -1,4 +1,4 @@
-import { Client, Message } from 'discord.js';
+import { Client, Message, ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -6,7 +6,9 @@ export interface Command {
     name: string;
     description: string;
     aliases?: string[];
-    execute: (message: Message, args: string[], client: Client) => Promise<void> | void;
+    data?: any; // SlashCommandBuilder
+    execute?: (message: Message, args: string[], client: Client) => Promise<void> | void;
+    executeSlash?: (interaction: ChatInputCommandInteraction, client: Client) => Promise<void> | void;
 }
 
 export const loadCommands = (client: Client): Map<string, Command> => {

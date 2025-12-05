@@ -155,8 +155,10 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     const command = commands.get(commandName);
     if (command) {
         try {
-            await command.execute(message, processedArgs, client);
-            incrementCommandCount();
+            if (command.execute) {
+                await command.execute(message, processedArgs, client);
+                incrementCommandCount();
+            }
         } catch (error) {
             console.error(error);
             // reused imported EmbedBuilder
@@ -165,6 +167,34 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
                 .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
                 .setColor('#ff69b4');
             await message.reply({ embeds: [errorEmbed] });
+        }
+    }
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = commands.get(interaction.commandName);
+
+    if (!command) {
+        console.error(`No command matching ${interaction.commandName} was found.`);
+        return;
+    }
+
+    try {
+        if (command.executeSlash) {
+            await command.executeSlash(interaction, client);
+            incrementCommandCount();
+        } else {
+            // Fallback if no specific slash handler (shouldn't happen if we only register supported ones)
+            await interaction.reply({ content: 'This command does not support slash usage yet.', ephemeral: true });
+        }
+    } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+        } else {
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     }
 });
