@@ -1,8 +1,7 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
-import { getInventoryItem } from '../../database/inventory';
-import { getUserColor } from '../../database/userColor';
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 // Stock types
 const stockTypes: Record<number, { name: string; emoji: string }> = {
@@ -13,7 +12,8 @@ const command: Command = {
     name: 'shares',
     description: 'View your stock shares',
     execute: async (message: Message, args: string[], client: Client) => {
-        const userId = message.author.id;
+        const target = await resolveTargetOrSelf(message, args, client);
+        const userId = target.id;
 
         // Check if user has Statistician
         const statAmount = await getInventoryItem(userId, 'p6');

@@ -1,6 +1,7 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 // Premium item definitions
 const premiumItems: Record<string, { name: string; emoji: string }> = {
@@ -22,7 +23,8 @@ const command: Command = {
     name: 'ditems',
     description: 'Check your donator items',
     execute: async (message: Message, args: string[], client: Client) => {
-        const userId = message.author.id;
+        const target = await resolveTargetOrSelf(message, args, client);
+        const userId = target.id;
 
         // Get owned premium items
         const result = await db.execute({
@@ -45,7 +47,7 @@ const command: Command = {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle(`@${message.author.username}'s Donor Items`)
+            .setTitle(`@${target.username}'s Donor Items`)
             .setDescription(
                 `\`~dshop\` to purchase items\n` +
                 `\`~dtransfer <user> <name>\` to transfer an item to another account\n\n` +

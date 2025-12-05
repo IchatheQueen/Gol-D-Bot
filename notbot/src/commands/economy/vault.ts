@@ -1,14 +1,10 @@
-import { Message, Client, EmbedBuilder } from 'discord.js';
-import { getUser } from '../../database/economy';
-import { Command } from '../../handlers/commandHandler';
-import { getUserColor } from '../../database/userColor';
-import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 const command: Command = {
     name: 'vault',
     description: 'View your currency vault',
     execute: async (message: Message, args: string[], client: Client) => {
-        const target = message.mentions.users.first() || message.author;
+        const target = await resolveTargetOrSelf(message, args, client);
         const user = await getUser(target.id);
 
         // Handle help argument

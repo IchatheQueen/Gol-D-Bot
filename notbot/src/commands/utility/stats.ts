@@ -2,6 +2,7 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 // Track command count
 let commandsParsedToday = 0;
@@ -24,7 +25,8 @@ const command: Command = {
     name: 'stats',
     description: 'View bot statistics',
     execute: async (message: Message, args: string[], client: Client) => {
-        const userId = message.author.id;
+        const target = await resolveTargetOrSelf(message, args, client);
+        const userId = target.id;
 
         // Get actual stats from the bot
         const serverCount = client.guilds.cache.size;

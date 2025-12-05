@@ -1,19 +1,18 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getUser } from '../../database/economy';
-import { Command } from '../../handlers/commandHandler';
-import { getUserColor } from '../../database/userColor';
-import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 const command: Command = {
     name: 'balance',
     description: 'Check your balance',
     aliases: ['bal', 'money'],
     execute: async (message: Message, args: string[], client: Client) => {
-        const userId = message.author.id;
+        const target = await resolveTargetOrSelf(message, args, client);
+        const userId = target.id;
         const user = await getUser(userId);
 
         const embed = new EmbedBuilder()
-            .setTitle(`💰 ${message.author.username}'s balance`)
+            .setTitle(`💰 ${target.username}'s balance`)
             .setDescription(
                 `💵 **Earn extra rewards by playing!**\n` +
                 `💵 ${formatBigNumber(user.balance)}`

@@ -2,19 +2,21 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getInventory } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
 const command: Command = {
     name: 'inv',
     description: 'Check your inventory',
     aliases: ['inventory', 'bag'],
     execute: async (message: Message, args: string[], client: Client) => {
-        const userId = message.author.id;
+        const target = await resolveTargetOrSelf(message, args, client);
+        const userId = target.id;
 
         const inventory = await getInventory(userId);
         const userItems = inventory.filter(i => i.amount > 0n);
 
         const embed = new EmbedBuilder()
-            .setTitle(`@${message.author.username}'s Inventory`)
+            .setTitle(`@${target.username}'s Inventory`)
             .setColor('#2f3136');
 
         if (userItems.length === 0) {

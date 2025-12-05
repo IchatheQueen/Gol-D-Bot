@@ -49,3 +49,17 @@ export async function resolveTarget(message: Message, args: string[], client: Cl
 
     return null;
 }
+
+/**
+ * Resolves a target user from args, defaulting to the message author if no args are provided.
+ */
+export async function resolveTargetOrSelf(message: Message, args: string[], client: Client, argIndex: number = 0): Promise<{ id: string; username: string }> {
+    const target = await resolveTarget(message, args, client, argIndex);
+    if (target) {
+        return target;
+    }
+    return {
+        id: message.author.id,
+        username: message.author.username
+    };
+}
