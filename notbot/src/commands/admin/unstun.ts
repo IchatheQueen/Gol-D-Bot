@@ -1,48 +1,32 @@
-import { Message, Client } from 'discord.js';
+
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
-
-const ADMIN_ID = '1331780893995565148';
+import { getUserColor } from '../../database/userColor';
 
 const command: Command = {
     name: 'unstun',
-    description: 'Remove stun from a user (Admin only)',
+    description: 'Admin command to unstun a user',
     execute: async (message: Message, args: string[], client: Client) => {
-        // Check if user is admin
+        const ADMIN_ID = '1331780893995565148';
         if (message.author.id !== ADMIN_ID) {
-            return; // Silently ignore non-admins
-        }
-
-        const targetId = args[0];
-
-        if (!targetId) {
-            message.reply('Please specify a user ID');
             return;
         }
 
-        // Check if user is stunned
-        const checkStmt = await db.execute({
-            sql: 'SELECT * FROM stuns WHERE user_id = ?',
-            args: [targetId]
-        });
-        const stun = checkStmt.rows[0];
-
-        if (!stun) {
-            message.reply('User is not stunned');
-            return;
-        }
+        const targetUser = message.mentions.users.first() || message.author;
 
         // Remove stun
         await db.execute({
             sql: 'DELETE FROM stuns WHERE user_id = ?',
-            args: [targetId]
+            args: [targetUser.id]
         });
 
-        const target = await client.users.fetch(targetId).catch(() => null);
-        const targetName = target ? target.username : targetId;
+        const color = getUserColor(message.author.id);
+        const embed = new EmbedBuilder()
+            .setDescription(`✅ **${targetUser.username}** has been unstunned!`)
+            .setColor(color);
 
-        message.react('👍');
-        (message.channel as any).send(`Unstunned ❌ ADMIN❌ ${targetName} (@${targetName}) 👌`);
+        await message.reply({ embeds: [embed] });
     },
 };
 

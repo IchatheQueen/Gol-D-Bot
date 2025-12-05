@@ -113,7 +113,6 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 }
-    }
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
 const commandName = args.shift()?.toLowerCase();
