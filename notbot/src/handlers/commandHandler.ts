@@ -22,7 +22,7 @@ export const loadCommands = (client: Client): Map<string, Command> => {
 
             if (stat.isDirectory()) {
                 readCommands(filePath);
-            } else if (file.endsWith('.ts')) {
+            } else if (file.endsWith('.ts') || file.endsWith('.js')) {
                 const commandModule = require(filePath);
                 const command: Command = commandModule.default || commandModule;
 
