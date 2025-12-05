@@ -3,6 +3,7 @@ import { getInventory } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'inv',
@@ -26,7 +27,8 @@ const command: Command = {
             for (const item of userItems) {
                 const itemDef = items[item.item_id];
                 if (itemDef) {
-                    description += `${itemDef.emoji || '📦'} **${itemDef.name}** ─ ${item.amount.toLocaleString()}\n`;
+                    const emoji = resolveEmoji(client, itemDef.emoji || '📦');
+                    description += `${emoji} **${itemDef.name}** ─ ${item.amount.toLocaleString()}\n`;
                 }
             }
             embed.setDescription(description);

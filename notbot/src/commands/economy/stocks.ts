@@ -4,10 +4,8 @@ import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
 
-// Stock types with current prices
-const stockTypes: Record<number, { name: string; emoji: string; price: bigint }> = {
-    1: { name: 'Casino', emoji: '🎰', price: 90n },
-};
+import { stockTypes } from '../../data/stockTypes';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'stocks',
@@ -24,7 +22,8 @@ const command: Command = {
 
         let stockList = '';
         for (const [id, stock] of Object.entries(stockTypes)) {
-            stockList += `**[${id}] ${stock.emoji} ${stock.name}**\n`;
+            const emoji = resolveEmoji(client, stock.emoji);
+            stockList += `**[${id}] ${emoji} ${stock.name}**\n`;
             stockList += `Price per share: 💵 ${stock.price.toLocaleString()}\n\n`;
         }
 

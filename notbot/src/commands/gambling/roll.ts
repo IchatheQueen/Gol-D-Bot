@@ -3,6 +3,7 @@ import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'roll',
@@ -47,20 +48,25 @@ const command: Command = {
         let color: ColorResolvable = getUserColor(userId);
         let winnings = 0n;
 
+        const pD1 = resolveEmoji(client, `dice_${playerDice1}`, diceEmoji[playerDice1]);
+        const pD2 = resolveEmoji(client, `dice_${playerDice2}`, diceEmoji[playerDice2]);
+        const hD1 = resolveEmoji(client, `dice_${houseDice1}`, diceEmoji[houseDice1]);
+        const hD2 = resolveEmoji(client, `dice_${houseDice2}`, diceEmoji[houseDice2]);
+
         if (playerTotal > houseTotal) {
             // Player wins - 2x bet
             winnings = bet;
             await updateUser(userId, { balance: user.balance + winnings });
-            resultText = `🎉 **YOU WIN!**\n\n**Your Roll**: ${diceEmoji[playerDice1]} ${diceEmoji[playerDice2]} = **${playerTotal}**\n**House Roll**: ${diceEmoji[houseDice1]} ${diceEmoji[houseDice2]} = **${houseTotal}**\n\n**Won**: 💵 ${formatBigNumber(winnings)}`;
+            resultText = `🎉 **YOU WIN!**\n\n**Your Roll**: ${pD1} ${pD2} = **${playerTotal}**\n**House Roll**: ${hD1} ${hD2} = **${houseTotal}**\n\n**Won**: 💵 ${formatBigNumber(winnings)}`;
             color = 0x00ff00;
         } else if (playerTotal < houseTotal) {
             // House wins
             await updateUser(userId, { balance: user.balance - bet });
-            resultText = `😢 **YOU LOSE!**\n\n**Your Roll**: ${diceEmoji[playerDice1]} ${diceEmoji[playerDice2]} = **${playerTotal}**\n**House Roll**: ${diceEmoji[houseDice1]} ${diceEmoji[houseDice2]} = **${houseTotal}**\n\n**Lost**: 💵 ${formatBigNumber(bet)}`;
+            resultText = `😢 **YOU LOSE!**\n\n**Your Roll**: ${pD1} ${pD2} = **${playerTotal}**\n**House Roll**: ${hD1} ${hD2} = **${houseTotal}**\n\n**Lost**: 💵 ${formatBigNumber(bet)}`;
             color = 0xff0000;
         } else {
             // Tie - push (no money changes)
-            resultText = `🤝 **TIE!**\n\n**Your Roll**: ${diceEmoji[playerDice1]} ${diceEmoji[playerDice2]} = **${playerTotal}**\n**House Roll**: ${diceEmoji[houseDice1]} ${diceEmoji[houseDice2]} = **${houseTotal}**\n\n**Push** - Bet returned!`;
+            resultText = `🤝 **TIE!**\n\n**Your Roll**: ${pD1} ${pD2} = **${playerTotal}**\n**House Roll**: ${hD1} ${hD2} = **${houseTotal}**\n\n**Push** - Bet returned!`;
             color = 0xffff00;
         }
 

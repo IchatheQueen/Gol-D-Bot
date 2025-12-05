@@ -2,6 +2,7 @@ import { Message, Client } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem } from '../../database/inventory';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'hunt',
@@ -102,10 +103,13 @@ const command: Command = {
             args: [userId, 'hunt', Date.now()]
         });
 
+        // Resolve emoji (using lowercase catchType as key, e.g. 'shark', 'dolphin')
+        const resolvedEmoji = resolveEmoji(client, catchType.toLowerCase(), catchEmoji);
+
         message.reply(
             `**${message.author.username}'s [Lvl ${pet.level}] ${pet.name}** went hunting!\n\n` +
             `🔋 **Energy consumed**: ${energyCost}\n` +
-            `${catchEmoji} **Caught**: ${catchType}\n` +
+            `${resolvedEmoji} **Caught**: ${catchType}\n` +
             `⭐ **XP gained**: ${xpGained}` +
             levelUpMessage
         );

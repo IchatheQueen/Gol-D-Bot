@@ -7,9 +7,8 @@ import { getInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
 
 // Stock types
-const stockTypes: Record<number, { name: string; emoji: string }> = {
-    1: { name: 'Casino', emoji: '🎰' },
-};
+import { stockTypes } from '../../data/stockTypes';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'shares',
@@ -52,7 +51,8 @@ const command: Command = {
                         ? `${valueStr.slice(0, 20)}... (${valueStr.length} digits)`
                         : totalValue.toLocaleString();
 
-                    stockList += `**[${stock.stock_type}] ${stockDef.name}**\n`;
+                    const emoji = resolveEmoji(client, stockDef.emoji);
+                    stockList += `**[${stock.stock_type}] ${emoji} ${stockDef.name}**\n`;
                     stockList += `Shares | ${sharesDisplay}\n`;
                     stockList += `Total Value | 💵 ${valueDisplay}\n\n`;
                 }

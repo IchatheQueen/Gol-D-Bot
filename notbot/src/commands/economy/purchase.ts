@@ -5,10 +5,8 @@ import { getUser } from '../../database/economy';
 import { getInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
 
-// Stock types with current prices
-const stockTypes: Record<number, { name: string; emoji: string; price: bigint }> = {
-    1: { name: 'Casino', emoji: '🎰', price: 90n },
-};
+import { stockTypes } from '../../data/stockTypes';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'purchase',
@@ -85,7 +83,7 @@ const command: Command = {
         });
 
         const embed = new EmbedBuilder()
-            .setDescription(`${message.author.username} (@${message.author.username}) has purchased ${purchaseAmount.toLocaleString()} ${stockDef.name} shares for 💵 ${totalCost.toLocaleString()}! \`~shares\``)
+            .setDescription(`${message.author.username} (@${message.author.username}) has purchased ${purchaseAmount.toLocaleString()} ${resolveEmoji(client, stockDef.emoji)} ${stockDef.name} shares for 💵 ${totalCost.toLocaleString()}! \`~shares\``)
             .setColor(getUserColor(userId));
 
         message.reply({ embeds: [embed] });

@@ -5,6 +5,7 @@ import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem, removeInventoryItem } from '../../database/inventory';
 import { sendCombatDM } from '../../utils/combatNotify';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'shoot',

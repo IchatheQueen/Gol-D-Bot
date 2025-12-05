@@ -2,6 +2,7 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 // Premium item definitions
 const premiumItems: Record<string, { name: string; emoji: string }> = {
@@ -38,7 +39,8 @@ const command: Command = {
             const itemDef = premiumItems[item.item_id];
             const amount = BigInt(item.amount);
             if (itemDef && amount > 0n) {
-                itemsList += `${itemDef.emoji} **${itemDef.name}**\n`;
+                const emoji = resolveEmoji(client, itemDef.emoji);
+                itemsList += `${emoji} **${itemDef.name}**\n`;
             }
         }
 

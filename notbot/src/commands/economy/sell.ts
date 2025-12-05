@@ -6,10 +6,8 @@ import { getInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
 
-// Stock types
-const stockTypes: Record<number, { name: string; emoji: string }> = {
-    1: { name: 'Casino', emoji: '🎰' },
-};
+import { stockTypes } from '../../data/stockTypes';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'sell',
@@ -82,7 +80,7 @@ const command: Command = {
         await updateUser(userId, { balance: user.balance + sellValue });
 
         const embed = new EmbedBuilder()
-            .setDescription(`${message.author.username} (@${message.author.username}) has sold ${formatBigNumber(sellAmount)} ${stockDef.name} shares. \`~shares\``)
+            .setDescription(`${message.author.username} (@${message.author.username}) has sold ${formatBigNumber(sellAmount)} ${resolveEmoji(client, stockDef.emoji)} ${stockDef.name} shares. \`~shares\``)
             .setColor(getUserColor(userId));
 
         message.reply({ embeds: [embed] });

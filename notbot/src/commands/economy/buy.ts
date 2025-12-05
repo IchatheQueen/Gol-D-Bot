@@ -4,6 +4,7 @@ import { getUser, updateUser } from '../../database/economy';
 import { getInventoryItem, addInventoryItem, removeInventoryItem } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'buy',
@@ -74,7 +75,8 @@ const command: Command = {
         // Add Item to Inventory
         await addInventoryItem(message.author.id, itemId, amount);
 
-        message.reply(`You bought **${formatBigNumber(amount)}x ${itemDef.name}** for ${currency === 'beer' ? '🍺' : currency === 'cash' ? '$' : ''}${formatBigNumber(totalPrice)}.`);
+        const itemEmoji = resolveEmoji(client, itemDef.emoji || '📦');
+        message.reply(`You bought **${formatBigNumber(amount)}x ${itemEmoji} ${itemDef.name}** for ${currency === 'beer' ? '🍺' : currency === 'cash' ? '$' : ''}${formatBigNumber(totalPrice)}.`);
     },
 };
 
