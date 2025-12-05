@@ -3,6 +3,9 @@ import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 
+import { getInventoryItem } from '../../database/inventory';
+import { getUserColor } from '../../database/userColor';
+
 // Stock types
 const stockTypes: Record<number, { name: string; emoji: string }> = {
     1: { name: 'Casino', emoji: '🎰' },
@@ -61,7 +64,7 @@ const command: Command = {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle(`${message.author.username} (@${message.author.username})'s Stock Account`)
+            .setTitle(`${target.username} (@${target.username})'s Stock Account`)
             .setDescription(`\`~sell <amount> 1\` to sell Casino shares\n\n${stockList}`)
             .setColor(getUserColor(userId));
 
