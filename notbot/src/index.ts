@@ -112,46 +112,46 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
         }
     }
-}
+
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
-const commandName = args.shift()?.toLowerCase();
-if (!commandName) return;
+    const commandName = args.shift()?.toLowerCase();
+    if (!commandName) return;
 
-// Process shortcuts in arguments
-const processedArgs = processShortcuts(args, message.author.id);
+    // Process shortcuts in arguments
+    const processedArgs = processShortcuts(args, message.author.id);
 
-// Check cooldown (skip for exempt user and specific commands)
-const exemptCommands = ['retreat', 'select', 'shoot'];
-if (message.author.id !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
-    const now = Date.now();
-    const lastCommand = userCooldowns.get(message.author.id) || 0;
-    const timeLeft = lastCommand + COOLDOWN_MS - now;
+    // Check cooldown (skip for exempt user and specific commands)
+    const exemptCommands = ['retreat', 'select', 'shoot'];
+    if (message.author.id !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
+        const now = Date.now();
+        const lastCommand = userCooldowns.get(message.author.id) || 0;
+        const timeLeft = lastCommand + COOLDOWN_MS - now;
 
-    if (timeLeft > 0) {
-        // User is on cooldown
-        return; // Silently ignore
+        if (timeLeft > 0) {
+            // User is on cooldown
+            return; // Silently ignore
+        }
+
+        // Update cooldown
+        userCooldowns.set(message.author.id, now);
     }
 
-    // Update cooldown
-    userCooldowns.set(message.author.id, now);
-}
-
-const command = commands.get(commandName);
-if (command) {
-    try {
-        await command.execute(message, processedArgs, client);
-        incrementCommandCount();
-    } catch (error) {
-        console.error(error);
-        const { EmbedBuilder } = require('discord.js');
-        const errorEmbed = new EmbedBuilder()
-            .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
-            .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
-            .setColor('#ff69b4');
-        await message.reply({ embeds: [errorEmbed] });
-    }
-});
+    const command = commands.get(commandName);
+    if (command) {
+        try {
+            await command.execute(message, processedArgs, client);
+            incrementCommandCount();
+        } catch (error) {
+            console.error(error);
+            const { EmbedBuilder } = require('discord.js');
+            const errorEmbed = new EmbedBuilder()
+                .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
+                .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
+                .setColor('#ff69b4');
+            await message.reply({ embeds: [errorEmbed] });
+        }
+    });
 
 // Initialize database and start bot
 async function main() {
