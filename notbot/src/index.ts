@@ -81,8 +81,14 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     }
 
     // Random wallet drop (only for non-command messages)
-    if (!message.content.startsWith(PREFIX)) {
-        if (Math.random() < WALLET_DROP_CHANCE && !client.activeWalletDrops.has(message.channel.id)) {
+    if (Math.random() < WALLET_DROP_CHANCE) {
+        // Check DB for existing drop
+        const existingDrop = await db.execute({
+            sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
+            args: [message.channel.id]
+        });
+
+        if (existingDrop.rows.length === 0) {
             const amount = Math.floor(Math.random() * 900000000000) + 100000000000; // 100B - 1T
             const scenarios = [
                 "A snobby old lady dropped their purse, exposing their wallet!",
@@ -92,53 +98,56 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             ];
             const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
-            client.activeWalletDrops.set(message.channel.id, { amount, timestamp: Date.now() });
+            // Insert into DB
+            await db.execute({
+                sql: 'INSERT INTO wallet_drops (channel_id, amount, timestamp) VALUES (?, ?, ?)',
+                args: [message.channel.id, amount.toString(), Date.now()]
+            });
 
             await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
-
-
         }
-        return;
     }
+    return;
+}
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);
-    const commandName = args.shift()?.toLowerCase();
-    if (!commandName) return;
+const commandName = args.shift()?.toLowerCase();
+if (!commandName) return;
 
-    // Process shortcuts in arguments
-    const processedArgs = processShortcuts(args, message.author.id);
+// Process shortcuts in arguments
+const processedArgs = processShortcuts(args, message.author.id);
 
-    // Check cooldown (skip for exempt user and specific commands)
-    const exemptCommands = ['retreat', 'select', 'shoot'];
-    if (message.author.id !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
-        const now = Date.now();
-        const lastCommand = userCooldowns.get(message.author.id) || 0;
-        const timeLeft = lastCommand + COOLDOWN_MS - now;
+// Check cooldown (skip for exempt user and specific commands)
+const exemptCommands = ['retreat', 'select', 'shoot'];
+if (message.author.id !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
+    const now = Date.now();
+    const lastCommand = userCooldowns.get(message.author.id) || 0;
+    const timeLeft = lastCommand + COOLDOWN_MS - now;
 
-        if (timeLeft > 0) {
-            // User is on cooldown
-            return; // Silently ignore
-        }
-
-        // Update cooldown
-        userCooldowns.set(message.author.id, now);
+    if (timeLeft > 0) {
+        // User is on cooldown
+        return; // Silently ignore
     }
 
-    const command = commands.get(commandName);
-    if (command) {
-        try {
-            await command.execute(message, processedArgs, client);
-            incrementCommandCount();
-        } catch (error) {
-            console.error(error);
-            const { EmbedBuilder } = require('discord.js');
-            const errorEmbed = new EmbedBuilder()
-                .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
-                .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
-                .setColor('#ff69b4');
-            await message.reply({ embeds: [errorEmbed] });
-        }
+    // Update cooldown
+    userCooldowns.set(message.author.id, now);
+}
+
+const command = commands.get(commandName);
+if (command) {
+    try {
+        await command.execute(message, processedArgs, client);
+        incrementCommandCount();
+    } catch (error) {
+        console.error(error);
+        const { EmbedBuilder } = require('discord.js');
+        const errorEmbed = new EmbedBuilder()
+            .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
+            .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
+            .setColor('#ff69b4');
+        await message.reply({ embeds: [errorEmbed] });
     }
+}
 });
 
 // Initialize database and start bot

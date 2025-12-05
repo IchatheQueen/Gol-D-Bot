@@ -1,4 +1,5 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
+import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
 
@@ -21,7 +22,19 @@ const command: Command = {
         ];
         const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
-        (client as any).activeWalletDrops.set(message.channel.id, { amount, timestamp: Date.now() });
+        // Check DB for existing drop
+        const existingDrop = await db.execute({
+            sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
+            args: [message.channel.id]
+        });
+
+        if (existingDrop.rows.length === 0) {
+            // Insert into DB
+            await db.execute({
+                sql: 'INSERT INTO wallet_drops (channel_id, amount, timestamp) VALUES (?, ?, ?)',
+                args: [message.channel.id, amount.toString(), Date.now()]
+            });
+        }
 
         await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
         await message.delete().catch(() => { }); // Delete the command message to keep it clean

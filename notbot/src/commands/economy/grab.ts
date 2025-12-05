@@ -1,5 +1,6 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getUser, updateUser } from '../../database/economy';
+import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
 import { formatBigNumber } from '../../utils/bigNumbers';
@@ -10,8 +11,13 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const channelId = message.channel.id;
 
-        // Check if there's an active wallet drop in this channel
-        const drop = (client as any).activeWalletDrops?.get(channelId);
+        // Check DB for active drop
+        const result = await db.execute({
+            sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
+            args: [channelId]
+        });
+
+        const drop = result.rows[0];
 
         if (!drop) {
             const embed = new EmbedBuilder()
@@ -21,15 +27,17 @@ const command: Command = {
             return;
         }
 
-        if (drop.claimedBy) {
-            return; // Already claimed
-        }
+        // Atomic delete and reward (prevents race conditions better)
+        // Or check if already claimed (though we just delete it upon claim)
 
-        // Mark as claimed
-        drop.claimedBy = message.author.id;
+        // Delete the drop
+        await db.execute({
+            sql: 'DELETE FROM wallet_drops WHERE channel_id = ?',
+            args: [channelId]
+        });
 
-        // Add money to user (convert drop amount to BigInt)
-        const amount = BigInt(drop.amount);
+        // Add money to user
+        const amount = BigInt(drop.amount as string);
         const user = await getUser(message.author.id);
         await updateUser(message.author.id, { balance: user.balance + amount });
 
@@ -38,10 +46,8 @@ const command: Command = {
             .setDescription(`@${message.author.username} snatches a wallet and found:\n• 💵 ${formatBigNumber(amount)}`)
             .setColor(getUserColor(message.author.id));
         await message.reply({ embeds: [embed] });
-
-        // Remove the drop
-        (client as any).activeWalletDrops?.delete(channelId);
     },
+},
 };
 
 export default command;

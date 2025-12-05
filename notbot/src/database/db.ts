@@ -105,6 +105,15 @@ export async function initDatabase() {
         )
     `);
 
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS wallet_drops (
+            channel_id TEXT PRIMARY KEY,
+            amount TEXT,
+            timestamp INTEGER,
+            claimed_by TEXT
+        )
+    `);
+
     console.log('Database tables initialized!');
 }
 

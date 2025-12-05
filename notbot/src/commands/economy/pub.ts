@@ -1,4 +1,5 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 import { items } from '../../data/items';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
@@ -28,16 +29,27 @@ const command: Command = {
         embed.addFields({ name: 'Stuff', value: stuffContent });
 
         // Weapons
+        // Weapons
         let weaponsContent = '';
         weaponsContent += `👁️ Hint: After selecting a weapon, use \`~shoot <target>\` to attack your foe!\n`;
-        weaponsContent += `[ID: 6] <:pistol:1445995386031308890> **Pistol Bullet** - Price: 🍺 1\n   └ Ammunition for pistols (All players have one! \`~select pistol\`)\n`;
-        weaponsContent += `[ID: 7] 🏹 **Crossbow** - Price: 🍺 20,000\n   └ Select this weapon with \`~select crossbow\` (Starts with 3 Shots!)\n`;
-        weaponsContent += `[ID: 8] <:arrow:1446143653931384943> **Arrow** - Price: 🍺 1,500\n   └ Ammunition for crossbows\n`;
-        weaponsContent += `[ID: 9] <:rifle:1445995242317942874> **Rifle** - Price: 🍺 27,000,000,000,000\n   └ Select this weapon with \`~select rifle\`\n`;
-        weaponsContent += `[ID: 10] <:rifle:1445995242317942874> **Rifle Bullet** - Price: 🍺 3,000,000,000,000\n   └ Ammunition for rifles\n`;
-        weaponsContent += `[ID: 11] 📢 **Speaker** - Price: 🍺 400,000,000,000,000\n   └ Shatters beer and knocks people unconscious (\`~select speaker\`)\n`;
-        weaponsContent += `[ID: 12] <:flamethrower:1446143428290416670> **Flamethrower** - Price: 🍺 100,000,000,000,000,000,000\n   └ Burns others' crops but knocks you unconscious as well in the process (\`~select flame\`)\n`;
-        weaponsContent += `[ID: 13] 🛢️ **Propane** - Price: 🍺 1,500,000,000,000,000,000\n   └ Ammunition for flamethrowers\n`;
+
+        const pistolBullet = items['6'];
+        const crossbow = items['7'];
+        const arrow = items['8'];
+        const rifle = items['9'];
+        const rifleBullet = items['10'];
+        const speaker = items['11'];
+        const flamethrower = items['12'];
+        const propane = items['13'];
+
+        weaponsContent += `[ID: 6] ${resolveEmoji(client, pistolBullet.emoji)} **${pistolBullet.name}** - Price: 🍺 ${pistolBullet.price}\n   └ ${pistolBullet.description}\n`;
+        weaponsContent += `[ID: 7] ${resolveEmoji(client, crossbow.emoji || '🏹')} **${crossbow.name}** - Price: 🍺 ${crossbow.price.toLocaleString()}\n   └ ${crossbow.description}\n`;
+        weaponsContent += `[ID: 8] ${resolveEmoji(client, arrow.emoji)} **${arrow.name}** - Price: 🍺 ${arrow.price.toLocaleString()}\n   └ ${arrow.description}\n`;
+        weaponsContent += `[ID: 9] ${resolveEmoji(client, rifle.emoji)} **${rifle.name}** - Price: 🍺 ${rifle.price.toLocaleString()}\n   └ ${rifle.description}\n`;
+        weaponsContent += `[ID: 10] ${resolveEmoji(client, rifleBullet.emoji)} **${rifleBullet.name}** - Price: 🍺 ${rifleBullet.price.toLocaleString()}\n   └ ${rifleBullet.description}\n`;
+        weaponsContent += `[ID: 11] ${resolveEmoji(client, speaker.emoji || '📢')} **${speaker.name}** - Price: 🍺 ${speaker.price.toLocaleString()}\n   └ ${speaker.description}\n`;
+        weaponsContent += `[ID: 12] ${resolveEmoji(client, flamethrower.emoji)} **${flamethrower.name}** - Price: 🍺 ${flamethrower.price.toLocaleString()}\n   └ ${flamethrower.description}\n`;
+        weaponsContent += `[ID: 13] ${resolveEmoji(client, propane.emoji || '🛢️')} **${propane.name}** - Price: 🍺 ${propane.price.toLocaleString()}\n   └ ${propane.description}\n`;
 
         embed.addFields({ name: 'Weapons', value: weaponsContent });
 
