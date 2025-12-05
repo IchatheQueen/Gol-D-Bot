@@ -96,10 +96,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
 
             await (message.channel as any).send(`${scenario} \`~grab\` to quickly steal it.`);
 
-            // Auto-clear after 30 seconds
-            setTimeout(() => {
-                client.activeWalletDrops.delete(message.channel.id);
-            }, 60000);
+
         }
         return;
     }
