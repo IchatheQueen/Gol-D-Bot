@@ -30,16 +30,9 @@ const createOwnerEmbed = (user: any) => {
 const command: Command = {
     name: 'owner',
     description: 'View the bot owner\'s profile',
-    data: new SlashCommandBuilder()
-        .setName('owner')
-        .setDescription('View the bot owner\'s profile'),
     execute: async (message: Message, args: string[], client: Client) => {
         const payload = createOwnerEmbed(message.author);
         await message.reply(payload);
-    },
-    executeSlash: async (interaction: ChatInputCommandInteraction, client: Client) => {
-        const payload = createOwnerEmbed(interaction.user);
-        await interaction.reply(payload);
     }
 };
 

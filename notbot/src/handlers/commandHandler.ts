@@ -6,9 +6,7 @@ export interface Command {
     name: string;
     description: string;
     aliases?: string[];
-    data?: any; // SlashCommandBuilder
-    execute?: (message: Message, args: string[], client: Client) => Promise<void> | void;
-    executeSlash?: (interaction: ChatInputCommandInteraction, client: Client) => Promise<void> | void;
+    execute: (message: Message, args: string[], client: Client) => Promise<void> | void;
 }
 
 export const loadCommands = (client: Client): Map<string, Command> => {

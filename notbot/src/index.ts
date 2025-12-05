@@ -171,33 +171,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     }
 });
 
-client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
 
-    const command = commands.get(interaction.commandName);
-
-    if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
-        return;
-    }
-
-    try {
-        if (command.executeSlash) {
-            await command.executeSlash(interaction, client);
-            incrementCommandCount();
-        } else {
-            // Fallback if no specific slash handler (shouldn't happen if we only register supported ones)
-            await interaction.reply({ content: 'This command does not support slash usage yet.', ephemeral: true });
-        }
-    } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-        } else {
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-    }
-});
 
 // Initialize database and start bot
 async function main() {
