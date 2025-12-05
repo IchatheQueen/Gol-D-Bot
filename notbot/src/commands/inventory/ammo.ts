@@ -20,7 +20,7 @@ const command: Command = {
             .setDescription(
                 `🏹 **Arrows** | ${arrows.toLocaleString()}\n` +
                 `🔫 **Pistol Bullets** | ${pistol.toLocaleString()}\n` +
-                `💥 **Rifle Bullets** | ${rifle.toLocaleString()}\n` +
+                `<:rifle:1445995242317942874> **Rifle Bullets** | ${rifle.toLocaleString()}\n` +
                 `⛽ **Propane** | ${propane.toLocaleString()}`
             )
             .setColor('#2f3136');
