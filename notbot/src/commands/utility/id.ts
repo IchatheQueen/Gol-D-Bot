@@ -1,4 +1,4 @@
-import { Message, Client, EmbedBuilder } from 'discord.js';
+import { Message, Client, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
@@ -15,7 +15,41 @@ const command: Command = {
             .setDescription(`**${target.username}**'s ID:\n\`${target.id}\``)
             .setColor(getUserColor(message.author.id));
 
-        message.reply({ embeds: [embed] });
+        const row = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`copy_id_${target.id}`)
+                    .setLabel('Copy ID')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('📋')
+            );
+
+        const reply = await message.reply({ embeds: [embed], components: [row] });
+
+        const collector = reply.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            time: 60000
+        });
+
+        collector.on('collect', async (interaction) => {
+            if (interaction.customId === `copy_id_${target.id}`) {
+                await interaction.reply({ content: target.id, ephemeral: true });
+            }
+        });
+
+        collector.on('end', () => {
+            // Disable button after timeout
+            const disabledRow = new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`copy_id_${target.id}`)
+                        .setLabel('Copy ID')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('📋')
+                        .setDisabled(true)
+                );
+            reply.edit({ components: [disabledRow] }).catch(() => { });
+        });
     },
 };
 
