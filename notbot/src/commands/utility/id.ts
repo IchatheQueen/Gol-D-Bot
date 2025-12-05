@@ -1,4 +1,4 @@
-import { Message, Client, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import { Message, Client, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } from 'discord.js';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
@@ -33,7 +33,7 @@ const command: Command = {
 
         collector.on('collect', async (interaction) => {
             if (interaction.customId === `copy_id_${target.id}`) {
-                await interaction.reply({ content: target.id, ephemeral: true });
+                await interaction.reply({ content: target.id, flags: MessageFlags.Ephemeral });
             }
         });
 

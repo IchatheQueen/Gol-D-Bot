@@ -18,14 +18,16 @@ const command: Command = {
             const embed = new EmbedBuilder()
                 .setTitle('Shop')
                 .setColor(getUserColor(message.author.id))
-                .setDescription('Use `~shop buy <item_id>` to purchase.');
+            let description = 'Use `~shop buy <item_id>` to purchase.\n\n';
 
             Object.values(items).forEach(item => {
                 const priceDisplay = typeof item.price === 'string'
                     ? formatBigNumber(parseBigNumber(item.price) || 0n)
                     : item.price.toLocaleString();
-                embed.addFields({ name: `${item.name} ($${priceDisplay})`, value: item.description, inline: false });
+                description += `**${item.name}** ($${priceDisplay})\n${item.description}\n\n`;
             });
+
+            embed.setDescription(description);
 
             message.reply({ embeds: [embed] });
             return;
