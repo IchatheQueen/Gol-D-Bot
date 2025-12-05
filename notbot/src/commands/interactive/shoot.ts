@@ -65,7 +65,7 @@ const command: Command = {
         // Weapon emojis
         const weaponEmojis: Record<string, string> = {
             'pistol': '🔫',
-            'rifle': '🔫',
+            'rifle': '<:rifle:1445995242317942874>',
             'crossbow': '🏹',
             'speaker': '📢',
             'flamethrower': '🔥',
