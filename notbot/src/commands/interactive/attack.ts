@@ -1,4 +1,4 @@
-import { Message, Client } from 'discord.js';
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
@@ -50,7 +50,10 @@ const command: Command = {
         });
 
         // Initial message
-        await (message.channel as any).send(`**${message.author.username}'s [Lvl ${attackerPet.level}] ${attackerPet.name}** has flown at <@${targetId}> and consumed 🔋 0`);
+        const initialEmbed = new EmbedBuilder()
+            .setDescription(`**${message.author.username}'s [Lvl ${attackerPet.level}] ${attackerPet.name}** has flown at <@${targetId}> and consumed 🔋 0`)
+            .setColor('#FF0000');
+        await (message.channel as any).send({ embeds: [initialEmbed] });
 
         const flavorTexts = [
             "slashed at",
@@ -74,7 +77,11 @@ const command: Command = {
             }
 
             if (attackerPet.energy < 5) {
-                await (message.channel as any).send(`**${message.author.username}'s [Lvl ${attackerPet.level}] ${attackerPet.name}** is too tired to continue and has returned.`);
+                const tiredEmbed = new EmbedBuilder()
+                    .setDescription(`**${message.author.username}'s [Lvl ${attackerPet.level}] ${attackerPet.name}** is too tired to continue and has returned.`)
+                    .setColor('#FF0000');
+                await (message.channel as any).send({ embeds: [tiredEmbed] });
+
                 await db.execute({
                     sql: 'UPDATE pets SET is_attacking = 0 WHERE user_id = ?',
                     args: [message.author.id]
@@ -126,7 +133,10 @@ const command: Command = {
                 }
             }
 
-            await (message.channel as any).send(`**${message.author.username}'s [Lvl ${attackerPet.level}] ${attackerPet.name}** has ${actionText}; 🔋 5 have been consumed`);
+            const attackEmbed = new EmbedBuilder()
+                .setDescription(`**${message.author.username}'s [Lvl ${attackerPet.level}] ${attackerPet.name}** has ${actionText}; 🔋 5 have been consumed`)
+                .setColor('#FF0000');
+            await (message.channel as any).send({ embeds: [attackEmbed] });
 
             // Wait 2 seconds between hits
             await new Promise(resolve => setTimeout(resolve, 2000));
