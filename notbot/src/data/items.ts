@@ -46,6 +46,14 @@ export const items: Record<string, Item> = {
     '4': { id: '4', name: 'Ender', price: 6, currency: 'beer', description: 'Kidnap an EnderMomandNate and receive Ender briefcases daily (~collect ender)', type: 'collectible' },
     '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
 
+    // Feed Items
+    'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
+    'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 50, description: 'Restores energy', type: 'consumable' },
+    'coffee': { id: 'coffee', name: 'Coffee', price: 30, description: 'Wake up!', type: 'consumable' },
+    'opioid': { id: 'opioid', name: 'Opioid', price: 100, description: 'Pain relief', type: 'consumable' },
+    'steroid': { id: 'steroid', name: 'Steroid', price: 500, description: 'Bulk up', type: 'consumable' },
+    'medicine': { id: 'medicine', name: 'Medicine', price: 50, description: 'Heals you', type: 'consumable' },
+
     // Weapons (Updated Prices/Currency)
     '6': { id: '6', name: 'Pistol Bullet', price: 1, emoji: '🚬', currency: 'beer', description: 'Ammunition for pistols (All players have one! ~select pistol)', type: 'consumable' },
     '7': { id: '7', name: 'Crossbow', price: 20000, currency: 'beer', description: 'Select this weapon with ~select crossbow (Starts with 3 Shots!)', type: 'weapon' },
