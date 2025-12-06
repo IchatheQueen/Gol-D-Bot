@@ -160,10 +160,70 @@ const command: Command = {
                 .setColor('#FF0000'); // Generic color
 
             message.reply({ embeds: [embed] });
+        } else if (itemId === 'beer') {
+            // Beer: Thirst +20, Halves Intellect/Agility for 2h
+            await db.execute({
+                sql: 'UPDATE pets SET thirst = MIN(100, thirst + 20) WHERE user_id = ?',
+                args: [userId]
+            });
+            // Add drug effect
+            const expires = Date.now() + 2 * 60 * 60 * 1000;
+            await db.execute({
+                sql: 'INSERT OR REPLACE INTO drug_effects (user_id, drug_type, expires_at) VALUES (?, ?, ?)',
+                args: [userId, 'alcohol', expires]
+            });
+            message.reply('You gave your pet a **Beer**! 🍺\nThirst +20. Your pet looks a bit wobbly (Intellect/Agility halved for 2h).');
+        } else if (itemId === 'energy_drink') {
+            // Energy Drink: Thirst -65, Energy Refill (100)
+            await db.execute({
+                sql: 'UPDATE pets SET thirst = MAX(0, thirst - 65), energy = 100 WHERE user_id = ?',
+                args: [userId]
+            });
+            message.reply('You gave your pet an **Energy Drink**! ⚡\nEnergy fully restored! But they look thirsty (-65 Thirst).');
+        } else if (itemId === 'coffee') {
+            // Coffee: Thirst +8, Energy +20
+            await db.execute({
+                sql: 'UPDATE pets SET thirst = MIN(100, thirst + 8), energy = MIN(100, energy + 20) WHERE user_id = ?',
+                args: [userId]
+            });
+            message.reply('You gave your pet some **Coffee**! ☕\nThirst +8, Energy +20.');
+        } else if (itemId === 'medicine') {
+            // Medicine: Health +250
+            await db.execute({
+                sql: 'UPDATE pets SET health = MIN(max_health, health + 250) WHERE user_id = ?',
+                args: [userId]
+            });
+            message.reply('You gave your pet **Medicine**! 🩹\nHealed 250 Health.');
+        } else if (itemId === 'opioid') {
+            // Opioid: Health +50 (Heal), Agility Debuff?
+            // Let's say Heal 50, and 'opioid' drug effect (maybe reduces agility in logic?)
+            await db.execute({
+                sql: 'UPDATE pets SET health = MIN(max_health, health + 50) WHERE user_id = ?',
+                args: [userId]
+            });
+            const expires = Date.now() + 1 * 60 * 60 * 1000; // 1h
+            await db.execute({
+                sql: 'INSERT OR REPLACE INTO drug_effects (user_id, drug_type, expires_at) VALUES (?, ?, ?)',
+                args: [userId, 'opioid', expires]
+            });
+            message.reply('You gave your pet an **Opioid**! 💊\nHealed 50 Health. They seem sluggish...');
+        } else if (itemId === 'steroid') {
+            // Steroid: Strength +1 (Permanent?), Health -10 (Damage)
+            await db.execute({
+                sql: 'UPDATE pets SET strength = strength + 1, health = MAX(0, health - 10) WHERE user_id = ?',
+                args: [userId]
+            });
+            message.reply('You gave your pet a **Steroid**! 💪\n**+1 Strength**! But it took a toll on their health (-10 HP).');
         } else {
-            // Generic feed placeholder
-            message.reply(`You fed your pet **${foodQuery}**! (Generic effect applied)`);
-            // TODO: Implement other foods effects
+            message.reply(`You fed your pet **${foodQuery}**!`);
+        }
+
+        if (itemId !== 'pill') {
+            // Deduct item implementation for non-pills
+            await db.execute({
+                sql: 'UPDATE inventory SET amount = amount - 1 WHERE user_id = ? AND item_id = ?',
+                args: [userId, itemId]
+            });
         }
     }
 };

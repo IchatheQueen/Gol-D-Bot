@@ -3,7 +3,7 @@ export interface Item {
     name: string;
     emoji?: string;
     price: number | string;
-    currency?: 'cash' | 'beer' | 'diamond' | 'weed' | 'opioid';
+    currency?: 'cash' | 'beer' | 'diamond' | 'weed' | 'opioid' | 'pills';
     description: string;
     type: 'consumable' | 'collectible' | 'weapon' | 'drug' | 'farming' | 'counterfeit';
     effect?: (user: any, pet?: any) => string;
@@ -48,11 +48,17 @@ export const items: Record<string, Item> = {
 
     // Feed Items
     'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
-    'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 50, description: 'Restores energy', type: 'consumable' },
-    'coffee': { id: 'coffee', name: 'Coffee', price: 30, description: 'Wake up!', type: 'consumable' },
+    'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
+    'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
     'opioid': { id: 'opioid', name: 'Opioid', price: 100, description: 'Pain relief', type: 'consumable' },
     'steroid': { id: 'steroid', name: 'Steroid', price: 500, description: 'Bulk up', type: 'consumable' },
-    'medicine': { id: 'medicine', name: 'Medicine', price: 50, description: 'Heals you', type: 'consumable' },
+    'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' }, // NOTE: petItems claims currency is 'pills' but items definition might need 'opioid' or 'pills'? items.ts usually uses 'currency' field for alt currencies. petItems uses 'pills'.
+    // `petItems.ts`: Medicine Price 3, currency 'pills'. 
+    // `items.ts` allowed currencies: 'cash' | 'beer' | 'diamond' | 'weed' | 'opioid'. NO 'pills'.
+    // I should add 'pills' to allowed currencies in `items.ts` or map it.
+    // For now I'll use 'opioid' only if it matches? No.
+    // I will leave logic as is but price 3.
+
 
     // Weapons (Updated Prices/Currency)
     '6': { id: '6', name: 'Pistol Bullet', price: 1, emoji: '🚬', currency: 'beer', description: 'Ammunition for pistols (All players have one! ~select pistol)', type: 'consumable' },
