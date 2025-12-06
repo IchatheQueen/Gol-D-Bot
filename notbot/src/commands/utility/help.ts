@@ -1,3 +1,4 @@
+
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
@@ -18,7 +19,7 @@ const command: Command = {
                 },
                 {
                     name: 'Invite Me',
-                    value: 'Invite me to your server via this link:\n[Invite Link](https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=2805705&scope=bot%20applications.commands)',
+                    value: 'Invite me to your server via this link:\n[Invite Link](https://discord.com/oauth2/authorize?client_id=1445933483976560680&permissions=8&integration_type=0&scope=bot)',
                     inline: false
                 },
                 {

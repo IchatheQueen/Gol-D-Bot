@@ -50,8 +50,8 @@ export const items: Record<string, Item> = {
     'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
     'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
     'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
-    'opioid': { id: 'opioid', name: 'Opioid', price: 100, description: 'Pain relief', type: 'consumable' },
-    'steroid': { id: 'steroid', name: 'Steroid', price: 500, description: 'Bulk up', type: 'consumable' },
+    'opioid': { id: 'opioid', name: 'Opioid', price: 100, description: 'Quadruples Endurance', type: 'consumable' },
+    'steroid': { id: 'steroid', name: 'Steroid', price: 500, description: 'Quadruples Strength', type: 'consumable' },
     'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' }, // NOTE: petItems claims currency is 'pills' but items definition might need 'opioid' or 'pills'? items.ts usually uses 'currency' field for alt currencies. petItems uses 'pills'.
     // `petItems.ts`: Medicine Price 3, currency 'pills'. 
     // `items.ts` allowed currencies: 'cash' | 'beer' | 'diamond' | 'weed' | 'opioid'. NO 'pills'.
