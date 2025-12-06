@@ -35,7 +35,28 @@ const command: Command = {
         const gen = generatorCheck.rows[0] as any;
 
         // Calculate needed for level up (placeholder logic: 900 * level?)
-        const neededForLevelUp = 900 * gen.level;
+        // Calculate needed for level up using exponential growth (900 * 3^(level-1))
+        let cost = 900n;
+        const targetLevel = gen.level as number;
+        for (let i = 1; i < targetLevel; i++) {
+            cost = cost * 3n;
+        }
+
+        let formattedNeeded = '';
+        if (cost.toString().length > 21) {
+            const formatted = formatBigNumber(cost);
+            if (formatted.includes('&')) {
+                const [visible, hiddenCount] = formatted.split('&');
+                const totalDigits = cost.toString().length;
+                formattedNeeded = `${visible}... (${totalDigits} digits)`;
+            } else {
+                formattedNeeded = formatted;
+            }
+        } else {
+            formattedNeeded = formatBigNumber(cost);
+        }
+
+        const neededForLevelUp = formattedNeeded;
 
         // Values formatting
         // Health: base 12 * level? Or specific formula? Screenshot says Level 1 -> 12.
