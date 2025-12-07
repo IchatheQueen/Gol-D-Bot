@@ -17,10 +17,10 @@ export const blackMarketItems: Record<string, BlackMarketItem> = {
     '6': { id: '6', name: 'LSD', price: 15000000, emoji: '1445946844470579210', currency: 'weed', description: 'Trippy effects', type: 'drug' },
 
     // Farming
-    '102': { id: '102', name: 'Cannabis Plant', price: 20, currency: 'weed', description: 'Yields 3 Weed every 12h', type: 'farming' },
-    '103': { id: '103', name: 'Opium Plant', price: 6, currency: 'opioid', description: 'Yields 1 Opioid every 12h', type: 'farming' },
-    '104': { id: '104', name: 'Linen Plant', price: 18, currency: 'weed', description: 'Yields 1 Linen every 12h', type: 'farming' },
-    '105': { id: '105', name: 'Cotton Plant', price: 67, currency: 'weed', description: 'Yields 1 Cotton every 12h', type: 'farming' },
+    '102': { id: '102', name: 'Cannabis Plant', price: 20, currency: 'weed', emoji: '🌱', description: 'Yields 3 Weed every 12h', type: 'farming' },
+    '103': { id: '103', name: 'Opium Plant', price: 6, currency: 'opioid', emoji: '🌹', description: 'Yields 1 Opioid every 12h', type: 'farming' },
+    '104': { id: '104', name: 'Linen Plant', price: 18, currency: 'weed', emoji: '🌾', description: 'Yields 1 Linen every 12h', type: 'farming' },
+    '105': { id: '105', name: 'Cotton Plant', price: 67, currency: 'weed', emoji: '🌿', description: 'Yields 1 Cotton every 12h', type: 'farming' },
 
     // Printer
     '201': { id: '201', name: 'Ink', price: 9000, currency: 'weed', description: 'Printing material', type: 'counterfeit' },
