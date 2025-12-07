@@ -13,6 +13,15 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
 
+        // Check ownership first
+        const { getInventoryItem } = await import('../../database/inventory'); // Dynamic import or add to top
+        const generatorAmount = await getInventoryItem(userId, 'pill_generator');
+
+        if (generatorAmount <= 0n) {
+            message.reply('You do not have a 🗜️; `~petshop` to buy one');
+            return;
+        }
+
         // Fetch generator data
         let generatorCheck = await db.execute({
             sql: 'SELECT * FROM generators WHERE user_id = ?',
@@ -20,8 +29,7 @@ const command: Command = {
         });
 
         if (generatorCheck.rows.length === 0) {
-            // Create generator if not exists (assume everyone has one or can view basic Lvl 1?)
-            // Screenshot implies ownership.
+            // Create generator record if they own the item but no DB record exists yet
             await db.execute({
                 sql: 'INSERT INTO generators (user_id) VALUES (?)',
                 args: [userId]

@@ -11,7 +11,7 @@ const command: Command = {
         const generatorAmount = await getInventoryItem(message.author.id, 'pill_generator');
 
         if (generatorAmount <= 0n) {
-            message.reply('You do not own a Pill Generator!');
+            message.reply('You do not have a 🗜️; `~petshop` to buy one');
             return;
         }
 
