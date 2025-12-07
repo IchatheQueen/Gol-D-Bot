@@ -80,12 +80,27 @@ const command: Command = {
             const playerValue = getHandValue(playerHand);
             const dealerValue = getHandValue(dealerHand);
 
+            // Format cards with space: "2 ♠"
+            const formatHand = (hand: Card[]) => hand.map(c => `${c.value} ${c.suit}`).join('  ');
+
             const embed = new EmbedBuilder()
-                .setTitle('Blackjack')
-                .setColor('#0099ff')
+                .setTitle('♠ | Blackjack')
+                .setColor('#00FFFF')
+                .setDescription(
+                    '👁️ Hint: Get the value of your cards as close to 21 as possible but going over 21 will cause a loss!\n' +
+                    '👁️ Hint: Use the buttons below to **Hit** or **Stand**.'
+                )
                 .addFields(
-                    { name: 'Your Hand', value: `${playerHand.map(c => `${c.value}${c.suit}`).join(' ')} (${playerValue})`, inline: true },
-                    { name: 'Dealer Hand', value: gameOver ? `${dealerHand.map(c => `${c.value}${c.suit}`).join(' ')} (${dealerValue})` : `${dealerHand[0].value}${dealerHand[0].suit} ?`, inline: true }
+                    {
+                        name: `GoldBot's cards (${gameOver ? dealerValue : '??'})`,
+                        value: gameOver ? formatHand(dealerHand) : `????????`,
+                        inline: false
+                    },
+                    {
+                        name: `.${message.author.username}'s cards (${playerValue})`,
+                        value: formatHand(playerHand),
+                        inline: false
+                    }
                 );
 
             return embed;
