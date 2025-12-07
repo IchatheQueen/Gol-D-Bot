@@ -4,6 +4,7 @@ import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 import { resolveEmoji } from '../../utils/resolveEmoji';
+import { formatBigNumber } from '../../utils/bigNumbers';
 
 // Define categories matching the screenshot + Requested "Ignore cocaine"
 const categories = {
@@ -76,14 +77,14 @@ const command: Command = {
                         description += `${emoji} **${itemDef.name}** ${status}\n`;
                     } else {
                         // Standard style: Emoji Name | Amount
-                        description += `${emoji} **${itemDef.name}** | ${amount.toLocaleString()}\n`;
+                        description += `${emoji} **${itemDef.name}** | ${formatBigNumber(amount)}\n`;
                     }
                     description += `👁️ ${itemEntry.hint}\n`;
                 }
             }
 
             const embed = new EmbedBuilder()
-                .setTitle(`${target.username} (@.${target.username})'s Inventory`)
+                .setTitle(`${target.username} (@${target.username})'s Inventory`)
                 .setColor('#2f3136')
                 .setDescription(description);
 

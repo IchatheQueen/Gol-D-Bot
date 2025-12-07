@@ -1,6 +1,7 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { shopItems } from '../../data/petItems';
 import { Command } from '../../handlers/commandHandler';
+import { formatBigNumber } from '../../utils/bigNumbers';
 
 const command: Command = {
     name: 'petshop',
@@ -16,7 +17,7 @@ const command: Command = {
         let toys = '';
 
         Object.values(shopItems).forEach(item => {
-            const price = item.currency === 'cash' ? `💵 ${item.price.toLocaleString()}` : `💊 ${item.price.toLocaleString()}`;
+            const price = item.currency === 'cash' ? `💵 ${formatBigNumber(item.price)}` : `💊 ${formatBigNumber(item.price)}`;
             const line = `[ID: **${item.id}**] ${item.name} - Price: ${price}\n└ ${item.description}\n`;
 
             if (item.id.startsWith('1')) {

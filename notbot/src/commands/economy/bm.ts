@@ -3,6 +3,7 @@ import { blackMarketItems } from '../../data/blackMarketItems';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
 import { resolveEmoji } from '../../utils/resolveEmoji';
+import { formatBigNumber } from '../../utils/bigNumbers';
 
 const command: Command = {
     name: 'bm',
@@ -19,7 +20,7 @@ const command: Command = {
         let counterfeit = '';
 
         Object.values(blackMarketItems).forEach(item => {
-            const price = item.currency === 'cash' ? `💵 ${item.price.toLocaleString()}` : `<:weed:1445946808982569071> ${item.price.toLocaleString()}`;
+            const price = item.currency === 'cash' ? `💵 ${formatBigNumber(item.price)}` : `<:weed:1445946808982569071> ${formatBigNumber(item.price)}`;
             const emoji = resolveEmoji(client, item.emoji);
             const line = `[ID: **${item.id}**] ${emoji} ${item.name} - Price: ${price}\n└ ${item.description}\n`;
 
