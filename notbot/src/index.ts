@@ -85,23 +85,24 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         return;
     }
 
+    // STRICT PREFIX CHECK - Bot only responds/acts if prefix is present
+    if (!message.content.startsWith(PREFIX)) {
+        return;
+    }
+
     // Check if user is stunned (show message with time remaining)
-    if (message.content.startsWith(PREFIX)) {
-        // Allow exempt user (Admin) to bypass stun
-        if (message.author.id === EXEMPT_USER_ID) {
-            // Proceed
-        } else {
-            const stunTimeRemaining = await getStunTimeRemaining(message.author.id);
-            if (stunTimeRemaining !== null) {
-                const minutes = Math.floor(stunTimeRemaining / 60000);
-                const seconds = Math.floor((stunTimeRemaining % 60000) / 1000);
-                message.reply(`⛓️ You are still stunned! Time remaining: **${minutes}m ${seconds}s**`);
-                return;
-            }
+    // Since we already checked prefix, we can just check logic
+    if (message.author.id !== EXEMPT_USER_ID) {
+        const stunTimeRemaining = await getStunTimeRemaining(message.author.id);
+        if (stunTimeRemaining !== null) {
+            const minutes = Math.floor(stunTimeRemaining / 60000);
+            const seconds = Math.floor((stunTimeRemaining % 60000) / 1000);
+            message.reply(`⛓️ You are still stunned! Time remaining: **${minutes}m ${seconds}s**`);
+            return;
         }
     }
 
-    // Random wallet drop (only for non-command messages)
+    // Random wallet drop (NOW only for command messages due to prefix restriction)
     if (Math.random() < WALLET_DROP_CHANCE) {
         // Check DB for existing drop
         const existingDrop = await db.execute({
@@ -116,6 +117,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
                 "A rich kid tripped and their wallet fell out!",
                 "An employee's briefcase opened, revealing a wallet!",
                 "A wallet mysteriously appeared on the ground!",
+                "A bank truck door flew open!"
             ];
             const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
@@ -161,7 +163,6 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             }
         } catch (error) {
             console.error(error);
-            // reused imported EmbedBuilder
             const errorEmbed = new EmbedBuilder()
                 .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
                 .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
@@ -170,8 +171,6 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 });
-
-
 
 // Initialize database and start bot
 async function main() {
