@@ -24,6 +24,9 @@ export function resolveEmoji(plugin: Client, emojiKey?: string, fallback: string
     if (/^\d{17,19}$/.test(emojiKey)) {
         const emoji = plugin.emojis.cache.get(emojiKey);
         if (emoji) return emoji.toString();
+        // Fallback: If it looks like an ID but not in cache, try constructing it anyway.
+        // This allows cross-server emojis if the bot really has access but cache missed.
+        return `<:custom:${emojiKey}>`;
     }
 
     // Try finding by name
@@ -31,8 +34,6 @@ export function resolveEmoji(plugin: Client, emojiKey?: string, fallback: string
     if (emoji) {
         return emoji.toString();
     }
-
-    // If not found in cache...
 
     // If it was already unicode, return it.
     if (/\p{Extended_Pictographic}/u.test(emojiKey)) {

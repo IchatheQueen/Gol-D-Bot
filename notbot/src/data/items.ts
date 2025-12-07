@@ -47,20 +47,20 @@ export const items: Record<string, Item> = {
     '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
 
     // Drugs (Substances)
-    'weed': { id: 'weed', name: 'Weed', price: 200, emoji: '🌿', description: 'Medical herb', type: 'drug' },
-    'anesthetics': { id: 'anesthetics', name: 'Anesthetics', price: 1000, emoji: '💉', description: 'Numbing agent', type: 'drug' },
-    'lsd': { id: 'lsd', name: 'LSD', price: 1500, emoji: '☯️', description: 'Hallucinogen', type: 'drug' },
+    'weed': { id: 'weed', name: 'Weed', price: 200, emoji: '1445946808982569071', description: 'Medical herb', type: 'drug' },
+    'anesthetics': { id: 'anesthetics', name: 'Anesthetics', price: 1000, emoji: '1445946885037887578', description: 'Numbing agent', type: 'drug' },
+    'lsd': { id: 'lsd', name: 'LSD', price: 1500, emoji: '1445946844470579210', description: 'Hallucinogen', type: 'drug' },
 
     // Feed Items
     'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
     'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
     'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
     'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '💊', description: 'Quadruples Endurance', type: 'consumable' },
-    'steroid': { id: 'steroid', name: 'Steroid', price: 500, emoji: '💊', description: 'Quadruples Strength', type: 'consumable' },
+    'steroid': { id: 'steroid', name: 'Steroid', price: 500, emoji: '1446143494610485289', description: 'Quadruples Strength', type: 'consumable' },
     'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' },
 
     // Weapons (Updated Prices/Currency)
-    'pistol': { id: 'pistol', name: 'Pistol', price: 0, emoji: '🔫', description: 'Default weapon', type: 'weapon' },
+    'pistol': { id: 'pistol', name: 'Pistol', price: 0, emoji: '1445995386031308890', description: 'Default weapon', type: 'weapon' },
     '6': { id: '6', name: 'Pistol Bullet', price: 1, emoji: '🚬', currency: 'beer', description: 'Ammunition for pistols (All players have one! ~select pistol)', type: 'consumable' },
     '7': { id: '7', name: 'Crossbow', price: 20000, emoji: '🏹', currency: 'beer', description: 'Select this weapon with ~select crossbow (Starts with 3 Shots!)', type: 'weapon' },
     '8': { id: '8', name: 'Arrow', price: 1500, emoji: '1446143653931384943', currency: 'beer', description: 'Ammunition for crossbows', type: 'consumable' },
