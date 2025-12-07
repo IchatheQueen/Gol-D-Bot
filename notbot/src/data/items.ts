@@ -55,7 +55,7 @@ export const items: Record<string, Item> = {
     'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
     'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
     'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
-    'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '1447325599554211940', description: 'Quadruples Endurance', type: 'consumable' },
+    'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '<:opioid:1447325599554211940>', description: 'Quadruples Endurance', type: 'consumable' },
     'steroid': { id: 'steroid', name: 'Steroid', price: 500, emoji: '1446143494610485289', description: 'Quadruples Strength', type: 'consumable' },
     'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' },
 
