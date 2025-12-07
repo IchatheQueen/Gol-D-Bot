@@ -79,7 +79,6 @@ export const items: Record<string, Item> = {
 
     'linen': { id: 'linen', name: 'Linen', price: 0, description: 'Printing material', type: 'collectible' },
     'cotton': { id: 'cotton', name: 'Cotton', price: 0, description: 'Printing material', type: 'collectible' },
-    'cotton': { id: 'cotton', name: 'Cotton', price: 0, description: 'Printing material', type: 'collectible' },
     'fertilizer': { id: 'fertilizer', name: 'Fertilizer', price: 1000, currency: 'weed', emoji: '💰', description: 'Reduces crop cooldown', type: 'consumable' },
     'ink': { id: 'ink', name: 'Ink', price: 9000, currency: 'weed', description: 'Printing material', type: 'consumable' },
     'printer': { id: 'printer', name: 'Printer', price: 10000000, currency: 'weed', description: 'Prints Counterfeit money', type: 'collectible' },
