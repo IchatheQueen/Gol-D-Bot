@@ -7,6 +7,11 @@ import { Client } from 'discord.js';
 export function resolveEmoji(plugin: Client, emojiKey?: string, fallback: string = '📦'): string {
     if (!emojiKey) return fallback;
 
+    // If it's already a formatted custom emoji (e.g. <:name:id> or <a:name:id>), return it directly.
+    if (/^<a?:[a-zA-Z0-9_]+:\d{17,19}>$/.test(emojiKey)) {
+        return emojiKey;
+    }
+
     // If it's a standard unicode emoji (basic check) - assume we want to use it directly
     // UNLESS the user passed it as a key to look up (unlikely for unicode chars)
     // But if we want to allow overriding '🔫', we shouldn't return immediately if it matches unicode regex.
