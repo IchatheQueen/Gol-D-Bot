@@ -110,7 +110,7 @@ const command: Command = {
         };
 
         const embed2 = {
-            description: `${message.author.username}'s [Lvl ${pet.level}] Cat has caught 🐟 ${fishAmount} and gained 💧 ${xpGained} (+${xpBonus.toFixed(1)}% Exp)\nBoost your hunting experience and much more with 🌕 **SlotBot Gold** \`~patreon\`!`,
+            description: `${message.author.username}'s [Lvl ${pet.level}] Cat has caught 🐟 ${fishAmount} and gained 💧 ${xpGained} (+${xpBonus.toFixed(1)}% Exp)\nBoost your hunting experience and much more with 🌕 **GoldBot Gold** \`~patreon\`!`,
             color: 0x2b2d31
         };
 

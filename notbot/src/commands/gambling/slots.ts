@@ -38,22 +38,48 @@ const command: Command = {
         // Deduct bet
         await updateUser(message.author.id, { balance: user.balance - bet });
 
-        // Spin
+        // Calculate Result
         const result = [
             slots[Math.floor(Math.random() * slots.length)],
             slots[Math.floor(Math.random() * slots.length)],
             slots[Math.floor(Math.random() * slots.length)],
         ];
 
+        // Initial Message (Spinning)
+        const embed = new EmbedBuilder()
+            .setTitle('🎰 Slots 🎰')
+            .setDescription('**[ ❓ | ❓ | ❓ ]**\n\nSpinning...')
+            .setColor('#ffff00'); // Yellow for spinning
+
+        const sentMessage = await message.reply({ embeds: [embed] });
+
+        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Reel 1
+        await delay(1000);
+        embed.setDescription(`**[ ${result[0]} | ❓ | ❓ ]**\n\nSpinning...`);
+        await sentMessage.edit({ embeds: [embed] });
+
+        // Reel 2
+        await delay(1000);
+        embed.setDescription(`**[ ${result[0]} | ${result[1]} | ❓ ]**\n\nSpinning...`);
+        await sentMessage.edit({ embeds: [embed] });
+
+        // Reel 3 (Final)
+        await delay(1000);
+
         let winnings = 0n;
         let messageText = 'You lost!';
+        let color = '#ff0000'; // Red for loss
 
         if (result[0] === result[1] && result[1] === result[2]) {
             winnings = bet * 10n;
             messageText = `Jackpot! You won $${formatBigNumber(winnings)}!`;
+            color = '#00ff00'; // Green
         } else if (result[0] === result[1] || result[1] === result[2] || result[0] === result[2]) {
             winnings = bet * 2n;
             messageText = `Two of a kind! You won $${formatBigNumber(winnings)}!`;
+            color = '#00ff00'; // Green
         }
 
         if (winnings > 0n) {
@@ -61,13 +87,12 @@ const command: Command = {
             await updateUser(message.author.id, { balance: updatedUser.balance + winnings });
         }
 
-        const embed = new EmbedBuilder()
-            .setTitle('🎰 Slots 🎰')
-            .setDescription(`**[ ${result.join(' | ')} ]**\n\n${messageText}`)
-            .setColor(winnings > 0n ? '#00ff00' : '#ff0000');
+        embed.setDescription(`**[ ${result.join(' | ')} ]**\n\n${messageText}`)
+            .setColor(color as any);
 
-        message.reply({ embeds: [embed] });
+        await sentMessage.edit({ embeds: [embed] });
     },
+},
 };
 
 export default command;
