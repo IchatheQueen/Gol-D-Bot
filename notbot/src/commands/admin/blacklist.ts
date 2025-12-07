@@ -15,12 +15,12 @@ const command: Command = {
 
         const targetId = args[0];
 
-        if (!targetId) {
-            message.reply('Invalid Syntax: <user> [TimeFormat|Optional] <reason>');
+        if (!targetId || args.length < 2) {
+            message.reply('Invalid Syntax: ~blacklist <user_id> <reason>');
             return;
         }
 
-        const reason = args.slice(1).join(' ') || 'fuck off';
+        const reason = args.slice(1).join(' ');
         const timestamp = Date.now();
 
         // Store blacklist in database
