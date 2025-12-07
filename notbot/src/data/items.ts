@@ -41,24 +41,23 @@ export const items: Record<string, Item> = {
     },
     // Pub Items
     '1': { id: '1', name: 'Bar Membership', price: 100000, description: 'Buy a membership and treat yourself to some of the best beers in town', type: 'collectible' },
-    '2': { id: '2', name: 'Beer', price: 10000, description: 'Order a nice refreshing stein of beer', type: 'consumable' },
+    '2': { id: '2', name: 'Beer', price: 10000, emoji: '🍺', description: 'Order a nice refreshing stein of beer', type: 'consumable' },
     '3': { id: '3', name: 'Sell Beer', price: 9000, description: 'Don\'t like your beer? You can sell it back to us for a 90% refund', type: 'consumable' }, // Special logic needed for selling
     '4': { id: '4', name: 'Ender', price: 6, currency: 'beer', description: 'Kidnap an EnderMomandNate and receive Ender briefcases daily (~collect ender)', type: 'collectible' },
     '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
+
+    // Drugs (Substances)
+    'weed': { id: 'weed', name: 'Weed', price: 200, emoji: '🌿', description: 'Medical herb', type: 'drug' },
+    'anesthetics': { id: 'anesthetics', name: 'Anesthetics', price: 1000, emoji: '💉', description: 'Numbing agent', type: 'drug' },
+    'lsd': { id: 'lsd', name: 'LSD', price: 1500, emoji: '☯️', description: 'Hallucinogen', type: 'drug' },
 
     // Feed Items
     'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
     'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
     'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
-    'opioid': { id: 'opioid', name: 'Opioid', price: 100, description: 'Quadruples Endurance', type: 'consumable' },
-    'steroid': { id: 'steroid', name: 'Steroid', price: 500, description: 'Quadruples Strength', type: 'consumable' },
-    'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' }, // NOTE: petItems claims currency is 'pills' but items definition might need 'opioid' or 'pills'? items.ts usually uses 'currency' field for alt currencies. petItems uses 'pills'.
-    // `petItems.ts`: Medicine Price 3, currency 'pills'. 
-    // `items.ts` allowed currencies: 'cash' | 'beer' | 'diamond' | 'weed' | 'opioid'. NO 'pills'.
-    // I should add 'pills' to allowed currencies in `items.ts` or map it.
-    // For now I'll use 'opioid' only if it matches? No.
-    // I will leave logic as is but price 3.
-
+    'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '💊', description: 'Quadruples Endurance', type: 'consumable' },
+    'steroid': { id: 'steroid', name: 'Steroid', price: 500, emoji: '💊', description: 'Quadruples Strength', type: 'consumable' },
+    'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' },
 
     // Weapons (Updated Prices/Currency)
     '6': { id: '6', name: 'Pistol Bullet', price: 1, emoji: '🚬', currency: 'beer', description: 'Ammunition for pistols (All players have one! ~select pistol)', type: 'consumable' },
