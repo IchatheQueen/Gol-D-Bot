@@ -11,13 +11,13 @@ const categories = {
         label: 'Substances',
         emoji: '💊',
         items: [
-            { id: '2', hint: 'Hint: Buy more in the `.pub`' }, // Beer
-            { id: 'weed', hint: 'Hint: Buy more in the `.blackmarket`' },
-            { id: 'opioid', hint: 'Hint: Buy more in the `.blackmarket`' },
-            { id: 'steroid', hint: 'Hint: Buy more in the `.blackmarket`' },
+            { id: '2', hint: 'Hint: Buy more in the `~pub`' }, // Beer
+            { id: 'weed', hint: 'Hint: Buy more in the `~blackmarket`' },
+            { id: 'opioid', hint: 'Hint: Buy more in the `~blackmarket`' },
+            { id: 'steroid', hint: 'Hint: Buy more in the `~blackmarket`' },
             // cocaine ignored
-            { id: 'anesthetics', hint: 'Hint: Buy more in the `.blackmarket`' },
-            { id: 'lsd', hint: 'Hint: Buy more in the `.blackmarket`' },
+            { id: 'anesthetics', hint: 'Hint: Buy more in the `~blackmarket`' },
+            { id: 'lsd', hint: 'Hint: Buy more in the `~blackmarket`' },
         ]
     },
     event_currencies: {
@@ -25,7 +25,7 @@ const categories = {
         emoji: '🎁',
         items: [
             { id: '4', hint: 'Hint: Kidnap EnderMomandNate' }, // Ender
-            { id: '5', hint: 'Hint: Buy more in the `.dshop`' }, // Miner's Capsule
+            { id: '5', hint: 'Hint: Buy more in the `~dshop`' }, // Miner's Capsule
         ]
     },
     weapons: {
@@ -33,11 +33,11 @@ const categories = {
         emoji: '🔫',
         items: [
             { id: 'pistol', hint: 'Hint: This is the default weapon!' },
-            { id: '9', hint: 'Hint: Purchase via the `.pub`' }, // Rifle
-            { id: '7', hint: 'Hint: Purchase via the `.pub`' }, // Crossbow
-            { id: '11', hint: 'Hint: Purchase via the `.pub`' }, // Speaker
-            { id: '12', hint: 'Hint: Purchase via the `.pub`' }, // Flamethrower
-            { id: 'laser', hint: 'Hint: Purchase via the `.petshop`' }
+            { id: '9', hint: 'Hint: Purchase via the `~pub`' }, // Rifle
+            { id: '7', hint: 'Hint: Purchase via the `~pub`' }, // Crossbow
+            { id: '11', hint: 'Hint: Purchase via the `~pub`' }, // Speaker
+            { id: '12', hint: 'Hint: Purchase via the `~pub`' }, // Flamethrower
+            { id: 'laser', hint: 'Hint: Purchase via the `~petshop`' }
         ]
     }
 };
