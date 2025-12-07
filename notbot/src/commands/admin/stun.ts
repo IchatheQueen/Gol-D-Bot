@@ -13,7 +13,7 @@ const command: Command = {
             return; // Silently ignore non-admins
         }
 
-        const targetId = args[0];
+        const targetId = message.mentions.users.first()?.id || args[0];
         const duration = args[1];
 
         if (!targetId || !duration) {

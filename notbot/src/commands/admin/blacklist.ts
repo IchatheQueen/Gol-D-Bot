@@ -13,7 +13,7 @@ const command: Command = {
             return; // Silently ignore non-admins
         }
 
-        const targetId = args[0];
+        const targetId = message.mentions.users.first()?.id || args[0];
 
         if (!targetId || args.length < 2) {
             message.reply('Invalid Syntax: ~blacklist <user_id> <reason>');
