@@ -3,6 +3,7 @@ import { getInventory } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 import { resolveTargetOrSelf } from '../../utils/resolveTarget';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 // Define categories matching the screenshot + Requested "Ignore cocaine"
 const categories = {
@@ -66,7 +67,8 @@ const command: Command = {
                 const itemDef = items[itemEntry.id];
                 if (itemDef) {
                     const amount = getAmount(itemEntry.id);
-                    const emoji = itemDef.emoji || '📦';
+                    // Use resolveEmoji to ensure custom emojis work cross-server
+                    const emoji = resolveEmoji(client, itemDef.emoji) || '📦';
 
                     if (categoryKey === 'weapons') {
                         // Weapons style: Emoji Name Status
