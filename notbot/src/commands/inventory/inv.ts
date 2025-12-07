@@ -25,22 +25,18 @@ const categories = {
         items: [
             { id: '4', hint: 'Hint: Kidnap EnderMomandNate' }, // Ender
             { id: '5', hint: 'Hint: Buy more in the `.dshop`' }, // Miner's Capsule
-            // '1'? Bar Membership? Maybe separate
         ]
     },
     weapons: {
         label: 'Weapons',
-        emoji: '🔫', // Using pistol emoji for generic weapon cat
+        emoji: '🔫',
         items: [
-            { id: '6', hint: 'Hint: Used for Pistol' },
-            { id: '7', hint: 'Hint: Select with .select crossbow' },
-            { id: '8', hint: 'Hint: Ammo for Crossbow' },
-            { id: '9', hint: 'Hint: Select with .select rifle' },
-            { id: '10', hint: 'Hint: Ammo for Rifle' },
-            { id: '11', hint: 'Hint: Select with .select speaker' },
-            { id: '12', hint: 'Hint: Select with .select flame' },
-            { id: '13', hint: 'Hint: Fuel for Flamethrower' },
-            { id: 'laser', hint: 'Hint: Pew pew' }
+            { id: 'pistol', hint: 'Hint: This is the default weapon!' },
+            { id: '9', hint: 'Hint: Purchase via the `.pub`' }, // Rifle
+            { id: '7', hint: 'Hint: Purchase via the `.pub`' }, // Crossbow
+            { id: '11', hint: 'Hint: Purchase via the `.pub`' }, // Speaker
+            { id: '12', hint: 'Hint: Purchase via the `.pub`' }, // Flamethrower
+            { id: 'laser', hint: 'Hint: Purchase via the `.petshop`' }
         ]
     }
 };
@@ -56,6 +52,7 @@ const command: Command = {
 
         // Helper to get amount
         const getAmount = (id: string) => {
+            if (id === 'pistol') return 1n; // Default weapon
             const found = inventory.find(i => i.item_id === id);
             return found ? found.amount : 0n;
         };
@@ -70,12 +67,18 @@ const command: Command = {
                 if (itemDef) {
                     const amount = getAmount(itemEntry.id);
                     const emoji = itemDef.emoji || '📦';
-                    description += `${emoji} ${itemDef.name} | ${amount}\n`;
+
+                    if (categoryKey === 'weapons') {
+                        // Weapons style: Emoji Name Status
+                        const status = amount > 0n ? '✅' : '❌';
+                        description += `${emoji} **${itemDef.name}** ${status}\n`;
+                    } else {
+                        // Standard style: Emoji Name | Amount
+                        description += `${emoji} **${itemDef.name}** | ${amount.toLocaleString()}\n`;
+                    }
                     description += `👁️ ${itemEntry.hint}\n`;
                 }
             }
-
-            // Fallback if empty in that category? Screenshot shows 0s, so we list all even if 0.
 
             const embed = new EmbedBuilder()
                 .setTitle(`${target.username} (@.${target.username})'s Inventory`)
