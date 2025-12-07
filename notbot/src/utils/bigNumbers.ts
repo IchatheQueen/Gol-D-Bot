@@ -39,10 +39,10 @@ export function formatBigNumber(amount: bigint | number | string): string {
         return (isNegative ? '-' : '') + addCommas(absNumStr);
     }
 
-    // Over 21 digits - show first 21 digits with commas, then &hiddenCount
+    // Over 21 digits - show first 21 digits with commas, then (TotalDigits digits)
     const first21 = absNumStr.slice(0, 21);
-    const hiddenCount = digitCount - 21;
-    return (isNegative ? '-' : '') + `${addCommas(first21)}&${hiddenCount}`;
+    // const hiddenCount = digitCount - 21; // Unused now
+    return (isNegative ? '-' : '') + `${addCommas(first21)}... (${digitCount} digits)`;
 }
 
 /**
