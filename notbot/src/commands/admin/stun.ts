@@ -17,7 +17,7 @@ const command: Command = {
         const duration = args[1];
 
         if (!targetId || !duration) {
-            message.reply('Invalid Syntax: <user> [TimeFormat|Optional] <reason>');
+            message.reply('Invalid Syntax: ~stun <user> <duration> (e.g. ~stun @user 1h)');
             return;
         }
 
@@ -40,7 +40,7 @@ const command: Command = {
             return;
         }
 
-        const reason = args.slice(2).join(' ') || 'No reason provided';
+        const reason = 'Stunned';
         const expiresAt = Date.now() + durationMs;
 
         // Store stun in database
@@ -48,11 +48,6 @@ const command: Command = {
             sql: 'INSERT OR REPLACE INTO stuns (user_id, expires_at, reason, issued_by) VALUES (?, ?, ?, ?)',
             args: [targetId, expiresAt, reason, message.author.id]
         });
-
-        // Debug output
-        console.log('[GoldBotDebug]');
-        console.log(`target == ${targetId}`);
-        console.log(`Object Generated == {"template":"DEFAULT","timestampExpires":"${expiresAt}","reason":"${reason}","anti_cheat":false,"issuedBy":"${message.author.id}","appealable":true,"id":"DSCOOYSGGT","timestamp":"${Date.now()}"}`);
 
         message.reply(`Stunned user ${targetId} for ${duration}`);
     },
