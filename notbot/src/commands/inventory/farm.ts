@@ -21,12 +21,12 @@ const command: Command = {
         // Fetch all plant items from inventory
         const plantIds = Object.keys(plants);
         const inventory = await getInventory(userId);
-        const userPlants = inventory.filter(i => plantIds.includes(i.item_id) && i.amount > 0n);
 
-        if (userPlants.length === 0) {
-            message.reply('You don\'t have any plants! Buy some from the Black Market (`~bm`).');
-            return;
-        }
+        // Helper to get amount
+        const getAmount = (id: string) => {
+            const found = inventory.find(i => i.item_id === id);
+            return found ? found.amount : 0n;
+        };
 
         const embed = new EmbedBuilder()
             .setTitle('🌱 Your Farm')
@@ -34,31 +34,40 @@ const command: Command = {
 
         let farmDescription = '';
 
-        for (const item of userPlants) {
-            const plantDef = plants[item.item_id];
-            const itemDef = items[item.item_id];
+        for (const plantId of plantIds) {
+            const plantDef = plants[plantId];
+            const itemDef = items[plantId];
 
             if (!plantDef || !itemDef) continue;
 
-            // Check cooldown for harvest
-            const cooldownKey = `harvest_${item.item_id}`;
-            const cooldownCheck = await db.execute({
-                sql: 'SELECT * FROM cooldowns WHERE user_id = ? AND command = ?',
-                args: [userId, cooldownKey]
-            });
-            const cooldown = cooldownCheck.rows[0] as any;
+            const amount = getAmount(plantId);
+            // Use resolveEmoji for best results, though items.ts has unicode for plants now so direct access is fine too. 
+            // Better to match style: itemDef.emoji is what we want.
+            const emoji = itemDef.emoji || '🌿';
 
-            let status = '✅ **Ready to Harvest**';
-            if (cooldown) {
-                const timeLeft = Number(cooldown.timestamp) + plantDef.harvestTime - Date.now();
-                if (timeLeft > 0) {
-                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                    const minutes = Math.ceil((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                    status = `⏳ **${hours}h ${minutes}m** remaining`;
+            let status = '⚪ **Not Planted**';
+
+            if (amount > 0n) {
+                // Check cooldown for harvest
+                const cooldownKey = `harvest_${plantId}`;
+                const cooldownCheck = await db.execute({
+                    sql: 'SELECT * FROM cooldowns WHERE user_id = ? AND command = ?',
+                    args: [userId, cooldownKey]
+                });
+                const cooldown = cooldownCheck.rows[0] as any;
+
+                status = '✅ **Ready to Harvest**';
+                if (cooldown) {
+                    const timeLeft = Number(cooldown.timestamp) + plantDef.harvestTime - Date.now();
+                    if (timeLeft > 0) {
+                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                        const minutes = Math.ceil((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        status = `⏳ **${hours}h ${minutes}m** remaining`;
+                    }
                 }
             }
 
-            farmDescription += `**${itemDef.name}** (x${item.amount.toLocaleString()})\n${status}\n\n`;
+            farmDescription += `${emoji} **${itemDef.name}** (x${amount.toLocaleString()})\n${status}\n\n`;
         }
 
         embed.setDescription(farmDescription || 'No plants found.');

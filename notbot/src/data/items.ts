@@ -55,7 +55,7 @@ export const items: Record<string, Item> = {
     'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
     'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
     'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
-    'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '💊', description: 'Quadruples Endurance', type: 'consumable' },
+    'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '1447325599554211940', description: 'Quadruples Endurance', type: 'consumable' },
     'steroid': { id: 'steroid', name: 'Steroid', price: 500, emoji: '1446143494610485289', description: 'Quadruples Strength', type: 'consumable' },
     'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' },
 
@@ -72,10 +72,10 @@ export const items: Record<string, Item> = {
     'laser': { id: 'laser', name: 'Laser', price: 0, emoji: '🕹️', description: 'Pet laser ability.', type: 'weapon' },
 
     // Farming & Printer Items
-    'cannabis_plant': { id: 'cannabis_plant', name: 'Cannabis Plant', price: 20, currency: 'weed', description: 'Yields 3 Weed every 12h', type: 'collectible' },
-    'opium_plant': { id: 'opium_plant', name: 'Opium Plant', price: 6, currency: 'opioid', description: 'Yields 1 Opioid every 12h', type: 'collectible' },
-    'linen_plant': { id: 'linen_plant', name: 'Linen Plant', price: 18, currency: 'weed', description: 'Yields 1 Linen every 12h', type: 'collectible' },
-    'cotton_plant': { id: 'cotton_plant', name: 'Cotton Plant', price: 67, currency: 'weed', description: 'Yields 1 Cotton every 12h', type: 'collectible' },
+    'cannabis_plant': { id: 'cannabis_plant', name: 'Cannabis Plant', price: 20, currency: 'weed', emoji: '🌱', description: 'Yields 3 Weed every 12h', type: 'collectible' },
+    'opium_plant': { id: 'opium_plant', name: 'Opium Plant', price: 6, currency: 'opioid', emoji: '🌹', description: 'Yields 1 Opioid every 12h', type: 'collectible' },
+    'linen_plant': { id: 'linen_plant', name: 'Linen Plant', price: 18, currency: 'weed', emoji: '🌾', description: 'Yields 1 Linen every 12h', type: 'collectible' },
+    'cotton_plant': { id: 'cotton_plant', name: 'Cotton Plant', price: 67, currency: 'weed', emoji: '🌿', description: 'Yields 1 Cotton every 12h', type: 'collectible' },
 
     'linen': { id: 'linen', name: 'Linen', price: 0, description: 'Printing material', type: 'collectible' },
     'cotton': { id: 'cotton', name: 'Cotton', price: 0, description: 'Printing material', type: 'collectible' },
