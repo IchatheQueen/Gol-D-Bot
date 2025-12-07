@@ -37,13 +37,13 @@ import { loadCommands } from './handlers/commandHandler';
 
 const commands = loadCommands(client);
 
-// Check if user is blacklisted
-async function isBlacklisted(userId: string): Promise<boolean> {
+// Check if user is blacklisted and return reason
+async function getBlacklistRecord(userId: string): Promise<any> {
     const result = await db.execute({
         sql: 'SELECT * FROM blacklist WHERE user_id = ?',
         args: [userId]
     });
-    return result.rows.length > 0;
+    return result.rows[0] || null;
 }
 
 // Check if user is stunned and return remaining time
@@ -80,8 +80,23 @@ client.once(Events.ClientReady, async (c: any) => {
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (message.author.bot) return;
 
-    // Check if user is blacklisted (silently ignore)
-    if (await isBlacklisted(message.author.id)) {
+    // Check if user is blacklisted
+    const blacklistRecord = await getBlacklistRecord(message.author.id);
+    if (blacklistRecord) {
+        // Only reply if they tried to run a command (starts with prefix) to avoid spamming everyday chat
+        // BUT user said "cannot run any commands without this popping up"
+        // So checking prefix first is safer to prevent loop/spam on every message?
+        // Actually adhering to user request: "cannot run any commands without this popping up".
+        // implies they tried to run a command.
+        if (message.content.startsWith(PREFIX)) {
+            const embed = new EmbedBuilder()
+                .setTitle('SERVICE RESTRICTION [X9WY64532]')
+                .setDescription('Sorry, your account has been permanently blacklisted from interacting with this bot.')
+                .addFields({ name: 'Reason', value: blacklistRecord.reason || 'No reason provided.' })
+                .setColor('#000000'); // Black color
+
+            await message.reply({ embeds: [embed] });
+        }
         return;
     }
 
