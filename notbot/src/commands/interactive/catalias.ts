@@ -32,10 +32,10 @@ const command: Command = {
                 }
             }
 
-            // Update pet skin
+            // Update pet skin and name
             await db.execute({
-                sql: 'UPDATE pets SET skin_id = ? WHERE user_id = ?',
-                args: [skinId, userId]
+                sql: 'UPDATE pets SET skin_id = ?, name = ? WHERE user_id = ?',
+                args: [skinId, skin.name, userId]
             });
             // Ensure pet entry exists if not? (~cat ensures it usually, but let's assume user has a cat if they use this)
             // If they don't have a cat, this update does nothing, which is fine.
