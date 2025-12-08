@@ -37,7 +37,6 @@ import { loadCommands } from './handlers/commandHandler';
 
 const commands = loadCommands(client);
 
-// Check if user is blacklisted and return reason
 async function getBlacklistRecord(userId: string): Promise<any> {
     const result = await db.execute({
         sql: 'SELECT * FROM blacklist WHERE user_id = ?',
@@ -46,7 +45,6 @@ async function getBlacklistRecord(userId: string): Promise<any> {
     return result.rows[0] || null;
 }
 
-// Check if user is stunned and return remaining time
 async function getStunTimeRemaining(userId: string): Promise<number | null> {
     const result = await db.execute({
         sql: 'SELECT * FROM stuns WHERE user_id = ? AND expires_at > ?',
@@ -80,33 +78,24 @@ client.once(Events.ClientReady, async (c: any) => {
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (message.author.bot) return;
 
-    // Check if user is blacklisted
     const blacklistRecord = await getBlacklistRecord(message.author.id);
     if (blacklistRecord) {
-        // Only reply if they tried to run a command (starts with prefix) to avoid spamming everyday chat
-        // BUT user said "cannot run any commands without this popping up"
-        // So checking prefix first is safer to prevent loop/spam on every message?
-        // Actually adhering to user request: "cannot run any commands without this popping up".
-        // implies they tried to run a command.
         if (message.content.startsWith(PREFIX)) {
             const embed = new EmbedBuilder()
                 .setTitle('SERVICE RESTRICTION [X9WY64532]')
                 .setDescription('Sorry, your account has been permanently blacklisted from interacting with this bot.')
                 .addFields({ name: 'Reason', value: blacklistRecord.reason || 'No reason provided.' })
-                .setColor('#000000'); // Black color
+                .setColor('#000000');
 
             await message.reply({ embeds: [embed] });
         }
         return;
     }
 
-    // STRICT PREFIX CHECK - Bot only responds/acts if prefix is present
     if (!message.content.startsWith(PREFIX)) {
         return;
     }
 
-    // Check if user is stunned (show message with time remaining)
-    // Since we already checked prefix, we can just check logic
     if (message.author.id !== EXEMPT_USER_ID) {
         const stunTimeRemaining = await getStunTimeRemaining(message.author.id);
         if (stunTimeRemaining !== null) {
@@ -117,16 +106,14 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 
-    // Random wallet drop (NOW only for command messages due to prefix restriction)
     if (Math.random() < WALLET_DROP_CHANCE) {
-        // Check DB for existing drop
         const existingDrop = await db.execute({
             sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
             args: [message.channel.id]
         });
 
         if (existingDrop.rows.length === 0) {
-            const amount = Math.floor(Math.random() * 900000000000) + 100000000000; // 100B - 1T
+            const amount = Math.floor(Math.random() * 900000000000) + 100000000000;
             const scenarios = [
                 "A snobby old lady dropped their purse, exposing their wallet!",
                 "A rich kid tripped and their wallet fell out!",
@@ -136,7 +123,6 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             ];
             const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
 
-            // Insert into DB
             await db.execute({
                 sql: 'INSERT INTO wallet_drops (channel_id, amount, timestamp) VALUES (?, ?, ?)',
                 args: [message.channel.id, amount.toString(), Date.now()]
@@ -150,10 +136,8 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     const commandName = args.shift()?.toLowerCase();
     if (!commandName) return;
 
-    // Process shortcuts in arguments
     const processedArgs = processShortcuts(args, message.author.id);
 
-    // Check cooldown (skip for exempt user and specific commands)
     const exemptCommands = ['retreat', 'select', 'shoot'];
     if (message.author.id !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
         const now = Date.now();
@@ -161,11 +145,9 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         const timeLeft = lastCommand + COOLDOWN_MS - now;
 
         if (timeLeft > 0) {
-            // User is on cooldown
-            return; // Silently ignore
+            return;
         }
 
-        // Update cooldown
         userCooldowns.set(message.author.id, now);
     }
 
@@ -180,7 +162,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             console.error(error);
             const errorEmbed = new EmbedBuilder()
                 .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
-                .setImage('https://media1.tenor.com/m/nS4DBv28et8AAAAd/boy-girl.gif')
+                .setImage('https://media.tenor.com/V6hW6B7f-jAAAAAC/anime-girl-sorry.gif')
                 .setColor('#ff69b4');
             await message.reply({ embeds: [errorEmbed] });
         }

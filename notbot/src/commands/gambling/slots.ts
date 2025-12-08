@@ -99,10 +99,10 @@ const command: Command = {
         } catch (error) {
             console.error('Error executing slots animation:', error);
             // If animation fails, ensure we at least show the result one last time
-            message.channel.send(`**Slots Result:** [ ${result.join(' | ')} ]`);
+            // If animation fails, ensure we at least show the result one last time
+            message.reply(`**Slots Result:** [ ${result.join(' | ')} ]`);
         }
     },
-},
 };
 
 export default command;

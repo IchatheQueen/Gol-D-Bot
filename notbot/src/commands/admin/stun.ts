@@ -8,9 +8,8 @@ const command: Command = {
     name: 'stun',
     description: 'Stun a user for a specified duration (Admin only)',
     execute: async (message: Message, args: string[], client: Client) => {
-        // Check if user is admin
         if (message.author.id !== ADMIN_ID) {
-            return; // Silently ignore non-admins
+            return;
         }
 
         const targetId = message.mentions.users.first()?.id || args[0];
@@ -21,7 +20,6 @@ const command: Command = {
             return;
         }
 
-        // Parse duration (e.g., "1h", "30m", "1d")
         let durationMs = 0;
         const timeMatch = duration.match(/^(\d+)([smhd])$/);
 
@@ -43,7 +41,6 @@ const command: Command = {
         const reason = 'Stunned';
         const expiresAt = Date.now() + durationMs;
 
-        // Store stun in database
         await db.execute({
             sql: 'INSERT OR REPLACE INTO stuns (user_id, expires_at, reason, issued_by) VALUES (?, ?, ?, ?)',
             args: [targetId, expiresAt, reason, message.author.id]
