@@ -129,6 +129,21 @@ export async function initDatabase() {
         )
     `);
 
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS user_skins (
+            user_id TEXT,
+            skin_id INTEGER,
+            PRIMARY KEY (user_id, skin_id)
+        )
+    `);
+
+    // Migration: Add skin_id to pets if not exists
+    try {
+        await db.execute('ALTER TABLE pets ADD COLUMN skin_id INTEGER DEFAULT 0');
+    } catch (e) {
+        // Column likely exists
+    }
+
     console.log('Database tables initialized!');
 }
 
