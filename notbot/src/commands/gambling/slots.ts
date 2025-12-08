@@ -55,42 +55,52 @@ const command: Command = {
 
         const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-        // Reel 1
-        await delay(1000);
-        embed.setDescription(`**[ ${result[0]} | ❓ | ❓ ]**\n\nSpinning...`);
-        await sentMessage.edit({ embeds: [embed] });
+        try {
+            // Reel 1
+            await delay(1000);
+            embed.setDescription(`**[ ${result[0]} | ❓ | ❓ ]**\n\nSpinning...`);
+            await sentMessage.edit({ embeds: [embed] });
 
-        // Reel 2
-        await delay(1000);
-        embed.setDescription(`**[ ${result[0]} | ${result[1]} | ❓ ]**\n\nSpinning...`);
-        await sentMessage.edit({ embeds: [embed] });
+            // Reel 2
+            await delay(1000);
+            embed.setDescription(`**[ ${result[0]} | ${result[1]} | ❓ ]**\n\nSpinning...`);
+            await sentMessage.edit({ embeds: [embed] });
 
-        // Reel 3 (Final)
-        await delay(1000);
+            // Reel 3 (Final)
+            await delay(1000);
 
-        let winnings = 0n;
-        let messageText = 'You lost!';
-        let color = '#ff0000'; // Red for loss
+            let winnings = 0n;
+            let messageText = 'You lost!';
+            let color = '#ff0000'; // Red for loss
 
-        if (result[0] === result[1] && result[1] === result[2]) {
-            winnings = bet * 10n;
-            messageText = `Jackpot! You won $${formatBigNumber(winnings)}!`;
-            color = '#00ff00'; // Green
-        } else if (result[0] === result[1] || result[1] === result[2] || result[0] === result[2]) {
-            winnings = bet * 2n;
-            messageText = `Two of a kind! You won $${formatBigNumber(winnings)}!`;
-            color = '#00ff00'; // Green
+            if (result[0] === result[1] && result[1] === result[2]) {
+                winnings = bet * 10n;
+                messageText = `Jackpot! You won $${formatBigNumber(winnings)}!`;
+                color = '#00ff00'; // Green
+            } else if (result[0] === result[1] || result[1] === result[2] || result[0] === result[2]) {
+                winnings = bet * 2n;
+                messageText = `Two of a kind! You won $${formatBigNumber(winnings)}!`;
+                color = '#00ff00'; // Green
+            }
+
+            if (winnings > 0n) {
+                const updatedUser = await getUser(message.author.id);
+                // Re-fetch user to get latest balance in case of race conditions, though less likely here
+                // We already have `user`, but `updatedUser` logic was correct.
+                // Re-calculating balance:
+                const latestUser = await getUser(message.author.id);
+                await updateUser(message.author.id, { balance: latestUser.balance + winnings });
+            }
+
+            embed.setDescription(`**[ ${result.join(' | ')} ]**\n\n${messageText}`)
+                .setColor(color as any); // Type cast for safety
+
+            await sentMessage.edit({ embeds: [embed] });
+        } catch (error) {
+            console.error('Error executing slots animation:', error);
+            // If animation fails, ensure we at least show the result one last time
+            message.channel.send(`**Slots Result:** [ ${result.join(' | ')} ]`);
         }
-
-        if (winnings > 0n) {
-            const updatedUser = await getUser(message.author.id);
-            await updateUser(message.author.id, { balance: updatedUser.balance + winnings });
-        }
-
-        embed.setDescription(`**[ ${result.join(' | ')} ]**\n\n${messageText}`)
-            .setColor(color as any);
-
-        await sentMessage.edit({ embeds: [embed] });
     },
 },
 };

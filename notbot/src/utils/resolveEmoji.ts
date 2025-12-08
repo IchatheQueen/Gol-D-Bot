@@ -12,6 +12,11 @@ export function resolveEmoji(plugin: Client, emojiKey?: string, fallback: string
         return emojiKey;
     }
 
+    // If it's a URL (GIF/Image), return it directly
+    if (emojiKey.startsWith('http')) {
+        return emojiKey;
+    }
+
     // If it's a standard unicode emoji (basic check) - assume we want to use it directly
     // UNLESS the user passed it as a key to look up (unlikely for unicode chars)
     // But if we want to allow overriding '🔫', we shouldn't return immediately if it matches unicode regex.
