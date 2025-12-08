@@ -29,7 +29,7 @@ export const CAT_SKINS: CatSkin[] = [
         id: 1,
         name: 'Kitten',
         emoji: '🐈',
-        image: 'https://media.tenor.com/_4u8M0S4QOIAAAAC/cat-kitten.gif',
+        image: 'https://tenor.com/view/cat-cute-exercise-bed-kitty-gif-17932354043745241231',
         statEmojis: {
             thirst: '🍼',
             strength: '🐾',
