@@ -76,25 +76,11 @@ const command: Command = {
         const itemId = item.id;
         await addInventoryItem(message.author.id, itemId, BigInt(amount));
 
-        // Item emojis based on what they bought
-        const itemEmojis: Record<string, string> = {
-            '1': '🌿', // Weed
-            '2': '💵', // 12B
-            '3': '💊', // Opioid
-            '4': '💉', // Steroid
-            '5': '💉', // Anesthesia
-            '6': '🌀', // LSD
-            '102': '🌱', // Cannabis Plant
-            '103': '🌹', // Opium Plant
-            '104': '🌾', // Linen Plant
-            '105': '🌿', // Cotton Plant
-            '201': '📼', // Ink
-            '204': '🖨️', // Printer
-        };
-        const itemEmoji = itemEmojis[item.id] || '📦';
+        const itemEmoji = resolveEmoji(client, item.emoji || '📦');
+        const currencyEmojiVal = item.currency === 'cash' ? '💵' : item.currency === 'weed' ? (resolveEmoji(client, '1445946808982569071') || '🌿') : (resolveEmoji(client, '<:opioid:1447325599554211940>') || '💊');
 
         const embed = new EmbedBuilder()
-            .setDescription(`**${message.author.username}** (@${message.author.username}) has successfully purchased ${itemEmoji} ${totalCost.toLocaleString()}!`)
+            .setDescription(`**${message.author.username}** (@${message.author.username}) has successfully purchased **${amount.toLocaleString()}x ${itemEmoji} ${item.name}** for **${currencyEmojiVal} ${formatBigNumber(BigInt(totalCost))}**!`)
             .setColor(getUserColor(message.author.id));
         message.reply({ embeds: [embed] });
     },
