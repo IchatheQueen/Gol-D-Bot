@@ -55,7 +55,7 @@ export const CAT_SKINS: CatSkin[] = [
         // Font: Mathematical Bold Script
         name: '𝓖𝓸𝓸𝓷𝓮𝓻',
         emoji: '🥵',
-        image: 'https://media.tenor.com/N6x-2X_C99MAAAAC/cat-stare.gif'
+        image: 'https://cdn.discordapp.com/attachments/1393132872554250291/1447482916102738035/PXON44J.gif?ex=6937c904&is=69367784&hm=3737a6ed82a96f7a147b4e0823f0b3cb42e86bc8b5d7edabe8dfa724a526982a&'
     }
 ];
 
