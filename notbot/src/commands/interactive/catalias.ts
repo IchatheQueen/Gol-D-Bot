@@ -95,7 +95,7 @@ const command: Command = {
                 const skin = getSkin(id);
                 if (!skin) return `Unknown Skin #${id}`;
                 const isEquipped = id === currentSkinId ? '✅' : '';
-                return `**#${id} ${skin.emoji} ${skin.name}** ${isEquipped}\nRarity: ${skin.rarity}`;
+                return `**#${id} ${skin.name}** ${isEquipped}`;
             }).join('\n\n');
 
             return EmbedUtils.basic(

@@ -3,7 +3,19 @@ export interface CatSkin {
     name: string;
     emoji: string; // The icon shown in the list
     image: string; // The image shown in ~cat
-    rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic';
+    statEmojis?: {
+        hunger?: string;
+        thirst?: string;
+        energy?: string;
+        health?: string;
+        experience?: string;
+        credits?: string;
+        strength?: string;
+        agility?: string;
+        intellect?: string;
+        endurance?: string;
+        metabolism?: string;
+    };
 }
 
 export const CAT_SKINS: CatSkin[] = [
@@ -11,30 +23,39 @@ export const CAT_SKINS: CatSkin[] = [
         id: 0,
         name: 'Cat',
         emoji: '🐱',
-        image: 'https://media.discordapp.net/attachments/1090332800366112831/1090635441776300082/image.png', // Default cat image
-        rarity: 'Common'
+        image: 'https://media.discordapp.net/attachments/1090332800366112831/1090635441776300082/image.png' // Default cat image
     },
     {
         id: 1,
         name: 'Kitten',
         emoji: '🐈',
         image: 'https://media.tenor.com/_4u8M0S4QOIAAAAC/cat-kitten.gif',
-        rarity: 'Common'
+        statEmojis: {
+            thirst: '🍼',
+            strength: '🐾',
+            energy: '💤',
+            health: '💖'
+        }
     },
     {
         id: 2,
         name: 'Warrior Cat',
         emoji: '⚔️',
         image: 'https://media.tenor.com/2z8X1_s_K9EAAAAC/cat-sword.gif',
-        rarity: 'Rare'
+        statEmojis: {
+            strength: '⚔️',
+            endurance: '🛡️',
+            energy: '⚡',
+            health: '❤️‍🔥',
+            metabolism: '🍖'
+        }
     },
     {
         id: 69,
         // Font: Mathematical Bold Script
         name: '𝓖𝓸𝓸𝓷𝓮𝓻',
         emoji: '🥵',
-        image: 'https://media.tenor.com/N6x-2X_C99MAAAAC/cat-stare.gif',
-        rarity: 'Legendary'
+        image: 'https://media.tenor.com/N6x-2X_C99MAAAAC/cat-stare.gif'
     }
 ];
 

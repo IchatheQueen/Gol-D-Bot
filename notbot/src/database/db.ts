@@ -144,6 +144,13 @@ export async function initDatabase() {
         // Column likely exists
     }
 
+    // Migration: Add last_updated to pets
+    try {
+        await db.execute('ALTER TABLE pets ADD COLUMN last_updated INTEGER DEFAULT 0');
+    } catch (e) {
+        // Column likely exists
+    }
+
     await db.execute(`
         CREATE TABLE IF NOT EXISTS user_command_skins (
             user_id TEXT,

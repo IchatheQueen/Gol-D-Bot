@@ -28,8 +28,8 @@ const command: Command = {
                     inline: false
                 },
                 {
-                    name: 'SlotHub',
-                    value: 'If you still have questions or simply wish to be informed of GoldBot\'s updates the moment they\'re released, you\'re always welcome to visit GoldBot\'s support server and have a chill interview with some other users and simply chill there and procrastinate your homework. You can use `~slothub` for an invite',
+                    name: 'GoldBot',
+                    value: 'If you still have questions or simply wish to be informed of GoldBot\'s updates the moment they\'re released, you\'re always welcome to visit GoldBot\'s support server and have a chill interview with some other users and simply chill there and procrastinate your homework. You can use `~support` for an invite',
                     inline: false
                 },
                 {
