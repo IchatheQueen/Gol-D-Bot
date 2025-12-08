@@ -50,7 +50,7 @@ const command: Command = {
 
         // Usage 2: ~ccmd <user> <command> (Give access)
         if (args.length >= 2) {
-            const targetUser = await resolveTarget(message, args[0], client);
+            const targetUser = await resolveTarget(message, args, client);
             if (!targetUser) {
                 message.reply('User not found.');
                 return;

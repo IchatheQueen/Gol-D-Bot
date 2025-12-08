@@ -15,7 +15,7 @@ const command: Command = {
             return;
         }
 
-        const targetUser = await resolveTarget(message, args[0], client);
+        const targetUser = await resolveTarget(message, args, client);
         if (!targetUser) {
             message.reply('User not found.');
             return;
