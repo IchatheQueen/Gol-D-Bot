@@ -137,28 +137,62 @@ export async function initDatabase() {
         )
     `);
 
-    // Migration: Add skin_id to pets if not exists
-    try {
-        await db.execute('ALTER TABLE pets ADD COLUMN skin_id INTEGER DEFAULT 0');
-    } catch (e) {
-        // Column likely exists
-    }
-
-    // Migration: Add last_updated to pets
-    try {
-        await db.execute('ALTER TABLE pets ADD COLUMN last_updated INTEGER DEFAULT 0');
-    } catch (e) {
-        // Column likely exists
-    }
-
+    // Generators Table
     await db.execute(`
-        CREATE TABLE IF NOT EXISTS user_command_skins (
-            user_id TEXT,
-            command TEXT,
-            skin_name TEXT,
-            PRIMARY KEY (user_id, command)
+        CREATE TABLE IF NOT EXISTS generators (
+            user_id TEXT PRIMARY KEY,
+            level INTEGER DEFAULT 1,
+            slots INTEGER DEFAULT 1,
+            production_rate INTEGER DEFAULT 1,
+            storage_capacity INTEGER DEFAULT 100,
+            last_collection INTEGER DEFAULT 0
         )
     `);
+
+    // Custom Command Ownership
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS custom_command_ownership (
+            command_name TEXT PRIMARY KEY,
+            owner_id TEXT NOT NULL
+        )
+    `);
+
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS custom_command_access (
+            command_name TEXT,
+            user_id TEXT,
+            access_type TEXT, -- 'owner', 'co_owner', 'access'
+            PRIMARY KEY (command_name, user_id)
+        )
+    `);
+
+    // Migration: Add skin_id and last_updated to pets if not exists
+    const migrations = [
+        'ALTER TABLE pets ADD COLUMN skin_id INTEGER DEFAULT 0',
+        'ALTER TABLE pets ADD COLUMN last_updated INTEGER DEFAULT 0',
+        'ALTER TABLE pets ADD COLUMN max_health INTEGER DEFAULT 1000',
+        'ALTER TABLE pets ADD COLUMN thirst INTEGER DEFAULT 100',
+        'ALTER TABLE pets ADD COLUMN energy INTEGER DEFAULT 100',
+        'ALTER TABLE pets ADD COLUMN experience INTEGER DEFAULT 0',
+        'ALTER TABLE pets ADD COLUMN credits INTEGER DEFAULT 0',
+        'ALTER TABLE pets ADD COLUMN strength INTEGER DEFAULT 1',
+        'ALTER TABLE pets ADD COLUMN agility INTEGER DEFAULT 1',
+        'ALTER TABLE pets ADD COLUMN intellect INTEGER DEFAULT 1',
+        'ALTER TABLE pets ADD COLUMN endurance INTEGER DEFAULT 1',
+        'ALTER TABLE pets ADD COLUMN metabolism INTEGER DEFAULT 1',
+        'ALTER TABLE pets ADD COLUMN protection INTEGER DEFAULT 0',
+        'ALTER TABLE pets ADD COLUMN target_item TEXT DEFAULT "balance"',
+        'ALTER TABLE pets ADD COLUMN is_attacking INTEGER DEFAULT 0',
+        'ALTER TABLE users ADD COLUMN pills INTEGER DEFAULT 0'
+    ];
+
+    for (const query of migrations) {
+        try {
+            await db.execute(query);
+        } catch (e) {
+            // Likely column exists error, ignore
+        }
+    }
 
     console.log('Database tables initialized!');
 }
