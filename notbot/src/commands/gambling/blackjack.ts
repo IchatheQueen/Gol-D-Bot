@@ -85,11 +85,7 @@ const command: Command = {
 
             const embed = new EmbedBuilder()
                 .setTitle('♠ | Blackjack')
-                .setColor('#00FFFF')
-                .setDescription(
-                    '👁️ Hint: Get the value of your cards as close to 21 as possible but going over 21 will cause a loss!\n' +
-                    '👁️ Hint: Use the buttons below to **Hit** or **Stand**.'
-                )
+                .setColor(gameOver ? (playerValue > 21 ? '#ff0000' : (dealerValue > 21 || playerValue > dealerValue ? '#00ff00' : (playerValue === dealerValue ? '#ffff00' : '#ff0000'))) : '#00FFFF')
                 .addFields(
                     {
                         name: `GoldBot's cards (${gameOver ? dealerValue : '??'})`,
@@ -102,6 +98,10 @@ const command: Command = {
                         inline: false
                     }
                 );
+
+            if (!gameOver) {
+                embed.setFooter({ text: 'Hit or Stand to continue • Closest to 21 wins!' });
+            }
 
             return embed;
         };

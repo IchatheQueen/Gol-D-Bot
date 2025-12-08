@@ -57,23 +57,23 @@ const command: Command = {
             // Player wins - 2x bet
             winnings = bet;
             await updateUser(userId, { balance: user.balance + winnings });
-            resultText = `🎉 **YOU WIN!**\n\n**Your Roll**: ${pD1} ${pD2} = **${playerTotal}**\n**House Roll**: ${hD1} ${hD2} = **${houseTotal}**\n\n**Won**: 💵 ${formatBigNumber(winnings)}`;
-            color = 0x00ff00;
+            resultText = `**Your Roll**: ${pD1} ${pD2} (**${playerTotal}**)\n**House Roll**: ${hD1} ${hD2} (**${houseTotal}**)\n\n**Result:** 🎉 **YOU WIN!**\n**Won:** 💵 ${formatBigNumber(winnings)}`;
+            color = '#00ff00'; // Green
         } else if (playerTotal < houseTotal) {
             // House wins
             await updateUser(userId, { balance: user.balance - bet });
-            resultText = `😢 **YOU LOSE!**\n\n**Your Roll**: ${pD1} ${pD2} = **${playerTotal}**\n**House Roll**: ${hD1} ${hD2} = **${houseTotal}**\n\n**Lost**: 💵 ${formatBigNumber(bet)}`;
-            color = 0xff0000;
+            resultText = `**Your Roll**: ${pD1} ${pD2} (**${playerTotal}**)\n**House Roll**: ${hD1} ${hD2} (**${houseTotal}**)\n\n**Result:** 😢 **YOU LOSE!**\n**Lost:** 💵 ${formatBigNumber(bet)}`;
+            color = '#ff0000'; // Red
         } else {
             // Tie - push (no money changes)
-            resultText = `🤝 **TIE!**\n\n**Your Roll**: ${pD1} ${pD2} = **${playerTotal}**\n**House Roll**: ${hD1} ${hD2} = **${houseTotal}**\n\n**Push** - Bet returned!`;
-            color = 0xffff00;
+            resultText = `**Your Roll**: ${pD1} ${pD2} (**${playerTotal}**)\n**House Roll**: ${hD1} ${hD2} (**${houseTotal}**)\n\n**Result:** 🤝 **TIE!**\n**Push** - Bet returned!`;
+            color = '#ffff00'; // Yellow
         }
 
         const embed = new EmbedBuilder()
             .setTitle('🎲 Dice Roll')
             .setDescription(resultText)
-            .setColor(color);
+            .setColor(color as any);
 
         message.reply({ embeds: [embed] });
     },

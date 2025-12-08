@@ -1,4 +1,4 @@
-import { Message, Client } from 'discord.js';
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
@@ -37,13 +37,25 @@ const command: Command = {
         const result = Math.random() < 0.5 ? 'heads' : 'tails';
         const won = (choice.startsWith('h') && result === 'heads') || (choice.startsWith('t') && result === 'tails');
 
+        let color = '#ffff00'; // Yellow
+        let description = '';
+
         if (won) {
             await updateUser(message.author.id, { balance: user.balance + bet });
-            message.reply(`It was **${result}**! You won $${formatBigNumber(bet)}!`);
+            color = '#00ff00'; // Green
+            description = `**Result:** 🪙 ${result.toUpperCase()}\n**You Won:** $${formatBigNumber(bet)}`;
         } else {
             await updateUser(message.author.id, { balance: user.balance - bet });
-            message.reply(`It was **${result}**! You lost $${formatBigNumber(bet)}.`);
+            color = '#ff0000'; // Red
+            description = `**Result:** 🪙 ${result.toUpperCase()}\n**You Lost:** $${formatBigNumber(bet)}`;
         }
+
+        const embed = new EmbedBuilder() // remove Import error by updating imports next
+            .setTitle('🪙 Coin Flip')
+            .setDescription(description)
+            .setColor(color as any); // Cast because format
+
+        message.reply({ embeds: [embed] });
     },
 };
 
