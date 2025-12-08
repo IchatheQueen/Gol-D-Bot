@@ -55,7 +55,17 @@ export const CAT_SKINS: CatSkin[] = [
         // Font: Mathematical Bold Script
         name: '𝓖𝓸𝓸𝓷𝓮𝓻',
         emoji: '🥵',
-        image: 'https://cdn.discordapp.com/attachments/1393132872554250291/1447482916102738035/PXON44J.gif?ex=6937c904&is=69367784&hm=3737a6ed82a96f7a147b4e0823f0b3cb42e86bc8b5d7edabe8dfa724a526982a&'
+        image: 'https://cdn.discordapp.com/attachments/1393132872554250291/1447482916102738035/PXON44J.gif?ex=6937c904&is=69367784&hm=3737a6ed82a96f7a147b4e0823f0b3cb42e86bc8b5d7edabe8dfa724a526982a&',
+        statEmojis: {
+            hunger: '<a:nods:1447484357391683625>',
+            thirst: '<a:TongueLick:1447484028281421905>',
+            endurance: '<a:rough_sex_fast:1447484388697706517>',
+            strength: '<a:Y_animedead:1447484134070161450>',
+            experience: '<a:AnimeGirlSmokingCigarette:1447485181471490088>',
+            health: '<a:knife_lick:1447484295684952144>',
+            agility: '<:bd_ahegao3:1447484192135843871>',
+            intellect: '<a:MemeTrance:1447484072711688232>'
+        }
     }
 ];
 
