@@ -6,6 +6,7 @@ import { Command } from '../../handlers/commandHandler';
 import { hasActiveDrugEffect } from '../../database/drugEffects';
 import { getUserColor } from '../../database/userColor';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'exch',
