@@ -164,6 +164,8 @@ const command: Command = {
                 loopResults.push(`💵 ${formatBigNumber(loopStolen)} has been moved to ${attackerTag}'s account and 💵 ${formatBigNumber(loopDestroyed)} disintegrated`);
             }
 
+            loopResults.push(`\n**TOTAL:** 💵 ${formatBigNumber(totalStolen)} stolen | 💵 ${formatBigNumber(totalDamage)} destroyed`);
+
             resultMessage = loopResults.join('\n');
         }
         else if (weaponId === 'crossbow') {
