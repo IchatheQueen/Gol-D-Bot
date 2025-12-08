@@ -14,6 +14,7 @@ export const items: Record<string, Item> = {
         id: 'cat_food',
         name: 'Cat Food',
         price: 50,
+        emoji: '🥫',
         description: 'Reduces cat hunger by 20.',
         type: 'consumable',
     },
@@ -21,6 +22,7 @@ export const items: Record<string, Item> = {
         id: 'toy',
         name: 'Cat Toy',
         price: 100,
+        emoji: '🧶',
         description: 'Increases cat happiness by 15.',
         type: 'consumable',
     },
@@ -28,6 +30,7 @@ export const items: Record<string, Item> = {
         id: 'briefcase',
         name: 'Briefcase',
         price: 5000,
+        emoji: '💼',
         description: 'Contains random loot.',
         type: 'consumable',
     },
@@ -40,11 +43,11 @@ export const items: Record<string, Item> = {
         type: 'consumable',
     },
     // Pub Items
-    '1': { id: '1', name: 'Bar Membership', price: 100000, description: 'Buy a membership and treat yourself to some of the best beers in town', type: 'collectible' },
+    '1': { id: '1', name: 'Bar Membership', price: 100000, emoji: '💳', description: 'Buy a membership and treat yourself to some of the best beers in town', type: 'collectible' },
     '2': { id: '2', name: 'Beer', price: 10000, emoji: '🍺', description: 'Order a nice refreshing stein of beer', type: 'consumable' },
-    '3': { id: '3', name: 'Sell Beer', price: 9000, description: 'Don\'t like your beer? You can sell it back to us for a 90% refund', type: 'consumable' }, // Special logic needed for selling
-    '4': { id: '4', name: 'Ender', price: 6, currency: 'beer', description: 'Kidnap an EnderMomandNate and receive Ender briefcases daily (~collect ender)', type: 'collectible' },
-    '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
+    '3': { id: '3', name: 'Sell Beer', price: 9000, emoji: '💸', description: 'Don\'t like your beer? You can sell it back to us for a 90% refund', type: 'consumable' }, // Special logic needed for selling
+    '4': { id: '4', name: 'Ender', price: 6, currency: 'beer', emoji: '👾', description: 'Kidnap an EnderMomandNate and receive Ender briefcases daily (~collect ender)', type: 'collectible' },
+    '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', emoji: '💊', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
 
     // Drugs (Substances)
     'weed': { id: 'weed', name: 'Weed', price: 200, emoji: '1445946808982569071', description: 'Medical herb', type: 'drug' },
@@ -52,12 +55,12 @@ export const items: Record<string, Item> = {
     'lsd': { id: 'lsd', name: 'LSD', price: 1500, emoji: '1445946844470579210', description: 'Hallucinogen', type: 'drug' },
 
     // Feed Items
-    'pill': { id: 'pill', name: 'Pill', price: 0, description: 'A mysterious pill from your generator', type: 'consumable' },
-    'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, description: 'Restores energy', type: 'consumable' },
-    'coffee': { id: 'coffee', name: 'Coffee', price: 120, description: 'Wake up!', type: 'consumable' },
+    'pill': { id: 'pill', name: 'Pill', price: 0, emoji: '💊', description: 'A mysterious pill from your generator', type: 'consumable' },
+    'energy_drink': { id: 'energy_drink', name: 'Energy Drink', price: 500, emoji: '⚡', description: 'Restores energy', type: 'consumable' },
+    'coffee': { id: 'coffee', name: 'Coffee', price: 120, emoji: '☕', description: 'Wake up!', type: 'consumable' },
     'opioid': { id: 'opioid', name: 'Opioid', price: 100, emoji: '<:opioid:1447325599554211940>', description: 'Quadruples Endurance', type: 'consumable' },
     'steroid': { id: 'steroid', name: 'Steroid', price: 500, emoji: '1446143494610485289', description: 'Quadruples Strength', type: 'consumable' },
-    'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', description: 'Heals you', type: 'consumable' },
+    'medicine': { id: 'medicine', name: 'Medicine', price: 3, currency: 'pills', emoji: '🩹', description: 'Heals you', type: 'consumable' },
 
     // Weapons (Updated Prices/Currency)
     'pistol': { id: 'pistol', name: 'Pistol', price: 0, emoji: '1445995386031308890', description: 'Default weapon', type: 'weapon' },
@@ -77,12 +80,12 @@ export const items: Record<string, Item> = {
     '104': { id: '104', name: 'Linen Plant', price: 18, currency: 'weed', emoji: '🌾', description: 'Yields 1 Linen every 12h', type: 'collectible' },
     '105': { id: '105', name: 'Cotton Plant', price: 67, currency: 'weed', emoji: '🌿', description: 'Yields 1 Cotton every 12h', type: 'collectible' },
 
-    'linen': { id: 'linen', name: 'Linen', price: 0, description: 'Printing material', type: 'collectible' },
-    'cotton': { id: 'cotton', name: 'Cotton', price: 0, description: 'Printing material', type: 'collectible' },
+    'linen': { id: 'linen', name: 'Linen', price: 0, emoji: '📜', description: 'Printing material', type: 'collectible' },
+    'cotton': { id: 'cotton', name: 'Cotton', price: 0, emoji: '☁️', description: 'Printing material', type: 'collectible' },
     'fertilizer': { id: 'fertilizer', name: 'Fertilizer', price: 1000, currency: 'weed', emoji: '💰', description: 'Reduces crop cooldown', type: 'consumable' },
-    'ink': { id: 'ink', name: 'Ink', price: 9000, currency: 'weed', description: 'Printing material', type: 'consumable' },
-    'printer': { id: 'printer', name: 'Printer', price: 10000000, currency: 'weed', description: 'Prints Counterfeit money', type: 'collectible' },
-    'counterfeit': { id: 'counterfeit', name: 'Counterfeit', price: 0, description: 'Fake money', type: 'collectible' },
+    'ink': { id: 'ink', name: 'Ink', price: 9000, currency: 'weed', emoji: '⚫', description: 'Printing material', type: 'consumable' },
+    'printer': { id: 'printer', name: 'Printer', price: 10000000, currency: 'weed', emoji: '🖨️', description: 'Prints Counterfeit money', type: 'collectible' },
+    'counterfeit': { id: 'counterfeit', name: 'Counterfeit', price: 0, emoji: '💵', description: 'Fake money', type: 'collectible' },
 
     // Premium Shop Items
     // Packages

@@ -76,7 +76,19 @@ const command: Command = {
         await addInventoryItem(message.author.id, itemId, amount);
 
         const itemEmoji = resolveEmoji(client, itemDef.emoji || '📦');
-        message.reply(`You bought **${formatBigNumber(amount)}x ${itemEmoji} ${itemDef.name}** for ${currency === 'beer' ? '🍺' : currency === 'cash' ? '$' : ''}${formatBigNumber(totalPrice)}.`);
+        let currencyEmoji = '';
+        switch (currency) {
+            case 'beer': currencyEmoji = '🍺'; break;
+            case 'cash': currencyEmoji = '$'; break;
+            case 'diamond': currencyEmoji = '💎'; break;
+            case 'weed': currencyEmoji = resolveEmoji(client, '1445946808982569071'); break;
+            case 'opioid': currencyEmoji = resolveEmoji(client, '<:opioid:1447325599554211940>'); break;
+            case 'pills': currencyEmoji = '💊'; break;
+        }
+
+        // "shows how much the amount of it cost and not what you bought want it the other way around"
+        // Interpret: Show Cost then Item
+        message.reply(`You spent **${currencyEmoji}${formatBigNumber(totalPrice)}** to buy **${formatBigNumber(amount)}x ${itemEmoji} ${itemDef.name}**.`);
     },
 };
 
