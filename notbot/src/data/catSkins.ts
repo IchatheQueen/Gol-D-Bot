@@ -29,7 +29,7 @@ export const CAT_SKINS: CatSkin[] = [
         id: 1,
         name: 'Kitten',
         emoji: '🐈',
-        image: 'https://media1.tenor.com/m/-NyE_jv5iI8AAAAd/cat-cute.gif',
+        image: 'https://cdn.discordapp.com/attachments/1393132872554250291/1447481065580134420/HnwS5sq.gif?ex=6937c74a&is=693675ca&hm=2294ced89e2137fbfe0fb7bb13913431ec2084068b3e85d765efb4ef238b22ba&',
         statEmojis: {
             thirst: '🍼',
             strength: '🐾',
