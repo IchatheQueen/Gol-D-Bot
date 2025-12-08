@@ -68,8 +68,29 @@ const command: Command = {
             }
             await updateUser(message.author.id, { credits: user.credits - totalPrice });
         } else if (currency === 'weed') {
-            message.reply('Weed currency not implemented yet.');
-            return;
+            const weedAmount = await getInventoryItem(message.author.id, 'weed');
+            if (weedAmount < totalPrice) {
+                const weedEmoji = resolveEmoji(client, '1445946808982569071') || '🌿';
+                message.reply(`You don't have enough Weed! Cost: ${weedEmoji} ${formatBigNumber(totalPrice)}`);
+                return;
+            }
+            await removeInventoryItem(message.author.id, 'weed', totalPrice);
+        } else if (currency === 'opioid') {
+            const opioidAmount = await getInventoryItem(message.author.id, 'opioid');
+            if (opioidAmount < totalPrice) {
+                const opioidEmoji = resolveEmoji(client, '<:opioid:1447325599554211940>') || '💊';
+                message.reply(`You don't have enough Opioids! Cost: ${opioidEmoji} ${formatBigNumber(totalPrice)}`);
+                return;
+            }
+            await removeInventoryItem(message.author.id, 'opioid', totalPrice);
+        } else if (currency === 'pills') {
+            // Currency is 'pills', but check item ID 'pill'
+            const pillAmount = await getInventoryItem(message.author.id, 'pill');
+            if (pillAmount < totalPrice) {
+                message.reply(`You don't have enough Pills! Cost: 💊 ${formatBigNumber(totalPrice)}`);
+                return;
+            }
+            await removeInventoryItem(message.author.id, 'pill', totalPrice);
         }
 
         // Add Item to Inventory
