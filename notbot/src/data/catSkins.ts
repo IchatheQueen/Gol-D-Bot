@@ -27,6 +27,14 @@ export const CAT_SKINS: CatSkin[] = [
         emoji: '⚔️',
         image: 'https://media.tenor.com/2z8X1_s_K9EAAAAC/cat-sword.gif',
         rarity: 'Rare'
+    },
+    {
+        id: 69,
+        // Font: Mathematical Bold Script
+        name: '𝓖𝓸𝓸𝓷𝓮𝓻',
+        emoji: '🥵',
+        image: 'https://media.tenor.com/N6x-2X_C99MAAAAC/cat-stare.gif',
+        rarity: 'Legendary'
     }
 ];
 

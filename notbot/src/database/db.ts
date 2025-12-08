@@ -144,6 +144,15 @@ export async function initDatabase() {
         // Column likely exists
     }
 
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS user_command_skins (
+            user_id TEXT,
+            command TEXT,
+            skin_name TEXT,
+            PRIMARY KEY (user_id, command)
+        )
+    `);
+
     console.log('Database tables initialized!');
 }
 
