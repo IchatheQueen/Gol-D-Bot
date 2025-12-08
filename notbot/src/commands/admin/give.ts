@@ -29,7 +29,8 @@ const command: Command = {
                     '`~give weapon <@user|ID|myid> <weapon>` - Give weapon\n' +
                     '`~give item <@user|ID|myid> <item_id> <amount>` - Give any item\n' +
                     '`~give credits <@user|ID|myid> <amount>` - Give credits\n' +
-                    '`~give vault <@user|ID|myid> <amount>` - Give vault money'
+                    '`~give vault <@user|ID|myid> <amount>` - Give vault money\n' +
+                    '`~give ccmd <@user|ID|myid> <command> [access|co|owner]` - Give custom command access'
                 )
                 .setColor('#ff0000');
             message.reply({ embeds: [embed] });
@@ -173,6 +174,47 @@ const command: Command = {
                     args: [newVault, targetId]
                 });
                 message.reply(`✅ Gave **${targetName}** 🏦 ${formatBigNumber(amount)} to vault`);
+                break;
+            }
+
+            case 'ccmd': {
+                const commandName = args[2]?.toLowerCase();
+                const level = args[3]?.toLowerCase() === 'owner' ? 'owner' : (args[3]?.toLowerCase() === 'co' ? 'co_owner' : 'access');
+
+                if (!commandName) {
+                    message.reply('Specify a command name!');
+                    return;
+                }
+
+                // If level is 'owner', update ownership table
+                if (level === 'owner') {
+                    await db.execute({
+                        sql: `INSERT INTO custom_command_ownership (command_name, owner_id)
+                              VALUES (?, ?)
+                              ON CONFLICT(command_name) DO UPDATE SET owner_id = ?`,
+                        args: [commandName, targetId, targetId]
+                    });
+
+                    // Also ensure they have access in access table
+                    await db.execute({
+                        sql: `INSERT INTO custom_command_access (command_name, user_id, access_type)
+                              VALUES (?, ?, 'owner')
+                              ON CONFLICT(command_name, user_id) DO UPDATE SET access_type = 'owner'`,
+                        args: [commandName, targetId]
+                    });
+
+                    message.reply(`✅ Transferred OWNERSHIP of custom command **${commandName}** to **${targetName}**`);
+                } else {
+                    // Update access table
+                    await db.execute({
+                        sql: `INSERT INTO custom_command_access (command_name, user_id, access_type)
+                              VALUES (?, ?, ?)
+                              ON CONFLICT(command_name, user_id) DO UPDATE SET access_type = ?`,
+                        args: [commandName, targetId, level, level]
+                    });
+
+                    message.reply(`✅ Gave **${targetName}** **${level.toUpperCase()}** access to **${commandName}**`);
+                }
                 break;
             }
 

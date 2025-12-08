@@ -32,7 +32,8 @@ const command: Command = {
 
         if (skinName === 'waifubal') {
             embed.setDescription(`${target.username} has escaped paying **$${formatBigNumber(user.balance)}** in taxes to the IRS`)
-                .setImage('https://media.tenor.com/images/e9d7240c11571477759530419358249a/tenor.gif'); // Anime Money GIF
+                .setImage('https://media.tenor.com/images/e9d7240c11571477759530419358249a/tenor.gif') // Anime Money GIF
+                .setThumbnail('https://media.tenor.com/r_bft3Qp0ioAAAAi/anime-blush.gif');
         } else {
             embed.setTitle(`💰 ${target.username}'s balance`)
                 .setDescription(
