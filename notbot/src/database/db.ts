@@ -121,6 +121,14 @@ export async function initDatabase() {
         )
     `);
 
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS command_aliases (
+            alias_name TEXT PRIMARY KEY,
+            target_command TEXT NOT NULL,
+            arguments TEXT
+        )
+    `);
+
     console.log('Database tables initialized!');
 }
 

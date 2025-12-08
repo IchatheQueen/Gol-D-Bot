@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Events, Message as DiscordMessage, EmbedBuil
 import dotenv from 'dotenv';
 import db, { initDatabase } from './database/db';
 import { processShortcuts } from './utils/shortcuts';
+import { EmbedUtils } from './utils/embeds';
 import { incrementCommandCount } from './commands/utility/stats';
 import fs from 'fs';
 import path from 'path';
@@ -151,19 +152,39 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         userCooldowns.set(message.author.id, now);
     }
 
-    const command = commands.get(commandName);
+    // Check for alias/skin
+    let finalCommandName = commandName;
+    let finalArgs = processedArgs;
+
+    try {
+        const aliasRecord = await db.execute({
+            sql: 'SELECT * FROM command_aliases WHERE alias_name = ?',
+            args: [commandName]
+        });
+
+        if (aliasRecord.rows.length > 0) {
+            const alias = aliasRecord.rows[0] as any;
+            finalCommandName = alias.target_command;
+            const aliasArgs = alias.arguments ? alias.arguments.split(' ') : [];
+            finalArgs = [...aliasArgs, ...processedArgs];
+        }
+    } catch (err) {
+        console.error('Error checking aliases:', err);
+    }
+
+    const command = commands.get(finalCommandName);
     if (command) {
         try {
             if (command.execute) {
-                await command.execute(message, processedArgs, client);
+                await command.execute(message, finalArgs, client);
                 incrementCommandCount();
             }
         } catch (error) {
             console.error(error);
-            const errorEmbed = new EmbedBuilder()
-                .setDescription('oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up')
-                .setImage('https://media.tenor.com/V6hW6B7f-jAAAAAC/anime-girl-sorry.gif')
-                .setColor('#ff69b4');
+            const errorEmbed = EmbedUtils.error(
+                'oopsie we had a fuckie wuckie take a scweenshot and send it to master icha and she will fix it right up'
+            ).setImage('https://media.tenor.com/V6hW6B7f-jAAAAAC/anime-girl-sorry.gif');
+
             await message.reply({ embeds: [errorEmbed] });
         }
     }
