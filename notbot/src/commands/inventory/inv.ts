@@ -79,7 +79,7 @@ const command: Command = {
                         // Standard style: Emoji Name | Amount
                         description += `${emoji} **${itemDef.name}** | ${formatBigNumber(amount)}\n`;
                     }
-                    description += `👁️ ${itemEntry.hint}\n`;
+                    description += `<:hint:1449971693085786162> ${itemEntry.hint}\n`;
                 }
             }
 

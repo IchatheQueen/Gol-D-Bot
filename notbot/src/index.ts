@@ -4,6 +4,8 @@ import db, { initDatabase } from './database/db';
 import { processShortcuts } from './utils/shortcuts';
 import { EmbedUtils } from './utils/embeds';
 import { incrementCommandCount } from './commands/utility/stats';
+
+import { startEventLoop, getEventMultiplier } from './events/eventManager';
 import fs from 'fs';
 import path from 'path';
 
@@ -37,6 +39,7 @@ client.emojiOverrides = new Map<string, string>();
 import { loadCommands } from './handlers/commandHandler';
 
 const commands = loadCommands(client);
+(client as any).commands = commands;
 
 async function getBlacklistRecord(userId: string): Promise<any> {
     const result = await db.execute({
@@ -73,7 +76,9 @@ async function loadEmojiOverrides() {
 
 client.once(Events.ClientReady, async (c: any) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
+    console.log(`Ready! Logged in as ${c.user.tag}`);
     await loadEmojiOverrides();
+    await startEventLoop(client);
 });
 
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
@@ -107,7 +112,8 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 
-    if (Math.random() < WALLET_DROP_CHANCE) {
+    const dropMultiplier = getEventMultiplier('DROP_RATE');
+    if (Math.random() < (WALLET_DROP_CHANCE * dropMultiplier)) {
         const existingDrop = await db.execute({
             sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
             args: [message.channel.id]
@@ -155,6 +161,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     // Check for alias/skin
     let finalCommandName = commandName;
     let finalArgs = processedArgs;
+    let forcedSkinId: number | undefined = undefined;
 
     try {
         const aliasRecord = await db.execute({
@@ -167,6 +174,40 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             finalCommandName = alias.target_command;
             const aliasArgs = alias.arguments ? alias.arguments.split(' ') : [];
             finalArgs = [...aliasArgs, ...processedArgs];
+
+            // Mapping strict aliases to Skin IDs
+            // This is hardcoded for now as requested, but could be DB driven later
+            const skinMap: Record<string, number> = {
+                'kitten': 1,
+                'warrior': 2,
+                'gooner': 69,
+                'goon': 69
+            };
+
+            // Check if this alias maps to a skin
+            if (skinMap[commandName]) {
+                const targetSkinId = skinMap[commandName];
+
+                // Check if user has ACCESS to this skin/alias
+                // We check 'custom_command_access' OR ownership
+                const accessCheck = await db.execute({
+                    sql: `
+                        SELECT 1 FROM custom_command_ownership WHERE command_name = ? AND owner_id = ?
+                        UNION
+                        SELECT 1 FROM custom_command_access WHERE command_name = ? AND user_id = ?
+                    `,
+                    args: [commandName, message.author.id, commandName, message.author.id]
+                });
+
+                // Also specific catch for admins or if it's open (but user implied restriction)
+                // For now, if they have access, we force the skin.
+                if (accessCheck.rows.length > 0 || message.author.id === EXEMPT_USER_ID) {
+                    forcedSkinId = targetSkinId;
+                }
+                // If they don't have access, we still run the command (e.g. ~cat) but WITHOUT the skin override?
+                // Or do we block? "users who has access ... can use custom command calls"
+                // If they don't have access, it just behaves like normal ~cat (using their equipped skin).
+            }
         }
     } catch (err) {
         console.error('Error checking aliases:', err);
@@ -176,7 +217,8 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (command) {
         try {
             if (command.execute) {
-                await command.execute(message, finalArgs, client);
+                // Pass forcedSkinId as the 4th argument (client is 3rd)
+                await command.execute(message, finalArgs, client, forcedSkinId);
                 incrementCommandCount();
             }
         } catch (error) {

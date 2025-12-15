@@ -5,9 +5,9 @@ import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 
 // Plant definitions
-const plants: Record<string, { harvestItem: string; harvestAmount: number; harvestTime: number; riskFactor: number }> = {
-    '102': { harvestItem: '1', harvestAmount: 3, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 }, // Weed
-    '103': { harvestItem: '3', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.20 }, // Opioid
+export const plants: Record<string, { harvestItem: string; harvestAmount: number; harvestTime: number; riskFactor: number }> = {
+    '102': { harvestItem: 'weed', harvestAmount: 3, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 }, // Weed
+    '103': { harvestItem: 'opioid', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.20 }, // Opioid
     '104': { harvestItem: 'linen', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
     '105': { harvestItem: 'cotton', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
 };

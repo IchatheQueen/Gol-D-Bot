@@ -3,6 +3,7 @@ import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { resolveTarget } from '../../utils/resolveTarget';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
+import { checkAchievement } from '../../utils/achievementCheck';
 
 const BOT_OWNER_ID = '1331780893995565148';
 
@@ -67,6 +68,9 @@ const command: Command = {
             await updateUser(targetId, { balance: receiver.balance + amount });
 
             message.reply(`Sent 💵 $${formatBigNumber(amount)} to ${target.username}`);
+
+            // Achievement Check: Philanthropist
+            await checkAchievement(client, message.author.id, 'first_pay', message.channel.id);
         }
     },
 };

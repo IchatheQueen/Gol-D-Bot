@@ -1,133 +1,73 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
-import { getInventory } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
+import { getInventory } from '../../database/inventory';
 import { items } from '../../data/items';
 import { formatBigNumber } from '../../utils/bigNumbers';
-
-// Plant definitions
-const plants: Record<string, { harvestItem: string; harvestAmount: number; harvestTime: number; riskFactor: number }> = {
-    '102': { harvestItem: '1', harvestAmount: 3, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 }, // Weed (BM ID 1)
-    '103': { harvestItem: '3', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.20 }, // Opioid (BM ID 3)
-    '104': { harvestItem: 'linen', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
-    '105': { harvestItem: 'cotton', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
-};
+import { resolveTarget } from '../../utils/resolveTarget';
 
 const command: Command = {
     name: 'farm',
-    description: 'View your farm',
+    aliases: ['f'],
+    description: 'View your farm status',
     execute: async (message: Message, args: string[], client: Client) => {
-        const userId = message.author.id;
+        const targetId = await resolveTarget(message, args[0]) || message.author.id;
+        const targetUser = await client.users.fetch(targetId);
 
-        // Fetch inventory
-        const inventory = await getInventory(userId);
+        const inventory = await getInventory(targetId);
 
-        // Helper to get amount
-        const getAmount = (id: string) => {
-            const found = inventory.find(i => i.item_id === id);
-            return found ? found.amount : 0n;
+        // Crops: 102 (Cannabis), 103 (Opium), 104 (Linen), 105 (Cotton)
+        // Barn: fertilizer, cotton, linen, counterfeit
+        // Also '2' is Beer? Wait.
+        // Screenshot Crops: Cannabis, Opium, Cotton, Linen.
+        // Screenshot Barn: Fertilizer, Cotton, Linen, Counterfeit Cash.
+
+        const getAmt = (id: string) => {
+            const item = inventory.find(i => i.item_id === id);
+            return item ? BigInt(item.amount || 0) : 0n;
         };
 
-        const embed = new EmbedBuilder()
-            .setTitle(`${message.author.username} (@${message.author.username})'s Farm`)
-            .setColor('#2f3136')
-            .setDescription(`\`~harvest <type>\` to harvest crops\n\`~destroy <type> <amount>\` to destroy a crop and receive two harvests worth of drugs/materials\n\`~fertilize <type>\` to reduce a crop's cooldown, requires 💰 1\n\n**Crops**`);
-
-        // Crops Section
-        let cropsText = '';
-        const plantIds = Object.keys(plants);
-
-        for (const plantId of plantIds) {
-            const plantDef = plants[plantId];
-            const itemDef = items[plantId];
-
-            if (!plantDef || !itemDef) continue;
-
-            const amount = getAmount(plantId);
-            const emoji = itemDef.emoji || '🌿';
-
-
-            // Generate Status Line
-            let statusLine = '';
-
-            if (amount > 0n) {
-                // Check cooldown for harvest
-                const cooldownKey = `harvest_${plantId}`;
-                const cooldownCheck = await db.execute({
-                    sql: 'SELECT * FROM cooldowns WHERE user_id = ? AND command = ?',
-                    args: [userId, cooldownKey]
-                });
-                const cooldown = cooldownCheck.rows[0] as any;
-
-                let timeStr = 'Ready!';
-                if (cooldown) {
-                    const timeLeft = Number(cooldown.timestamp) + plantDef.harvestTime - Date.now();
-                    if (timeLeft > 0) {
-                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                        // Matching style "in 2 hours"
-                        if (hours === 0) timeStr = 'in less than an hour';
-                        else timeStr = `in ${hours} hours`;
-                    } else {
-                        timeStr = 'now';
-                    }
-                } else {
-                    timeStr = 'now';
-                }
-
-                // Show Risk% and Scythe (Time)
-                // User said "remove cockroach emoji" -> Just show percentage?
-                // Screenshot: [Cockroach] 10% | [Scythe] in 2 hours
-                // New: 10% | 镰 in 2 hours
-                const risk = plantDef.riskFactor * 100;
-                statusLine = `┕ ${risk}% | 镰 ${timeStr}`;
-            } else {
-                statusLine = `┕  0% | 镰 Not Planted`;
-            }
-
-            // Append to crops text
-            // Format: Emoji Name | Amount (digits)
-            // Use formatBigNumber which handles the commas and digits truncation logic roughly
-            // Note: formatBigNumber output: "26,791...&134" or similar depending on implementation.
-            // Screen shot showed: "26,791...(134 digits)". My utils does &X.
-            // I'll stick to utils for consistency.
-            const amtStr = formatBigNumber(amount);
-
-            cropsText += `${emoji} ${itemDef.name} | ${amtStr}\n${statusLine}\n`;
-        }
-
-        // Barn Section
-        let barnText = '**Barn**\n';
-        const barnItems = [
-            { id: 'fertilizer', emoji: '💰' },
-            { id: 'cotton', emoji: '☁️' },
-            { id: 'linen', emoji: '📜' },
-            { id: 'counterfeit', emoji: '💵', name: 'Counterfeit Cash' }
+        const cropList = [
+            { id: '102', label: 'Cannabis', emoji: '🌱' },
+            { id: '103', label: 'Opium', emoji: '🌹' }, // Using items.ts emoji if possible, but matching screenshot emoji
+            { id: '105', label: 'Cotton', emoji: '🌿' },
+            { id: '104', label: 'Linen', emoji: '🌾' }
         ];
 
-        for (const bItem of barnItems) {
-            const amount = getAmount(bItem.id);
-            const amtStr = formatBigNumber(amount);
+        const barnList = [
+            { id: 'fertilizer', label: 'Fertilizer', emoji: '💰' },
+            { id: 'cotton', label: 'Cotton', emoji: '☁️' },
+            { id: 'linen', label: 'Linen', emoji: '📜' },
+            { id: 'counterfeit', label: 'Counterfeit Cash', emoji: '💵' }
+        ];
 
-            // Fallback lookup
-            const iDef = items[bItem.id];
-            const name = bItem.name || (iDef ? iDef.name : bItem.id);
-            // Use local override emoji if present (e.g. cloud for cotton in barn section specifically? Screenshot shows specific icons for Barn items that differ from plant emojis)
-            // Screenshot Barn:
-            // Fertilizer: Bag 💰
-            // Cotton: Cloud ☁️
-            // Linen: Scroll 📜
-            // Counterfeit: Cash 💵
-            // My items.ts has `cotton_plant` (🌿) vs `cotton` (Material).
-            // `items.ts`: 'cotton': { id: 'cotton', name: 'Cotton', ... } -> Emoji?
-            // In items.ts I didn't set emojis for `cotton` (material) yet. I set it for `cotton_plant`.
-            // So I will use the hardcoded emojis in `barnItems` array above to match the look.
-            const emoji = bItem.emoji;
-
-            barnText += `${emoji} ${name} | ${amtStr}\n`;
+        let cropsText = '';
+        for (const c of cropList) {
+            const amt = getAmt(c.id);
+            // items[c.id].emoji might be different, let's trust screenshot or list
+            const emoji = items[c.id]?.emoji || c.emoji;
+            cropsText += `${emoji} ${c.label} | ${formatBigNumber(amt)}\n`;
         }
 
-        const fullDescription = (embed.data.description || '') + '\n' + cropsText + '\n' + barnText;
-        embed.setDescription(fullDescription);
+        let barnText = '';
+        for (const b of barnList) {
+            const amt = getAmt(b.id);
+            const emoji = items[b.id]?.emoji || b.emoji;
+            barnText += `${emoji} ${b.label} | ${formatBigNumber(amt)}\n`;
+        }
+
+        const embed = new EmbedBuilder()
+            .setTitle(`@${targetUser.username}'s Farm`) // Actually screenshots uses display name logic usually, but username is safe
+            .setDescription(
+                '`~harvest <type>` to harvest crops\n' +
+                '`~destroy <type> <amount>` to destroy a crop and receive two harvests worth of drugs/materials\n' +
+                '`~fertilize <type>` to reduce a crop\'s cooldown, requires 💰 1\n\n' +
+                '**Crops**\n' +
+                cropsText + '\n' +
+                '**Barn**\n' +
+                barnText
+            )
+            .setColor('#112211'); // Dark Greenish from screenshot
 
         message.reply({ embeds: [embed] });
     },

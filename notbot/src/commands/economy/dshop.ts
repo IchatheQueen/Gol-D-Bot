@@ -34,6 +34,12 @@ const command: Command = {
         let addons = '';
         addons += `[12] ⤴️ **Top Donor Role** - 💎 7\n`;
         addons += `[13] 👶 **Recruit** - 💎 15\n`;
+        // Addons
+        let addons = '';
+        addons += `[12] ⤴️ **Top Donor Role** - 💎 7\n`;
+        addons += `[13] 👶 **Recruit** - 💎 15\n`;
+        addons += `[custom_role_token] 🎟️ **Custom Role Token** - 💎 5\n`;
+        addons += `[auto_feeder] 🦾 **Auto-Feeder** - 💎 10\n`;
         embed.addFields({ name: 'Addons', value: addons });
 
         // Cosmetic Market

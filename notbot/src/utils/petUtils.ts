@@ -1,4 +1,5 @@
 import db from '../database/db';
+import { getInventoryItem, removeInventoryItem } from '../database/inventory';
 
 export interface Pet {
     user_id: string;
@@ -66,6 +67,23 @@ export const updatePetStats = async (userId: string): Promise<Pet | undefined> =
     // 3. Decay Health (if Energy is 0)
     if (energy <= 0) {
         health = Math.max(0, health - (DECAY_RATES.HEALTH_PENALTY * hoursPassed));
+    }
+
+    // 4. Auto-Feeder Logic
+    // If hunger is low (< 20) and user has Auto-Feeder + Cat Food, feed automatically.
+    if (hunger < 20) {
+        const hasFeeder = await getInventoryItem(userId, 'auto_feeder');
+        if (hasFeeder > 0n) {
+            const foodCount = await getInventoryItem(userId, 'cat_food');
+            if (foodCount > 0n) {
+                hunger = Math.min(100, hunger + 20);
+                await removeInventoryItem(userId, 'cat_food', 1n);
+                // console.log(`[AutoFeeder] Fed pet for user ${userId}`);
+
+                // If hunger is STILL < 20, we could loop, but let's do one per update to avoid draining instantly?
+                // Or just let natural command usage trigger it again. One is fine.
+            }
+        }
     }
 
     // Apply updates

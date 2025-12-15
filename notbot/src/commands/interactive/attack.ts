@@ -4,6 +4,7 @@ import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem, removeInventoryItem } from '../../database/inventory';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { updatePetStats, isPetDead } from '../../utils/petUtils';
 
 const command: Command = {
     name: 'attack',
@@ -22,14 +23,15 @@ const command: Command = {
             return;
         }
 
-        const attackerPetStmt = await db.execute({
-            sql: 'SELECT * FROM pets WHERE user_id = ?',
-            args: [message.author.id]
-        });
-        let attackerPet = attackerPetStmt.rows[0] as any;
+        let attackerPet = await updatePetStats(message.author.id);
 
         if (!attackerPet) {
             message.reply('You need a cat to attack! Use `~cat` to adopt one.');
+            return;
+        }
+
+        if (isPetDead(attackerPet)) {
+            message.reply('Your cat is dead 💀. You must revive it with `~revive` before attacking!');
             return;
         }
 
@@ -40,6 +42,18 @@ const command: Command = {
 
         if (attackerPet.is_attacking) {
             message.reply('Your cat is already attacking! Use `~retreat` to stop.');
+            return;
+        }
+
+        // Check Target Protection
+        const targetPetStmt = await db.execute({
+            sql: 'SELECT protection FROM pets WHERE user_id = ?',
+            args: [targetId]
+        });
+        const targetPet = targetPetStmt.rows[0] as any;
+
+        if (targetPet && targetPet.protection === 1) {
+            message.reply('The target has protection enabled and cannot be attacked!');
             return;
         }
 

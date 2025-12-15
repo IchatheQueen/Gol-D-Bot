@@ -5,6 +5,8 @@ import { getInventoryItem, addInventoryItem, removeInventoryItem } from '../../d
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
 import { resolveEmoji } from '../../utils/resolveEmoji';
+import { plants } from '../inventory/harvest';
+import db from '../../database/db';
 
 const command: Command = {
     name: 'buy',
@@ -15,7 +17,7 @@ const command: Command = {
         const amount = parseBigNumber(amountStr || '1') || 1n;
 
         if (!itemId) {
-            message.reply('Usage: `~buy <id> <amount>`');
+            message.reply(`You must specify an **ID** under the format of \`~buy <id> <amount>\`\n<:hint:1449971693085786162> Hint: IDs are numerical, but names also work! E.g: ~buy beer`);
             return;
         }
 
@@ -36,12 +38,24 @@ const command: Command = {
         const totalPrice = price * amount;
 
         // Check Bar Membership for Beer purchases
-        if (currency === 'beer') {
-            const membershipAmount = await getInventoryItem(message.author.id, '1');
-            if (membershipAmount < 1n) {
-                message.reply('You need a **Bar Membership** (ID: 1) to buy items with Beer! Buy it from the `~pub`.');
-                return;
-            }
+        if (currency === 'beer' || itemId === '2') {
+             // Also restrict buying Beer itself if logic was "cannot buy beer without membership"
+             if (itemId === '2') {
+                  const membershipAmount = await getInventoryItem(message.author.id, '1');
+                  if (membershipAmount < 1n) {
+                       message.reply('You need a **Bar Membership** (ID: 1) to buy Beer! Buy it from the `~pub`.');
+                       return;
+                  }
+             }
+
+            // Existing logic for currency == 'beer' (buying WITH beer)
+             if (currency === 'beer') {
+                const membershipAmount = await getInventoryItem(message.author.id, '1');
+                if (membershipAmount < 1n) {
+                    message.reply('You need a **Bar Membership** (ID: 1) to buy items with Beer! Buy it from the `~pub`.');
+                    return;
+                }
+             }
         }
 
         // Check Balance
@@ -95,6 +109,26 @@ const command: Command = {
 
         // Add Item to Inventory
         await addInventoryItem(message.author.id, itemId, amount);
+
+        // Check if item is a plant and set cooldown if needed
+        if (plants[itemId]) {
+            const cooldownKey = `harvest_${itemId}`;
+            const cooldownCheck = await db.execute({
+                sql: 'SELECT * FROM cooldowns WHERE user_id = ? AND command = ?',
+                args: [message.author.id, cooldownKey]
+            });
+            const cooldown = cooldownCheck.rows[0] as any;
+
+            // If no cooldown or cooldown expired, set it to full duration
+            const isReady = !cooldown || (Number(cooldown.timestamp) + plants[itemId].harvestTime < Date.now());
+
+            if (isReady) {
+                await db.execute({
+                    sql: 'INSERT OR REPLACE INTO cooldowns (user_id, command, timestamp) VALUES (?, ?, ?)',
+                    args: [message.author.id, cooldownKey, Date.now()]
+                });
+            }
+        }
 
         const itemEmoji = resolveEmoji(client, itemDef.emoji || '📦');
         let currencyEmoji = '';

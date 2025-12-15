@@ -6,13 +6,15 @@ import { getInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
 import { sendCombatDM } from '../../utils/combatNotify';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveTarget } from '../../utils/resolveTarget';
 
 const command: Command = {
     name: 'hex',
     description: 'Hex a user to steal money and stun them',
+    aliases: ['haunt'],
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
-        const targetUser = message.mentions.users.first();
+        const targetResolved = await resolveTarget(message, args, client);
 
         // Check if user has Conjuror
         const conjurorAmount = await getInventoryItem(userId, 'p7');
@@ -21,14 +23,16 @@ const command: Command = {
             return;
         }
 
-        if (!targetUser) {
-            message.reply('Usage: `~hex <@user>`');
+        if (!targetResolved) {
+            message.reply('Your attack missed because you didn\'t mention the user!');
             return;
         }
 
-        if (targetUser.id === userId) {
-            message.reply('You cannot hex yourself!');
-            return;
+        let targetUser: any;
+        try {
+            targetUser = await client.users.fetch(targetResolved.id);
+        } catch {
+            targetUser = { id: targetResolved.id, username: targetResolved.username, bot: false, toString: () => `<@${targetResolved.id}>` };
         }
 
         if (targetUser.bot) {
@@ -71,8 +75,8 @@ const command: Command = {
         const stealPct = BigInt(Math.floor(Math.random() * 3) + 1); // 1-3
         const stolen = (targetData.balance * stealPct) / 100n;
 
-        // Stun for 6-10 minutes
-        const stunMinutes = Math.floor(Math.random() * (10 - 6 + 1)) + 6;
+        // Stun for 10 minutes (implied by screenshot)
+        const stunMinutes = 10;
         const stunDuration = stunMinutes * 60 * 1000;
         const expiresAt = Date.now() + stunDuration;
 
@@ -94,16 +98,17 @@ const command: Command = {
             args: [userId, 'hex', Date.now()]
         });
 
-        const hexMessage = `${message.author.username} (@${message.author.username}) has hexed ${targetUser.username} (@${targetUser.username}) and stolen 💵 ${formatBigNumber(stolen)}, stunning them for ${stunMinutes} minutes in the process!`;
-
         const embed = new EmbedBuilder()
-            .setDescription(hexMessage)
+            .setDescription(`👻 ${message.author} has haunted ${targetUser} causing them to have a heart attack and drop 💵 ${formatBigNumber(stolen)}`)
             .setColor(getUserColor(userId));
 
-        message.reply({ embeds: [embed] });
+        await message.reply({ embeds: [embed] });
 
-        // DM the target the same message
-        await sendCombatDM(client, targetUser.id, hexMessage);
+        // Follow up message
+        await message.channel.send(`${targetUser} remains on life support for ${stunMinutes} minutes 🪦`);
+
+        // DM the target
+        await sendCombatDM(client, targetUser.id, `You were haunted by ${message.author.username} and put on life support for ${stunMinutes}m!`);
     },
 };
 

@@ -1,31 +1,29 @@
-
 import db from '../db';
 
-async function migrate() {
-    console.log('Migrating generators table...');
-    try {
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS generators (
-                user_id TEXT PRIMARY KEY,
-                level INTEGER DEFAULT 1,
-                invested TEXT DEFAULT '0',
-                credits INTEGER DEFAULT 0,
-                potency_level INTEGER DEFAULT 1,
-                efficiency_level INTEGER DEFAULT 1,
-                health_level INTEGER DEFAULT 1,
-                hunger_level INTEGER DEFAULT 1,
-                thirst_level INTEGER DEFAULT 1,
-                energy_level INTEGER DEFAULT 1,
-                strength_level INTEGER DEFAULT 1,
-                agility_level INTEGER DEFAULT 1,
-                intellect_level INTEGER DEFAULT 1,
-                endurance_level INTEGER DEFAULT 1
-            )
-        `);
-        console.log('Generators table created successfully.');
-    } catch (error) {
-        console.error('Migration failed:', error);
-    }
-}
+export async function run() {
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS generators (
+            user_id TEXT PRIMARY KEY,
+            level INTEGER DEFAULT 0,
+            invested TEXT DEFAULT '0',
+            points INTEGER DEFAULT 0, -- Credits/Points to spend on stats
+            
+            -- Upgradable Stats
+            stat_potency INTEGER DEFAULT 1,
+            stat_efficiency INTEGER DEFAULT 1,
+            stat_health INTEGER DEFAULT 0,
+            stat_hunger INTEGER DEFAULT 0,
+            stat_thirst INTEGER DEFAULT 0,
+            stat_energy INTEGER DEFAULT 0,
+            stat_strength INTEGER DEFAULT 0,
+            stat_agility INTEGER DEFAULT 0,
+            stat_intellect INTEGER DEFAULT 0,
+            stat_endurance INTEGER DEFAULT 0,
+            stat_metabolism INTEGER DEFAULT 0,
+            
+            last_claim INTEGER DEFAULT 0
+        )
+    `);
 
-migrate();
+    console.log('Generator table created.');
+}

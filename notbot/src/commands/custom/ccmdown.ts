@@ -9,6 +9,7 @@ const command: Command = {
     description: 'Grant co-ownership of a custom command',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
+        const ADMIN_ID = '1331780893995565148'; // Bot Owner ID
 
         if (args.length < 2) {
             message.reply('Usage: `~ccmdown <user> <command>`');
@@ -24,13 +25,33 @@ const command: Command = {
         const commandName = args[1].toLowerCase();
 
         try {
-            // Verify ownership (only strictly the OWNER can give co-ownership)
+            // Check current ownership
             const ownership = await db.execute({
-                sql: 'SELECT owner_id FROM custom_command_ownership WHERE command_name = ? AND owner_id = ?',
-                args: [commandName, userId]
+                sql: 'SELECT owner_id FROM custom_command_ownership WHERE command_name = ?',
+                args: [commandName]
             });
 
-            if (ownership.rows.length === 0) {
+            const currentOwnerId = ownership.rows.length > 0 ? (ownership.rows[0] as any).owner_id : null;
+
+            // Admin Override: Transfer Ownership completely
+            if (userId === ADMIN_ID) {
+                if (currentOwnerId) {
+                    await db.execute({
+                        sql: 'UPDATE custom_command_ownership SET owner_id = ? WHERE command_name = ?',
+                        args: [targetUser.id, commandName]
+                    });
+                } else {
+                    await db.execute({
+                        sql: 'INSERT INTO custom_command_ownership (command_name, owner_id) VALUES (?, ?)',
+                        args: [commandName, targetUser.id]
+                    });
+                }
+                message.reply(`👮 **Admin Override**: Successfully transferred FULL ownership of \`${commandName}\` to **${targetUser.username}**.`);
+                return;
+            }
+
+            // Normal User: Grant Co-ownership
+            if (currentOwnerId !== userId) {
                 message.reply(`You are not the owner of the command \`${commandName}\`. Only the owner can grant co-ownership.`);
                 return;
             }

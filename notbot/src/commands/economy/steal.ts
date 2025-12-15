@@ -1,9 +1,8 @@
 import { Message, Client } from 'discord.js';
 import db from '../../database/db';
-import { addInventoryItem, getInventoryItem } from '../../database/inventory';
+import { addInventoryItem } from '../../database/inventory';
 import { Command } from '../../handlers/commandHandler';
-
-const briefcases = ['employee', 'richkid', 'oldlady', 'nitro', 'ender'];
+import { EmbedBuilder } from 'discord.js';
 
 const command: Command = {
     name: 'steal',
@@ -32,12 +31,45 @@ const command: Command = {
         const success = Math.random() < 0.4; // 40% chance
 
         if (success) {
-            const type = briefcases[Math.floor(Math.random() * briefcases.length)];
-            const itemId = `${type}_briefcase`;
+            // Weighted random for briefcase type
+            const rand = Math.random();
+            let type = 'employee';
 
+            if (rand < 0.05) type = 'nitro';       // 5% chance for Nitro
+            else if (rand < 0.15) type = 'ender';  // 10%
+            else if (rand < 0.35) type = 'richkid'; // 20%
+            else if (rand < 0.60) type = 'oldlady'; // 25%
+            else type = 'employee';                // 40%
+
+            const itemId = `${type}_briefcase`;
             await addInventoryItem(message.author.id, itemId, 1n);
 
-            message.reply(`You stole an **${type}'s briefcase** 💼!`);
+            // Descriptions
+            let typeName = `${type} briefcase`;
+            let emoji = '💼';
+
+            if (type === 'oldlady') {
+                typeName = "snobby old lady's briefcase";
+                emoji = '👝';
+            } else if (type === 'ender') {
+                typeName = "EnderMomandNate briefcase";
+                emoji = '👛';
+            } else if (type === 'nitro') {
+                typeName = "nitro briefcase";
+                emoji = '🎒';
+            } else if (type === 'richkid') {
+                typeName = "rich kid's briefcase";
+                emoji = '👜';
+            } else if (type === 'employee') {
+                typeName = "employee's briefcase";
+                emoji = '💼';
+            }
+
+            const embed = new EmbedBuilder()
+                .setDescription(`${message.author} has stolen a ${typeName} ${emoji}! \`~briefcases\``)
+                .setColor('#2F3136'); // Dark gray/black from screenshot
+
+            message.reply({ embeds: [embed] });
         } else {
             message.reply('You tried to steal a briefcase but got caught! You ran away empty-handed.');
         }

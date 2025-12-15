@@ -1,4 +1,12 @@
-import { createClient } from '@libsql/client';
+import { run as runCustomCmdMigration } from './migrations/create_ccmd_tables';
+import { run as runPhase2Migration } from './migrations/create_phase2_tables';
+import { run as runCustomRoleMigration } from './migrations/create_custom_role_tables';
+import { run as runCustomRoleMigration } from './migrations/create_custom_role_tables';
+import { run as runRecruitMigration } from './migrations/create_recruit_tables';
+import { run as runClanMigration } from './migrations/create_clan_tables';
+import { run as runAchievementMigration } from './migrations/create_achievement_tables';
+import { run as runPremiumMigration } from './migrations/add_premium_column';
+import { run as runGeneratorMigration } from './migrations/create_generators';
 
 // Turso connection - uses environment variables
 // TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set
@@ -148,6 +156,16 @@ export async function initDatabase() {
             last_collection INTEGER DEFAULT 0
         )
     `);
+
+    await runCustomCmdMigration();
+    await runPhase2Migration();
+    await runCustomRoleMigration();
+    await runRecruitMigration();
+    await runClanMigration();
+    await runClanMigration();
+    await runAchievementMigration();
+    await runPremiumMigration();
+    await runGeneratorMigration();
 
     // Custom Command Ownership
     await db.execute(`

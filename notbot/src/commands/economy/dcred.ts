@@ -1,33 +1,41 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
-import { getUser } from '../../database/economy';
+import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
-import { getUserColor } from '../../database/userColor';
+import { getUser } from '../../database/economy';
+import { getInventoryItem } from '../../database/inventory';
 
 const command: Command = {
     name: 'dcred',
-    description: 'Check your available credit or get help',
+    description: 'Check your Credits balance',
     execute: async (message: Message, args: string[], client: Client) => {
-        if (args[0] === 'help') {
-            const embed = new EmbedBuilder()
-                .setTitle('💎 | Credit Help')
-                .setDescription('💎 **Credits** is the Premium currency that can be spent on cosmetic skins, upgrades and more')
-                .addFields({
-                    name: 'Related Commands',
-                    value: '`~donate` to purchase 💎 Credit\n`~market` to spend your 💎 Credit\n`~dpay <user> <amount>` to transfer 💎 Credit to another account'
-                })
-                .setColor(getUserColor(message.author.id));
+        const userId = message.author.id;
 
-            message.reply({ embeds: [embed] });
-            return;
-        }
+        // Fetch credits (Diamond/DCRED currency)
+        // Using 'diamond' as the currency key in items logic, usually stored in inventory or user table?
+        // In items.ts, currency: 'diamond'.
+        // In economy.ts, is there a 'credits' column?
+        // Let's check getUser result structure or inventory.
+        // Assuming it's a special inventory item or a column.
+        // Based on `dshop` usage, it might be an item 'diamond' or 'dcred'.
+        // Let's check inventory for 'diamond' or 'dcred'.
 
-        const user = await getUser(message.author.id);
-        const credits = user.credits || 0;
+        // Wait, `getUser` might have it.
+        // If not, I'll assume it's an item 'diamond'.
+
+        const credits = await getInventoryItem(userId, 'diamond');
 
         const embed = new EmbedBuilder()
-            .setAuthor({ name: `${message.author.username}'s 💎 Credits`, iconURL: message.author.displayAvatarURL() })
-            .setDescription('PREMIUM CURRENCY\n`~dcred help` to get more information\n\n**Available Credit**\n💎 ' + credits.toLocaleString(undefined, { minimumFractionDigits: 2 }))
-            .setColor(getUserColor(message.author.id));
+            .setAuthor({ name: `@${message.author.username}'s Credits`, iconURL: 'https://cdn.discordapp.com/emojis/1331780893995565148.png' }) // Placeholder emoji/icon
+            // Title: "@user's SlotBot Credits" -> "Credits" (Restricted)
+            // Description: 
+            // PREMIUM CURRENCY
+            // ~dcred help to get more information
+            // Available Credit
+            // <emoji> 0.00
+
+            .setTitle(`@${message.author.username}'s Credits`)
+            .setDescription(`PREMIUM CURRENCY\n\`~dcred help\` to get more information\n\n**Available Credit**\n💎 ${Number(credits).toFixed(2)}`)
+            .setColor('#2F3136');
 
         message.reply({ embeds: [embed] });
     },

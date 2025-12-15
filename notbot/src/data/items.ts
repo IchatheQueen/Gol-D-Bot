@@ -5,7 +5,7 @@ export interface Item {
     price: number | string;
     currency?: 'cash' | 'beer' | 'diamond' | 'weed' | 'opioid' | 'pills';
     description: string;
-    type: 'consumable' | 'collectible' | 'weapon' | 'drug' | 'farming' | 'counterfeit';
+    type: 'consumable' | 'collectible' | 'weapon' | 'drug' | 'farming' | 'counterfeit' | 'cat_resource' | 'briefcase';
     effect?: (user: any, pet?: any) => string;
 }
 
@@ -34,6 +34,38 @@ export const items: Record<string, Item> = {
         description: 'Contains random loot.',
         type: 'consumable',
     },
+    'employee_briefcase': {
+        id: 'employee_briefcase',
+        name: 'Employee Briefcase',
+        price: 0,
+        emoji: '💼',
+        description: 'Stolen from an employee.',
+        type: 'briefcase',
+    },
+    'richkid_briefcase': {
+        id: 'richkid_briefcase',
+        name: 'Rich Kid Briefcase',
+        price: 0,
+        emoji: '👜',
+        description: 'Stolen from a rich kid.',
+        type: 'briefcase',
+    },
+    'oldlady_briefcase': {
+        id: 'oldlady_briefcase',
+        name: 'Old Lady Briefcase',
+        price: 0,
+        emoji: '👝',
+        description: 'Stolen from a snobby old lady.',
+        type: 'briefcase',
+    },
+    'ender_briefcase': {
+        id: 'ender_briefcase',
+        name: 'Ender Briefcase',
+        price: 0,
+        emoji: '👛',
+        description: 'Stolen from EnderMomandNate.',
+        type: 'briefcase',
+    },
     'fish': {
         id: 'fish',
         name: 'Fish',
@@ -45,6 +77,7 @@ export const items: Record<string, Item> = {
     // Pub Items
     '1': { id: '1', name: 'Bar Membership', price: 100000, emoji: '💳', description: 'Buy a membership and treat yourself to some of the best beers in town', type: 'collectible' },
     '2': { id: '2', name: 'Beer', price: 10000, emoji: '🍺', description: 'Order a nice refreshing stein of beer', type: 'consumable' },
+    'scotch': { id: 'scotch', name: 'Scotch', price: 50000, emoji: '🥃', description: 'A fine scotch to regain composure', type: 'consumable' }, // Added Scotch
     '3': { id: '3', name: 'Sell Beer', price: 9000, emoji: '💸', description: 'Don\'t like your beer? You can sell it back to us for a 90% refund', type: 'consumable' }, // Special logic needed for selling
     '4': { id: '4', name: 'Ender', price: 6, currency: 'beer', emoji: '👾', description: 'Kidnap an EnderMomandNate and receive Ender briefcases daily (~collect ender)', type: 'collectible' },
     '5': { id: '5', name: 'Miner\'s Capsule', price: 0.20, currency: 'diamond', emoji: '💊', description: 'A chance to win big with some useful commands (~vault help)', type: 'consumable' },
@@ -106,4 +139,12 @@ export const items: Record<string, Item> = {
     // Addons
     'p12': { id: 'p12', name: 'Top Donor Role', price: 7, currency: 'diamond', description: 'Exclusive Role', type: 'collectible' },
     'p13': { id: 'p13', name: 'Recruit', price: 15, currency: 'diamond', description: 'Exclusive Role', type: 'collectible' },
+
+    // Phase 2 Items
+    'custom_role_token': { id: 'custom_role_token', name: 'Custom Role Token', price: 5, currency: 'diamond', emoji: '🎟️', description: 'Create a custom role with color (~cstmrl)', type: 'consumable' },
+    'marriage_ring': { id: 'marriage_ring', name: 'Marriage Ring', price: 10000000, emoji: '💍', description: 'Propose to someone (~marry)', type: 'consumable' },
+    'auto_feeder': { id: 'auto_feeder', name: 'Auto-Feeder', price: 10, currency: 'diamond', emoji: '🦾', description: 'Automatically feeds your pet when hunger is low (Passive)', type: 'collectible' },
+    'cat_pill': { id: 'cat_pill', name: 'Cat Pill', price: 0, emoji: '💊', description: 'A pill from the generator. Use to boost stats!', type: 'consumable' },
+    'nitro_briefcase': { id: 'nitro_briefcase', name: 'Nitro Briefcase', price: 0, emoji: '🎒', description: 'A rare briefcase containing Nitro gifts or premium tokens.', type: 'consumable' },
+    'cocaine': { id: 'cocaine', name: 'Cocaine', price: 5000, emoji: '🌫️', description: 'Highly addictive stimulant.', type: 'drug' }
 };

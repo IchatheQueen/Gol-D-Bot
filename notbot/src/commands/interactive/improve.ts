@@ -1,55 +1,74 @@
-
-import { Message, Client } from 'discord.js';
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 
-const VALID_STATS = [
-    'potency', 'efficiency', 'health', 'hunger', 'thirst',
-    'energy', 'strength', 'agility', 'intellect', 'endurance'
-];
-
 const command: Command = {
     name: 'improve',
-    description: 'Upgrade your Pill Generator stats using Credits',
+    description: 'Improve generator stats using points',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
-        const stat = args[0]?.toLowerCase();
+        const type = args[0]?.toLowerCase(); // stat
+        const amountStr = args[1]; // amount
+        const amount = parseInt(amountStr);
 
-        if (!stat || !VALID_STATS.includes(stat)) {
-            // Match screenshot format roughly
-            const statsList = VALID_STATS.map(s => `\`${s}\``).join(', ');
-            message.reply(`The types of stats you can upgrade are ${statsList}`);
+        const statMap: any = {
+            'effi': 'stat_efficiency', 'efficiency': 'stat_efficiency',
+            'pot': 'stat_potency', 'potency': 'stat_potency',
+            'health': 'stat_health', 'hunger': 'stat_hunger',
+            'thirst': 'stat_thirst', 'energy': 'stat_energy', 'ene': 'stat_energy',
+            'str': 'stat_strength', 'strength': 'stat_strength',
+            'agi': 'stat_agility', 'agility': 'stat_agility',
+            'int': 'stat_intellect', 'intellect': 'stat_intellect',
+            'end': 'stat_endurance', 'endurance': 'stat_endurance',
+            'meta': 'stat_metabolism', 'metabolism': 'stat_metabolism'
+        };
+
+        const displayMap: any = {
+            'stat_efficiency': 'efficiency',
+            'stat_potency': 'potency',
+            'stat_health': 'health',
+            'stat_hunger': 'hunger',
+            'stat_thirst': 'thirst',
+            'stat_energy': 'energy',
+            'stat_strength': 'strength',
+            'stat_agility': 'agility',
+            'stat_intellect': 'intellect',
+            'stat_endurance': 'endurance',
+            'stat_metabolism': 'metabolism'
+        };
+
+        const dbCol = statMap[type];
+
+        if (!dbCol || !amount || amount <= 0) {
+            message.reply('Usage: `~improve <stat> <amount>`');
             return;
         }
 
-        // Fetch generator
-        const genCheck = await db.execute({
-            sql: 'SELECT * FROM generators WHERE user_id = ?',
-            args: [userId]
-        });
+        let genRes = await db.execute({ sql: 'SELECT * FROM generators WHERE user_id = ?', args: [userId] });
+        if (genRes.rows.length === 0) {
+            message.reply('You don\'t have a generator.');
+            return;
+        }
+        const gen = genRes.rows[0] as any;
 
-        if (genCheck.rows.length === 0) {
-            message.reply('You do not own a Pill Generator (use `~generator`).');
+        if (gen.points < amount) {
+            message.reply(`Not enough points. You have ${gen.points}.`);
             return;
         }
 
-        const gen = genCheck.rows[0] as any;
-
-        if (gen.credits < 1) {
-            message.reply('You do not have enough Credits 🏵️ to improve this stat!');
-            return;
-        }
-
-        // Update DB
-        const colName = `${stat}_level`;
         await db.execute({
-            sql: `UPDATE generators SET credits = credits - 1, ${colName} = ${colName} + 1 WHERE user_id = ?`,
-            args: [userId]
+            sql: `UPDATE generators SET ${dbCol} = ${dbCol} + ?, points = points - ? WHERE user_id = ?`,
+            args: [amount, amount, userId]
         });
 
-        const newLevel = gen[colName] + 1;
-        message.reply(`Successfully upgraded **${stat}** to level ${newLevel}!`);
-    }
+        const displayStat = displayMap[dbCol];
+
+        const embed = new EmbedBuilder()
+            .setDescription(`${message.author} has improved their pills' ${displayStat} boost by ${amount} points`)
+            .setColor('#2F3136');
+
+        message.reply({ embeds: [embed] });
+    },
 };
 
 export default command;

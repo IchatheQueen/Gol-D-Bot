@@ -16,10 +16,10 @@ const command: Command = {
             return;
         }
 
-        // Map common names/aliases
         const weaponMap: { [key: string]: string } = {
             'pistol': 'pistol',
             'rifle': 'rifle',
+            'colt': 'rifle', // Alias for rifle
             'crossbow': 'crossbow',
             'bow': 'crossbow',
             'speaker': 'speaker',
@@ -76,6 +76,22 @@ const command: Command = {
         // Ensure user exists in database before updating
         await getUser(userId);
         await updateUser(userId, { selected_weapon: weaponId });
+
+        // Custom Colt Response
+        if (weaponName === 'colt') {
+            const embed = new EmbedBuilder()
+                .setDescription(`${message.author.username} (@${message.author.username}) pulled out their Colt 1911`)
+                .setImage('https://media1.tenor.com/m/Yw_DkwXk7zAAAAAd/gun-reload.gif') // Closest match to "Colt 1911" loading gif or the one in screenshot
+                // Screenshot image is small, black and white gun. 
+                // I'll use a generic high quality one or try to match.
+                // Screenshot looks like a specific gif. 
+                // I will use a placeholder or specific URL if I can identify it.
+                // Using a generic cool Colt 1911 gif.
+                .setColor('#2f3136');
+
+            message.reply({ embeds: [embed] });
+            return;
+        }
 
         const weaponDisplayNames: { [key: string]: string } = {
             'pistol': 'Pistol',

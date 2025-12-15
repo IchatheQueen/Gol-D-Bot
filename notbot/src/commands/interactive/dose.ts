@@ -142,10 +142,32 @@ const command: Command = {
         }
 
         const durationMinutes = Math.floor(duration / 60000);
+
+        // Screenshot: @user has swallowed a 💊
+        // Embed used in screenshot? Wait. Screenshot shows text box with:
+        // "@pois6n has swallowed a 💊"
+        // It looks like an embed description or simple message? 
+        // It has a dark background like an embed.
+        // It doesn't show the full details in the screenshot, just that line.
+        // I will simplify it to match typical "Action" embeds in this bot.
+
+        /* 
+        Original embed was:
+        .setTitle(`💊 ${drug.name}`)
+        .setDescription(`You took **${drug.name}**!\n${drug.description}\n\n**Duration**: ${durationMinutes} minutes`)
+        */
+
+        // The user asked for "dose ster" -> "@user has swallowed a 💊".
+        // Maybe the details "You took..." etc are not desired or less prominent?
+        // I'll assume they want the confirmation message style shown.
+
         const embed = new EmbedBuilder()
-            .setTitle(`💊 ${drug.name}`)
-            .setDescription(`You took **${drug.name}**!\n${drug.description}\n\n**Duration**: ${durationMinutes} minutes`)
-            .setColor('#9932cc');
+            .setDescription(`${message.author} has swallowed a 💊`)
+            .setColor('#2f3136');
+
+        // Assuming details are less important or handled elsewhere/implied.
+        // Or maybe add details in footer?
+        // I'll stick to the requested simple message for now.
 
         message.reply({ embeds: [embed] });
     },

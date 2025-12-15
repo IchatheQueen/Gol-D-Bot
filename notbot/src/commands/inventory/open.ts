@@ -1,5 +1,5 @@
 import { Message, Client } from 'discord.js';
-import { getInventoryItem, removeInventoryItem } from '../../database/inventory';
+import { getInventoryItem, removeInventoryItem, addInventoryItem } from '../../database/inventory';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { formatBigNumber } from '../../utils/bigNumbers';
@@ -18,7 +18,6 @@ const command: Command = {
         }
 
         if (type === 'all') {
-            // Logic to open all (simplified: just say feature coming soon or loop)
             message.reply('Opening all briefcases is not supported yet.');
             return;
         }
@@ -38,20 +37,31 @@ const command: Command = {
 
         // Loot logic - money based on briefcase type
         const moneyRanges: Record<string, [number, number]> = {
-            'employee': [1000, 10000],
+            'employee': [100, 1000], // Lowered range based on screenshot (484)
             'richkid': [50000, 500000],
             'oldlady': [100000, 1000000],
             'nitro': [500000, 5000000],
             'ender': [1000000, 10000000],
         };
-        const [min, max] = moneyRanges[type] || [1000, 10000];
+        const [min, max] = moneyRanges[type] || [100, 1000];
         const money = BigInt(Math.floor(Math.random() * (max - min)) + min);
         const user = await getUser(message.author.id);
-        await updateUser(message.author.id, { balance: user.balance + money });
 
+        // Special Loot for Employee: Tipped Arrows
+        let specialLootMsg = '';
+        if (type === 'employee') {
+            const arrowCount = Math.floor(Math.random() * 2); // 0 or 1
+
+            if (arrowCount > 0) {
+                await addInventoryItem(message.author.id, 'tipped_arrow', BigInt(arrowCount));
+            }
+            specialLootMsg = `🏹 ${arrowCount} along with `;
+        }
+
+        await updateUser(message.author.id, { balance: user.balance + money });
         await removeInventoryItem(message.author.id, itemId, 1n);
 
-        message.reply(`You opened the **${type}** briefcase and found **💵 ${formatBigNumber(money)}**!`);
+        message.reply(`${message.author} has opened an ${type}'s briefcase and found ${specialLootMsg || ''}💵 ${formatBigNumber(money)}!`);
     },
 };
 

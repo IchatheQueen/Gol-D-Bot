@@ -16,6 +16,7 @@ const premiumItems: Record<string, { name: string; emoji: string }> = {
     'p8': { name: 'Junkie', emoji: '🚬' },
     'p9': { name: 'Investor', emoji: '💰' },
     'p10': { name: 'Seagull', emoji: '🕊️' },
+    'p11': { name: 'Support Server Perk', emoji: '<:hint:1449971693085786162>' }, // Support Server Perk
     'p12': { name: 'Top Donor Role', emoji: '👑' },
     'p13': { name: 'Recruit', emoji: '🎖️' },
 };

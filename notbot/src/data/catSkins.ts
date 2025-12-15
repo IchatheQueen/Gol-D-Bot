@@ -27,28 +27,42 @@ export const CAT_SKINS: CatSkin[] = [
     },
     {
         id: 1,
-        name: 'Kitten',
-        emoji: '🐈',
-        image: 'https://cdn.discordapp.com/attachments/1393132872554250291/1447481065580134420/HnwS5sq.gif?ex=6937c74a&is=693675ca&hm=2294ced89e2137fbfe0fb7bb13913431ec2084068b3e85d765efb4ef238b22ba&',
-        statEmojis: {
-            thirst: '🍼',
-            strength: '🐾',
-            energy: '💤',
-            health: '💖'
-        }
+        name: 'Gary',
+        emoji: '🐌',
+        image: 'https://media1.tenor.com/m/7wGqplNf9kMAAAAd/spongebob-gary.gif',
+        statEmojis: { thirst: '💧', strength: '🐚', energy: '🐌', health: '❤️' }
     },
     {
-        id: 2,
-        name: 'Warrior Cat',
-        emoji: '⚔️',
-        image: 'https://media.tenor.com/2z8X1_s_K9EAAAAC/cat-sword.gif',
-        statEmojis: {
-            strength: '⚔️',
-            endurance: '🛡️',
-            energy: '⚡',
-            health: '❤️‍🔥',
-            metabolism: '🍖'
-        }
+        id: 5,
+        name: 'Juice WRLD',
+        emoji: '🧃',
+        image: 'https://media1.tenor.com/m/0zD38X4XjAAAAAAd/juice-wrld-juice-world.gif',
+        statEmojis: { strength: '🎤', agility: '🕊️', intellect: '🎵' }
+    },
+    { id: 6, name: 'Spirit', emoji: '👻', image: 'https://media.tenor.com/m/7wGqplNf9kMAAAAd/spongebob-gary.gif' },
+    { id: 7, name: 'Velociraptor', emoji: '🦖', image: 'https://media1.tenor.com/m/8H3f_z7d_z0AAAAd/jurassic-park-raptor.gif' },
+    { id: 8, name: '[ Vampire ]', emoji: '🧛', image: 'https://media1.tenor.com/m/1w8D4F_z_z0AAAAd/cat-vampire.gif' },
+    { id: 9, name: '[ AHEGAO ]', emoji: '😳', image: 'https://media1.tenor.com/m/2w8D4F_z_z0AAAAd/ahegao-cat.gif' },
+    {
+        id: 10,
+        name: 'Titan',
+        emoji: '👹',
+        image: 'https://media1.tenor.com/m/NIs2qkhZ-wQAAAAd/berserk-monster.gif',
+        statEmojis: { strength: '👺', agility: '🔥', health: '🩸' }
+    },
+    {
+        id: 11,
+        name: '𝔇𝔢𝔞𝔱𝔥', // Gothic 'Death'
+        emoji: '☠️',
+        image: 'https://media1.tenor.com/m/pA_zH9yPhs0AAAAd/berserk-brand-of-sacrifice.gif',
+        statEmojis: { strength: '💀', agility: '🧛', intellect: '🌑', health: '⚰️' }
+    },
+    {
+        id: 12,
+        name: 'Goose',
+        emoji: '🦢',
+        image: 'https://media1.tenor.com/m/hnwS5sqAAAAi/goose-knife.gif',
+        statEmojis: { strength: '🔪', agility: '🪶', intellect: '😈' }
     },
     {
         id: 69,

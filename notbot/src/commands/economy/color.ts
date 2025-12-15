@@ -32,24 +32,21 @@ const command: Command = {
             return;
         }
 
-        // Store with # prefix
+        const colorInt = parseInt(cleanColor, 16);
         const finalColor = `#${cleanColor}`;
 
-        // Ensure color_preference column exists and update
-        try {
-            await db.execute('ALTER TABLE users ADD COLUMN color_preference TEXT DEFAULT "#39C5BB"');
-        } catch (e) {
-            // Column already exists
-        }
-
+        // Upsert into user_colors
         await db.execute({
-            sql: 'UPDATE users SET color_preference = ? WHERE id = ?',
-            args: [finalColor, userId]
+            sql: 'INSERT OR REPLACE INTO user_colors (user_id, color) VALUES (?, ?)',
+            args: [userId, colorInt]
         });
 
+        // Match Screenshot Format:
+        // "hammy:3 has successfully updated their color preference to #230000" (in an embed)
+
         const embed = new EmbedBuilder()
-            .setDescription(`Your embed color has been changed to **${finalColor}**!`)
-            .setColor(parseInt(cleanColor, 16));
+            .setDescription(`${message.author.username} (${message.author}) has successfully updated their color preference to ${finalColor}`)
+            .setColor(colorInt);
 
         message.reply({ embeds: [embed] });
     },

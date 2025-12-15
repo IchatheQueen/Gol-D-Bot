@@ -3,6 +3,7 @@ import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem } from '../../database/inventory';
 import { resolveEmoji } from '../../utils/resolveEmoji';
+import { updatePetStats, isPetDead } from '../../utils/petUtils';
 
 const command: Command = {
     name: 'hunt',
@@ -11,14 +12,15 @@ const command: Command = {
         const userId = message.author.id;
 
         // Get pet
-        const petCheck = await db.execute({
-            sql: 'SELECT * FROM pets WHERE user_id = ?',
-            args: [userId]
-        });
-        const pet = petCheck.rows[0] as any;
+        const pet = await updatePetStats(userId);
 
         if (!pet) {
             message.reply('You don\'t have a cat! Use `~cat` to adopt one.');
+            return;
+        }
+
+        if (isPetDead(pet)) {
+            message.reply('Your cat is dead 💀. You must revive it with `~revive` before it can hunt!');
             return;
         }
 
@@ -57,9 +59,32 @@ const command: Command = {
             args: [energyCost, userId]
         });
 
+        // Check Support Server Membership for XP Boost
+        const SUPPORT_GUILD_ID = '1341830866657083402';
+        let isSupportMember = false;
+        try {
+            const supportGuild = client.guilds.cache.get(SUPPORT_GUILD_ID);
+            if (supportGuild) {
+                // Check cache first for speed, then fetch if needed? 
+                // We'll just try to fetch to be safe.
+                await supportGuild.members.fetch(userId);
+                isSupportMember = true;
+            }
+        } catch (e) {
+            isSupportMember = false;
+        }
+
         // Rewards
-        const xpGained = 300; // Fixed for now based on screenshot
-        const xpBonus = 120.0; // Hardcoded visual for now or derived? Let's assume hardcoded visual match for level 1
+        let xpGained = 300; // Base XP
+        let xpBonusPercent = 0;
+
+        // Apply Boosts
+        if (isSupportMember) {
+            xpGained = Math.floor(xpGained * 1.10); // +10%
+            xpBonusPercent += 10;
+        }
+
+        const xpBonusDisplay = 120.0 + xpBonusPercent; // "120%" base visual + bonus
         const fishAmount = 15;
         const fishId = 'fish';
 
@@ -109,8 +134,13 @@ const command: Command = {
             color: 0x2b2d31 // Dark theme color
         };
 
+        let footerMsg = `Boost your hunting experience and much more with 🌕 **GoldBot Gold** \`~patreon\`!`;
+        if (!isSupportMember) {
+            footerMsg += `\n🚀 **Join the Support Server for +10% XP Boost!** \`~support\` to join.`;
+        }
+
         const embed2 = {
-            description: `${message.author.username}'s [Lvl ${pet.level}] Cat has caught 🐟 ${fishAmount} and gained 💧 ${xpGained} (+${xpBonus.toFixed(1)}% Exp)\nBoost your hunting experience and much more with 🌕 **GoldBot Gold** \`~patreon\`!`,
+            description: `${message.author.username}'s [Lvl ${pet.level}] Cat has caught 🐟 ${fishAmount} and gained 💧 ${xpGained} (+${xpBonusDisplay.toFixed(1)}% Exp)\n${footerMsg}`,
             color: 0x2b2d31
         };
 
