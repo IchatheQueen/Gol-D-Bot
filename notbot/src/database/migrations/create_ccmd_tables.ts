@@ -1,7 +1,7 @@
 
 import db from '../db';
 
-async function migrate() {
+export async function run() {
     try {
         await db.execute(`
             CREATE TABLE IF NOT EXISTS custom_command_ownership (
@@ -24,5 +24,3 @@ async function migrate() {
         console.error('Migration failed:', error);
     }
 }
-
-migrate();

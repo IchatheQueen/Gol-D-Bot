@@ -49,7 +49,7 @@ const command: Command = {
         });
 
         const newTimeLeft = Math.ceil((Number(feedCooldown.timestamp) + (30 * 60 * 1000) - Date.now() - reduction) / 60000);
-This tool call is strictly to fix recruit.ts or steal.ts, I will view petUtils first then update pet.ts.
+
     },
 };
 

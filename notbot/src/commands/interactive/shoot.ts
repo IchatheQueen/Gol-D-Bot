@@ -295,78 +295,76 @@ const command: Command = {
 
             resultMessage = ''; // Already handled messages
         }
+        else if (weaponId === 'laser') {
+            // Laser: Vaporizes Beer from target, Consumes Pills + Battery from attacker
+            // Screenshot: "vaporized 🍺 [amount], consuming 💊 105 and 🔋 37"
 
-    }
-        else if(weaponId === 'laser') {
-        // Laser: Vaporizes Beer from target, Consumes Pills + Battery from attacker
-        // Screenshot: "vaporized 🍺 [amount], consuming 💊 105 and 🔋 37"
+            // Check Attacker Inventory for Ammo (Pills + Battery)
+            const pillsNeeded = 105n;
+            const batteriesNeeded = 37n;
 
-        // Check Attacker Inventory for Ammo (Pills + Battery)
-        const pillsNeeded = 105n;
-const batteriesNeeded = 37n;
+            const userPills = await getInventoryItem(userId, 'cat_pill');
+            const userBatteries = await getInventoryItem(userId, 'battery');
 
-const userPills = await getInventoryItem(userId, 'cat_pill');
-const userBatteries = await getInventoryItem(userId, 'battery');
+            if (userPills < pillsNeeded || userBatteries < batteriesNeeded) {
+                message.reply(`You need ${pillsNeeded} 💊 and ${batteriesNeeded} 🔋 to fire the laser!`);
+                return;
+            }
 
-if (userPills < pillsNeeded || userBatteries < batteriesNeeded) {
-    message.reply(`You need ${pillsNeeded} 💊 and ${batteriesNeeded} 🔋 to fire the laser!`);
-    return;
-}
+            // Consume Ammo
+            await removeInventoryItem(userId, 'cat_pill', pillsNeeded);
+            await removeInventoryItem(userId, 'battery', batteriesNeeded);
 
-// Consume Ammo
-await removeInventoryItem(userId, 'cat_pill', pillsNeeded);
-await removeInventoryItem(userId, 'battery', batteriesNeeded);
+            // Destroy Target Beer
+            const targetBeer = await getInventoryItem(targetId, 'beer');
+            let destroyedBeer = 0n;
 
-// Destroy Target Beer
-const targetBeer = await getInventoryItem(targetId, 'beer');
-let destroyedBeer = 0n;
+            if (targetBeer > 0n) {
+                // "Vaporized" implies destruction. Screenshot shows huge number (probably all or %?).
+                // I will burn 50-100% of beer
+                const percent = BigInt(Math.floor(Math.random() * 51) + 50);
+                destroyedBeer = (targetBeer * percent) / 100n;
 
-if (targetBeer > 0n) {
-    // "Vaporized" implies destruction. Screenshot shows huge number (probably all or %?).
-    // I will burn 50-100% of beer
-    const percent = BigInt(Math.floor(Math.random() * 51) + 50);
-    destroyedBeer = (targetBeer * percent) / 100n;
+                if (destroyedBeer > 0n) {
+                    await removeInventoryItem(targetId, 'beer', destroyedBeer);
+                }
+            }
 
-    if (destroyedBeer > 0n) {
-        await removeInventoryItem(targetId, 'beer', destroyedBeer);
-    }
-}
-
-resultMessage = `${attackerTag}'s ${weaponEmoji} has unleashed a focused beam of light at ${targetTag} and vaporized 🍺 ${formatBigNumber(destroyedBeer)}, consuming 💊 ${pillsNeeded} and 🔋 ${batteriesNeeded} in the process`;
+            resultMessage = `${attackerTag}'s ${weaponEmoji} has unleashed a focused beam of light at ${targetTag} and vaporized 🍺 ${formatBigNumber(destroyedBeer)}, consuming 💊 ${pillsNeeded} and 🔋 ${batteriesNeeded} in the process`;
         }
 
-// Apply Balance Changes
-if (totalStolen > 0n || totalDamage > 0n) {
-    // Cap at target balance
-    const totalTaken = totalStolen + totalDamage;
-    if (totalTaken > targetData.balance) {
-        // Scale proportionally
-        totalStolen = (targetData.balance * totalStolen) / totalTaken;
-        totalDamage = targetData.balance - totalStolen;
-    }
+        // Apply Balance Changes
+        if (totalStolen > 0n || totalDamage > 0n) {
+            // Cap at target balance
+            const totalTaken = totalStolen + totalDamage;
+            if (totalTaken > targetData.balance) {
+                // Scale proportionally
+                totalStolen = (targetData.balance * totalStolen) / totalTaken;
+                totalDamage = targetData.balance - totalStolen;
+            }
 
-    await updateUser(targetId, { balance: targetData.balance - totalStolen - totalDamage });
-    await updateUser(userId, { balance: user.balance + totalStolen });
-}
+            await updateUser(targetId, { balance: targetData.balance - totalStolen - totalDamage });
+            await updateUser(userId, { balance: user.balance + totalStolen });
+        }
 
-// Set Cooldown
-await db.execute({
-    sql: 'INSERT OR REPLACE INTO cooldowns (user_id, command, timestamp) VALUES (?, ?, ?)',
-    args: [userId, cooldownKey, Date.now()]
-});
+        // Set Cooldown
+        await db.execute({
+            sql: 'INSERT OR REPLACE INTO cooldowns (user_id, command, timestamp) VALUES (?, ?, ?)',
+            args: [userId, cooldownKey, Date.now()]
+        });
 
-if (resultMessage) {
-    const embed = new EmbedBuilder()
-        .setDescription(resultMessage)
-        .setColor('#ff0000');
+        if (resultMessage) {
+            const embed = new EmbedBuilder()
+                .setDescription(resultMessage)
+                .setColor('#ff0000');
 
-    message.reply({ embeds: [embed] });
-}
+            message.reply({ embeds: [embed] });
+        }
 
-// DM the target about the attack
-if (targetId !== userId) {
-    await sendCombatDM(client, targetId, resultMessage);
-}
+        // DM the target about the attack
+        if (targetId !== userId) {
+            await sendCombatDM(client, targetId, resultMessage);
+        }
     },
 };
 

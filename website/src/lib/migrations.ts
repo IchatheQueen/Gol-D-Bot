@@ -1,5 +1,5 @@
 
-import { execute } from './db';
+import { db } from './db';
 
 const schema = `
 CREATE TABLE IF NOT EXISTS forum_categories (
@@ -41,7 +41,7 @@ export async function migrate() {
     console.log('Running migrations...');
     const statements = schema.split(';').filter(s => s.trim());
     for (const stmt of statements) {
-        await execute(stmt);
+        await db.execute(stmt);
     }
     console.log('Migrations complete.');
 }

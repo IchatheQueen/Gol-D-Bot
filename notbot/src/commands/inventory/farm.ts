@@ -11,7 +11,8 @@ const command: Command = {
     aliases: ['f'],
     description: 'View your farm status',
     execute: async (message: Message, args: string[], client: Client) => {
-        const targetId = await resolveTarget(message, args[0]) || message.author.id;
+        const targetResolved = await resolveTarget(message, args, client, 0);
+        const targetId = targetResolved ? targetResolved.id : message.author.id;
         const targetUser = await client.users.fetch(targetId);
 
         const inventory = await getInventory(targetId);

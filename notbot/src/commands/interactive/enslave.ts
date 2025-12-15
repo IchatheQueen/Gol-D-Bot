@@ -32,7 +32,7 @@ const command: Command = {
         const msg1 = new EmbedBuilder()
             .setDescription(`${message.author} has abducted you from your home and shackled you, you're now a slave`)
             .setColor('#2F3136');
-        await message.channel.send({ embeds: [msg1] });
+        await (message.channel as any).send({ embeds: [msg1] });
         await delay(2000);
 
         // 2. Chaining & Whip (Money Drop)
@@ -41,28 +41,28 @@ const command: Command = {
         const msg2 = new EmbedBuilder()
             .setDescription(`${message.author} has chained you facing a tree and whipped out their 🪢 , ${message.author} cracks the whip on your whip and 💵 ${fakeMoney} has fallen out`)
             .setColor('#2F3136');
-        await message.channel.send({ embeds: [msg2] });
+        await (message.channel as any).send({ embeds: [msg2] });
         await delay(2000);
 
         // 3. Whip Legs (Weed Drop)
         const msg3 = new EmbedBuilder()
             .setDescription(`${message.author} swings their whip again and snaps it on the back of your legs, causing 🌿 0 to fall out`)
             .setColor('#2F3136');
-        await message.channel.send({ embeds: [msg3] });
+        await (message.channel as any).send({ embeds: [msg3] });
         await delay(2000);
 
         // 4. Cat Jump
         const msg4 = new EmbedBuilder()
             .setDescription(`${message.author} swings their whip a final time but your cat jumps in the way, your cat loses 🌸 1000`)
             .setColor('#2F3136');
-        await message.channel.send({ embeds: [msg4] });
+        await (message.channel as any).send({ embeds: [msg4] });
         await delay(2000);
 
         // 5. Noose
         const msg5 = new EmbedBuilder()
             .setDescription(`${message.author} grabs a noose and begins to hang their slave ${targetTag}`)
             .setColor('#2F3136');
-        await message.channel.send({ embeds: [msg5] });
+        await (message.channel as any).send({ embeds: [msg5] });
         await delay(2000);
 
         // 6. Hanging Struggles (Item drops)
@@ -76,7 +76,7 @@ const command: Command = {
             const struggleEmbed = new EmbedBuilder()
                 .setDescription(`${targetTag} struggles while being hanged and loses ${item.emoji} ${item.amount}`)
                 .setColor('#2F3136');
-            await message.channel.send({ embeds: [struggleEmbed] });
+            await (message.channel as any).send({ embeds: [struggleEmbed] });
             await delay(1500);
         }
 
@@ -86,7 +86,7 @@ const command: Command = {
         const finalEmbed = new EmbedBuilder()
             .setDescription(`Im just playing w/ you boy, you lost nothing`)
             .setColor('#2F3136');
-        await message.channel.send({ embeds: [finalEmbed] });
+        await (message.channel as any).send({ embeds: [finalEmbed] });
     }
 };
 

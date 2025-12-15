@@ -100,7 +100,8 @@ const command: Command = {
 
         // Add Logic: ~recruit <alt> <keyword>
         // Check if args[0] is user resolvable and args[1] is keyword
-        const targetId = await resolveTarget(message, args[0]);
+        const targetResolved = await resolveTarget(message, args, client, 0);
+        const targetId = targetResolved ? targetResolved.id : null;
         const keyword = args[1];
 
         if (targetId && keyword) {

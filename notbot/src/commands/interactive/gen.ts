@@ -70,10 +70,10 @@ const command: Command = {
             let amount = 0n;
 
             const userRes = await db.execute({ sql: 'SELECT credits FROM users WHERE id = ?', args: [userId] });
-            const userCredits = BigInt(userRes.rows[0]?.credits || '0');
+            const userCredits = BigInt((userRes.rows[0]?.credits as string) || '0');
 
             if (amountStr === 'all') amount = userCredits;
-            else amount = parseBigNumber(amountStr);
+            else amount = parseBigNumber(amountStr) || 0n;
 
             if (amount <= 0n) { message.reply('Invalid amount.'); return; }
             if (userCredits < amount) { message.reply('Insufficient credits.'); return; }

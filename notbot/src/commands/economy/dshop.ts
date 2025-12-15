@@ -30,10 +30,7 @@ const command: Command = {
 
         embed.addFields({ name: 'Items', value: items });
 
-        // Addons
-        let addons = '';
-        addons += `[12] ⤴️ **Top Donor Role** - 💎 7\n`;
-        addons += `[13] 👶 **Recruit** - 💎 15\n`;
+
         // Addons
         let addons = '';
         addons += `[12] ⤴️ **Top Donor Role** - 💎 7\n`;

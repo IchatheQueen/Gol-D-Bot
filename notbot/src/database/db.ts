@@ -1,6 +1,6 @@
+import { createClient } from '@libsql/client';
 import { run as runCustomCmdMigration } from './migrations/create_ccmd_tables';
 import { run as runPhase2Migration } from './migrations/create_phase2_tables';
-import { run as runCustomRoleMigration } from './migrations/create_custom_role_tables';
 import { run as runCustomRoleMigration } from './migrations/create_custom_role_tables';
 import { run as runRecruitMigration } from './migrations/create_recruit_tables';
 import { run as runClanMigration } from './migrations/create_clan_tables';

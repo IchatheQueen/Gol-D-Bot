@@ -17,19 +17,21 @@ const command: Command = {
         // Use standard structure.
 
         const user = await getUser(userId);
-        const beerPrice = items['beer']?.price || 500n; // Default if not found
+        const beerPrice = items['beer']?.price ? BigInt(items['beer'].price) : 500n; 
 
-        if (user.balance < beerPrice) {
+        const balance = BigInt(user.balance);
+
+        if (balance < beerPrice) {
             message.reply('You cannot afford even a single beer!');
             return;
         }
 
         // Calculate max beer
-        const maxBeer = user.balance / beerPrice;
+        const maxBeer = balance / beerPrice;
 
         // Deduct all money (or cost of max beer)
         const cost = maxBeer * beerPrice;
-        await updateUser(userId, { balance: user.balance - cost });
+        await updateUser(userId, { balance: balance - cost });
 
         // Add beer
         await addInventoryItem(userId, 'beer', maxBeer);

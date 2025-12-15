@@ -36,7 +36,7 @@ const command: Command = {
             }
 
             const userRes = await db.execute({ sql: 'SELECT credits FROM users WHERE id = ?', args: [userId] });
-            const userCredits = BigInt(userRes.rows[0]?.credits || 0);
+            const userCredits = BigInt((userRes.rows[0]?.credits as string) || '0');
 
             if (userCredits < BigInt(CLAN_CREATION_COST)) {
                 message.reply(`You need **${CLAN_CREATION_COST.toLocaleString()}** credits to form a clan.`);
@@ -82,7 +82,7 @@ const command: Command = {
 
             const data = memberRes.rows[0] as any;
             const countRes = await db.execute({ sql: 'SELECT COUNT(*) as count FROM clan_members WHERE clan_id = ?', args: [data.clan_id] });
-            const memberCount = countRes.rows[0].count;
+            const memberCount = (countRes.rows[0] as any).count || 0;
 
             const embed = new EmbedBuilder()
                 .setTitle(`🛡️ ${data.name}`)
@@ -147,7 +147,7 @@ const command: Command = {
             if (!amountStr || isNaN(Number(amountStr)) && amountStr !== 'all') { message.reply('Usage: `~clan deposit <amount|all>`'); return; }
 
             const userRes = await db.execute({ sql: 'SELECT credits FROM users WHERE id = ?', args: [userId] });
-            const userCredits = BigInt(userRes.rows[0]?.credits || 0);
+            const userCredits = BigInt((userRes.rows[0]?.credits as string) || '0');
 
             let amount = 0n;
             if (amountStr === 'all') amount = userCredits;
@@ -160,7 +160,7 @@ const command: Command = {
             // Update clan balance
             // Reading clan balance first to add bigints safely
             const clanRes = await db.execute({ sql: 'SELECT balance FROM clans WHERE id = ?', args: [clanId] });
-            const currentBalance = BigInt(clanRes.rows[0].balance || 0);
+            const currentBalance = BigInt((clanRes.rows[0].balance as string) || '0');
             const newBalance = currentBalance + amount;
 
             await db.execute({ sql: 'UPDATE clans SET balance = ? WHERE id = ?', args: [newBalance.toString(), clanId] });

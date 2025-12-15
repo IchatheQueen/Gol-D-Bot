@@ -23,7 +23,7 @@ const command: Command = {
             return;
         }
 
-        let attackerPet = await updatePetStats(message.author.id);
+        let attackerPet: any | undefined = await updatePetStats(message.author.id);
 
         if (!attackerPet) {
             message.reply('You need a cat to attack! Use `~cat` to adopt one.');
@@ -85,7 +85,7 @@ const command: Command = {
             });
             attackerPet = petCheck.rows[0] as any;
 
-            if (!attackerPet.is_attacking) {
+            if (!attackerPet || !attackerPet.is_attacking) {
                 // Retreat was called
                 break;
             }

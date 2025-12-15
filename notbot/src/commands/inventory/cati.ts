@@ -37,7 +37,7 @@ const command: Command = {
             'beer', 'energy_drink', 'coffee', 'opioid', 'steroid' // Since feed accepts these
         ];
 
-        const catItems = inventory.filter(i => catItemIds.includes(i.item_id) || items[i.item_id]?.type === 'food' || items[i.item_id]?.type === 'cat_resource');
+        const catItems = inventory.filter(i => catItemIds.includes(i.item_id) || items[i.item_id]?.type === 'cat_resource');
 
         if (catItems.length === 0) {
             message.reply('Your cat inventory is empty!');

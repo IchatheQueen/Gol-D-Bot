@@ -105,7 +105,7 @@ const command: Command = {
         await message.reply({ embeds: [embed] });
 
         // Follow up message
-        await message.channel.send(`${targetUser} remains on life support for ${stunMinutes} minutes 🪦`);
+        await (message.channel as any).send(`${targetUser} remains on life support for ${stunMinutes} minutes 🪦`);
 
         // DM the target
         await sendCombatDM(client, targetUser.id, `You were haunted by ${message.author.username} and put on life support for ${stunMinutes}m!`);
