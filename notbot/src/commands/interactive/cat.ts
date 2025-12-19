@@ -69,34 +69,15 @@ const command: Command = {
 
         const e = { ...DEFAULTS, ...(skin.statEmojis || {}) };
 
-        // XP Calculation
-        // Assuming Next Level XP pattern.
-        // Screenshot: 1.8B / 3.355B.
-        // Let's invent a formula or fetch max_xp if it exists.
-        // Assuming current logic just has 'experience'.
-        // I will define max_xp based on level.
         const currentXp = BigInt(pet.experience);
-        // Formula: Base * (Multiplier ^ Level) ?
-        // If Lvl 24 is ~3B.
-        // 100 * (1.5 ^ 24)? -> 100 * 16834 = 1.6M. Too low.
-        // 1000 * (2 ^ 24) = 16B. Closer.
-        // Maybe MaxXP is simply stored? Or simpler formula.
-        // I'll use a placeholder MaxXP based on current * 2 for now or a hardcoded curve.
-        const maxXp = BigInt(Math.floor(1000 * Math.pow(1.5, pet.level + 1)));
-        // Just for display matching, using a large number if level is high.
-        // Actually, screenshot shows 3.355B.
-        // Let's just calculate Max as Current * 1.5 for visuals if we don't have exact math.
-        // Wait, 1.8B is 54% of 3.35B. approx double.
-        // Let's set MaxXP to roughly Current / 0.54 if valid, else arbitrary.
-        // I'll stick to a standard curve.
+        const nextLevelXp = BigInt(Math.floor(1000 * Math.pow(1.5, pet.level + 1)));
 
-        const nextLevelXp = BigInt(Math.floor(100 * Math.pow(1.2, pet.level))); // Arbitrary
+        const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
 
         const embed = new EmbedBuilder()
             .setTitle(`[Lvl ${pet.level}] ${pet.name}`)
-            .setDescription(`Tamed by ${message.author.username}\n\`~cat help\` to get help with your cat`)
-            .setColor('#2f3136')
-            .setImage(skin.image)
+            .setDescription(`Tamed by @${message.author.username}\n\`~cat help\` to get help with your cat`)
+            .setColor('#2b2d31')
             .addFields(
                 {
                     name: 'Vitals',
@@ -105,23 +86,18 @@ const command: Command = {
                 },
                 {
                     name: 'Stats',
-                    // Screenshot: "Experience - 1,815.../3.355B \n [Bar] 54.11%"
-                    // "Credits - 0"
-                    // "Strength - 2 (1)" -> What denotes (1)? Maybe (Base + Bonus)? Or (Level)?
-                    // I will format as "Value (Level)" or similar.
-                    // For now "Value" is fine.
-                    value: `${e.experience} Experience - ${formatBigNumber(currentXp)} / ${formatBigNumber(nextLevelXp)}\n` +
-                        `${createProgressBar(currentXp, nextLevelXp)}\n` +
+                    value: `${e.experience} Experience - ${formatBigNumber(currentXp)}/${formatBigNumber(nextLevelXp)}\n` +
+                        `L ${createProgressBar(currentXp, nextLevelXp)}\n` +
                         `${e.credits} Credits - ${pet.credits}\n` +
-                        `${e.strength} Strength - ${pet.strength}\n` +
-                        `${e.agility} Agility - ${pet.agility}\n` +
-                        `${e.intellect} Intellect - ${pet.intellect}\n` +
-                        `${e.endurance} Endurance - ${pet.endurance}\n` +
-                        `${e.metabolism} Metabolism - ${pet.metabolism}`,
+                        `${e.strength} Strength - ${pet.strength} (${pet.strength})\n` +
+                        `${e.agility} Agility - ${pet.agility} (${pet.agility})\n` +
+                        `${e.intellect} Intellect - ${pet.intellect} (${pet.intellect})\n` +
+                        `${e.endurance} Endurance - ${pet.endurance} (${pet.endurance})\n` +
+                        `${e.metabolism} Metabolism - ${pet.metabolism} (${pet.metabolism})`,
                     inline: false
                 }
             )
-            .setFooter({ text: 'Spice up your cat with a cosmetic skin via ~catalias', iconURL: 'https://i.imgur.com/wSTFkRM.png' }); // Placeholder icon
+            .setFooter({ text: 'Spice up your cat with a cosmetic skin via ~market', iconURL: 'https://i.imgur.com/wSTFkRM.png' }); // Placeholder icon
 
         message.reply({ embeds: [embed] });
     },

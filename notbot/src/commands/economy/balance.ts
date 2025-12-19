@@ -35,9 +35,10 @@ const command: Command = {
                 .setImage('https://media.tenor.com/images/e9d7240c11571477759530419358249a/tenor.gif') // Anime Money GIF
                 .setThumbnail('https://media.tenor.com/r_bft3Qp0ioAAAAi/anime-blush.gif');
         } else {
-            embed.setTitle(`💰 ${target.username}'s balance`)
+            const displayName = message.guild?.members.cache.get(userId)?.displayName || target.username;
+            embed.setTitle(`${displayName} (@${target.username})'s balance`)
                 .setDescription(
-                    `💵 **Earn extra rewards by playing!**\n` +
+                    `<:cat_logo:1449971693085786162> Earn extra rewards by playing in SlotHub ~slothub (Click Me)\n` +
                     `💵 ${formatBigNumber(user.balance)}`
                 );
         }

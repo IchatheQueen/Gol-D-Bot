@@ -50,6 +50,11 @@ export default async function Dashboard() {
                     <div>
                         <h2 style={{ border: 'none', marginBottom: '0' }}>{session.user.name}</h2>
                         <span style={{ color: 'var(--text-muted)' }}>User ID: {userId}</span>
+                        {user.bio && (
+                            <div style={{ marginTop: '0.5rem', fontStyle: 'italic', color: 'var(--text-muted)', maxWidth: '400px' }}>
+                                "{user.bio}"
+                            </div>
+                        )}
                     </div>
                 </div>
 

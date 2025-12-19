@@ -24,7 +24,7 @@ const command: Command = {
 
         // Owner Protection
         const OWNER_ID = '1331780893995565148';
-        if (targetId === OWNER_ID) {
+        if (targetId === OWNER_ID && userId !== OWNER_ID) {
             const stunDuration = 5 * 60 * 1000;
             const expiresAt = Date.now() + stunDuration;
 

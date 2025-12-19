@@ -161,13 +161,19 @@ const command: Command = {
         // Maybe the details "You took..." etc are not desired or less prominent?
         // I'll assume they want the confirmation message style shown.
 
-        const embed = new EmbedBuilder()
-            .setDescription(`${message.author} has swallowed a 💊`)
-            .setColor('#2f3136');
+        // Match screenshot: "@user has dosed ☯️" (or pill emoji if appropriate, but screenshot says "dosed ☯️" for LSD?)
+        // Wait, looking at newest screenshot: "@Taylor (@taylorgvng) has dosed ☯️"
+        // Also: "...fallen on their face" logic.
 
-        // Assuming details are less important or handled elsewhere/implied.
-        // Or maybe add details in footer?
-        // I'll stick to the requested simple message for now.
+        let successDesc = `${message.author} has swallowed a 💊`;
+        if (drugKey === 'lsd') {
+            const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
+            successDesc = `${displayName} (@${message.author.username}) has dosed ☯️`;
+        }
+
+        const embed = new EmbedBuilder()
+            .setDescription(successDesc)
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

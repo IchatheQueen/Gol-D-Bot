@@ -1,16 +1,18 @@
-import { Message, Client } from 'discord.js';
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { shopItems } from '../../data/petItems';
+import { items } from '../../data/items';
+import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
+import { addInventoryItem } from '../../database/inventory';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
-import { addInventoryItem } from '../../database/inventory';
 
 const command: Command = {
     name: 'gbuy',
     description: 'Buy items from the pet shop',
     execute: async (message: Message, args: string[], client: Client) => {
         const id = args[0];
-        const amount = parseInt(args[1]) || 1;
+        const amount = parseBigNumber(args[1] || '1') || 1n;
 
         if (!id) {
             message.reply('Usage: ~gbuy <id> <amount>');
@@ -24,12 +26,12 @@ const command: Command = {
         }
 
         const user = await getUser(message.author.id);
-        const totalCost = item.price * amount;
+        const totalCost = BigInt(item.price) * amount;
 
         if (item.currency === 'cash') {
-            const cost = BigInt(totalCost);
+            const cost = totalCost;
             if (user.balance < cost) {
-                message.reply(`You don't have enough cash! Cost: $${totalCost.toLocaleString()}`);
+                message.reply(`You don't have enough cash! Cost: $${formatBigNumber(cost)}`);
                 return;
             }
             await updateUser(message.author.id, { balance: user.balance - cost });
@@ -42,23 +44,29 @@ const command: Command = {
             });
             const userPills = pillsCheck.rows[0] as any;
 
-            if ((userPills?.pills || 0) < totalCost) {
-                message.reply(`You don't have enough pills! Cost: 💊 ${totalCost.toLocaleString()}`);
+            if (BigInt(userPills?.pills || 0) < totalCost) {
+                message.reply(`You don't have enough pills! Cost: 💊 ${formatBigNumber(totalCost)}`);
                 return;
             }
 
             await db.execute({
                 sql: 'UPDATE users SET pills = pills - ? WHERE id = ?',
-                args: [totalCost, message.author.id]
+                args: [totalCost.toString(), message.author.id]
             });
         }
 
         // Add item to inventory
-        const itemId = item.name.toLowerCase().replace(/ /g, '_').replace(/\[.*?\]/g, '').trim();
+        const itemId = item.id; // Use item.id as defined in petItems.ts
 
         await addInventoryItem(message.author.id, itemId, BigInt(amount));
 
-        message.reply(`You bought **${amount}x ${item.name}** for ${item.currency === 'cash' ? '$' : '💊 '}${totalCost.toLocaleString()}.`);
+        const itemEmoji = items[itemId]?.emoji || '📦';
+        const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
+        const embed = new EmbedBuilder()
+            .setDescription(`${displayName} (@${message.author.username}) has successfully purchased ${itemEmoji} ${amount}`)
+            .setColor(0x2b2d31);
+
+        message.reply({ embeds: [embed] });
     },
 };
 

@@ -4,223 +4,130 @@ import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { resolveTarget } from '../../utils/resolveTarget';
 import { parseBigNumber, formatBigNumber, addBigNumbers } from '../../utils/bigNumbers';
+import { items } from '../../data/items';
 
-// Admin IDs
-const ADMIN_IDS = ['1331780893995565148'];
+import { isAdmin } from '../../utils/adminUtils';
 
 const command: Command = {
     name: 'give',
-    description: 'Admin command to give items/currency',
+    description: 'Admin command to give items/currency universally',
     execute: async (message: Message, args: string[], client: Client) => {
-        if (!ADMIN_IDS.includes(message.author.id)) {
+        if (!await isAdmin(message.author.id)) {
             message.reply('You do not have permission to use this command.');
             return;
         }
 
-        const type = args[0]?.toLowerCase();
-
-        if (!type) {
-            const embed = new EmbedBuilder()
-                .setTitle('🔧 Admin Give Command')
-                .setDescription(
-                    '`~give bal <@user|ID|myid> <amount>` - Give balance\n' +
-                    '`~give drug <@user|ID|myid> <drug> <amount>` - Give drugs\n' +
-                    '`~give ditem <@user|ID|myid> <item_id>` - Give donator item\n' +
-                    '`~give weapon <@user|ID|myid> <weapon>` - Give weapon\n' +
-                    '`~give item <@user|ID|myid> <item_id> <amount>` - Give any item\n' +
-                    '`~give credits <@user|ID|myid> <amount>` - Give credits\n' +
-                    '`~give vault <@user|ID|myid> <amount>` - Give vault money\n' +
-                    '`~give ccmd <@user|ID|myid> <command> [access|co|owner]` - Give custom command access'
-                )
-                .setColor('#ff0000');
-            message.reply({ embeds: [embed] });
-            return;
-        }
-
-        const target = await resolveTarget(message, args, client, 1);
-
+        const target = await resolveTarget(message, args, client, 0);
         if (!target) {
-            message.reply('Please specify a user (@mention, ID, or myid)!');
+            const helpEmbed = new EmbedBuilder()
+                .setTitle('🔧 Universal Give Command')
+                .setDescription(
+                    'Usage: `~give <user> <type/item> [amount]`\n\n' +
+                    '**Examples:**\n' +
+                    '- `~give myid bal 1Q` (Give cash)\n' +
+                    '- `~give myid beer 10` (Give items)\n' +
+                    '- `~give myid conj` (Give Conjuror)\n' +
+                    '- `~give myid 2` (Give OG Package bundle)\n' +
+                    '- `~give myid credits 100` (Give credits)\n' +
+                    '- `~give myid vault 1T` (Give vault money)'
+                )
+                .setColor('#ffcc00');
+            message.reply({ embeds: [helpEmbed] });
             return;
         }
 
         const targetId = target.id;
         const targetName = target.username;
+        const inputType = args[1]?.toLowerCase();
+        const amountStr = args[2]?.replace(/,/g, '');
+        const amount = parseBigNumber(amountStr || '1') || 1n;
 
-        switch (type) {
-            case 'bal':
-            case 'balance': {
-                const amountStr = args[2]?.replace(/,/g, '');
-                const amount = parseBigNumber(amountStr || '0');
-                if (!amount || amount <= 0n) {
-                    message.reply('Invalid amount!');
-                    return;
-                }
-                const user = await getUser(targetId);
-                const newBalance = addBigNumbers(user.balance, amount);
-                await db.execute({
-                    sql: 'UPDATE users SET balance = ? WHERE id = ?',
-                    args: [newBalance, targetId]
-                });
-                message.reply(`✅ Gave **${targetName}** 💵 ${formatBigNumber(amount)}`);
-                break;
-            }
+        if (!inputType) {
+            message.reply('Specify what you want to give! (e.g., balance, beer, conj)');
+            return;
+        }
 
-            case 'drug': {
-                const drugName = args[2]?.toLowerCase();
-                const amountStr = args[3]?.replace(/,/g, '');
-                const amount = parseBigNumber(amountStr || '1') || 1n;
-                const validDrugs = ['weed', 'opioid', 'steroids', 'cocaine', 'anesthetics', 'lsd'];
+        // 1. Check for Currency
+        const currencyMap: Record<string, 'balance' | 'vault' | 'credits' | 'pills'> = {
+            'bal': 'balance', 'balance': 'balance', 'cash': 'balance',
+            'vault': 'vault', 'bank': 'vault',
+            'cred': 'credits', 'credits': 'credits', 'dcred': 'credits',
+            'pills': 'pills', 'pillz': 'pills'
+        };
 
-                if (!validDrugs.includes(drugName)) {
-                    message.reply(`Invalid drug! Valid: ${validDrugs.join(', ')}`);
-                    return;
-                }
+        if (currencyMap[inputType]) {
+            const col = currencyMap[inputType];
+            const user = await getUser(targetId);
+            const currentVal = (user as any)[col] || 0n;
+            const newVal = addBigNumbers(currentVal, amount);
 
-                await db.execute({
-                    sql: 'INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, ?) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + ?',
-                    args: [targetId, drugName, amount.toString(), amount.toString()]
-                });
-                message.reply(`✅ Gave **${targetName}** ${formatBigNumber(amount)}x ${drugName}`);
-                break;
-            }
+            await db.execute({
+                sql: `UPDATE users SET ${col} = ? WHERE id = ?`,
+                args: [newVal.toString(), targetId]
+            });
 
-            case 'ditem': {
-                const itemId = args[2]?.toLowerCase();
-                if (!itemId || !itemId.startsWith('p')) {
-                    message.reply('Invalid donator item! Use p1, p2, p3... p13');
-                    return;
-                }
+            const icons: Record<string, string> = { balance: '💵', vault: '🏦', credits: '💎', pills: '💊' };
+            message.reply(`✅ Gave **${targetName}** ${icons[col]} **${formatBigNumber(amount)}** ${col}`);
+            return;
+        }
 
+        // 2. Check for Premium Bundles (Packages)
+        const bundles: Record<string, string[]> = {
+            'p1': ['p7', 'p6'], // Essentials: Conjuror + Statistician
+            'p2': ['p7', 'p9', 'p6'], // OG: Conjuror + Investor + Statistician
+            'p3': ['p7', 'p9', 'p6', 'p8'], // No-lifer: OG + Junkie
+            'p4': ['p8', 'p9', 'p10'], // Gentlemen: Junkie + Investor + Seagull
+            'p5': ['p6', 'p7', 'p8', 'p9', 'p10'], // Flexer: All basic premium
+        };
+
+        if (bundles[inputType]) {
+            const contents = bundles[inputType];
+            for (const itemId of contents) {
                 await db.execute({
                     sql: 'INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1',
                     args: [targetId, itemId]
                 });
-                message.reply(`✅ Gave **${targetName}** donator item **${itemId}**`);
-                break;
             }
-
-            case 'weapon': {
-                const weaponMap: Record<string, string> = {
-                    'crossbow': '7',
-                    'rifle': '9',
-                    'speaker': '11',
-                    'flamethrower': '12',
-                };
-                const weaponName = args[2]?.toLowerCase();
-                const weaponId = weaponMap[weaponName];
-
-                if (!weaponId) {
-                    message.reply(`Invalid weapon! Valid: ${Object.keys(weaponMap).join(', ')}`);
-                    return;
-                }
-
-                await db.execute({
-                    sql: 'INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1',
-                    args: [targetId, weaponId]
-                });
-                message.reply(`✅ Gave **${targetName}** a **${weaponName}**`);
-                break;
-            }
-
-            case 'item': {
-                const itemId = args[2];
-                const amountStr = args[3]?.replace(/,/g, '');
-                const amount = parseBigNumber(amountStr || '1') || 1n;
-
-                if (!itemId) {
-                    message.reply('Specify an item ID!');
-                    return;
-                }
-
-                await db.execute({
-                    sql: 'INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, ?) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + ?',
-                    args: [targetId, itemId, amount.toString(), amount.toString()]
-                });
-                message.reply(`✅ Gave **${targetName}** ${formatBigNumber(amount)}x item **${itemId}**`);
-                break;
-            }
-
-            case 'credits':
-            case 'dcred': {
-                const amountStr = args[2]?.replace(/,/g, '');
-                const amount = parseBigNumber(amountStr || '0');
-                if (!amount || amount <= 0n) {
-                    message.reply('Invalid amount!');
-                    return;
-                }
-                await getUser(targetId);
-                const user = await getUser(targetId);
-                const newCredits = addBigNumbers(user.credits || 0, amount);
-                await db.execute({
-                    sql: 'UPDATE users SET credits = ? WHERE id = ?',
-                    args: [newCredits, targetId]
-                });
-                message.reply(`✅ Gave **${targetName}** 💎 ${formatBigNumber(amount)} credits`);
-                break;
-            }
-
-            case 'vault': {
-                const amountStr = args[2]?.replace(/,/g, '');
-                const amount = parseBigNumber(amountStr || '0');
-                if (!amount || amount <= 0n) {
-                    message.reply('Invalid amount!');
-                    return;
-                }
-                const user = await getUser(targetId);
-                const newVault = addBigNumbers(user.vault, amount);
-                await db.execute({
-                    sql: 'UPDATE users SET vault = ? WHERE id = ?',
-                    args: [newVault, targetId]
-                });
-                message.reply(`✅ Gave **${targetName}** 🏦 ${formatBigNumber(amount)} to vault`);
-                break;
-            }
-
-            case 'ccmd': {
-                const commandName = args[2]?.toLowerCase();
-                const level = args[3]?.toLowerCase() === 'owner' ? 'owner' : (args[3]?.toLowerCase() === 'co' ? 'co_owner' : 'access');
-
-                if (!commandName) {
-                    message.reply('Specify a command name!');
-                    return;
-                }
-
-                // If level is 'owner', update ownership table
-                if (level === 'owner') {
-                    await db.execute({
-                        sql: `INSERT INTO custom_command_ownership (command_name, owner_id)
-                              VALUES (?, ?)
-                              ON CONFLICT(command_name) DO UPDATE SET owner_id = ?`,
-                        args: [commandName, targetId, targetId]
-                    });
-
-                    // Also ensure they have access in access table
-                    await db.execute({
-                        sql: `INSERT INTO custom_command_access (command_name, user_id, access_type)
-                              VALUES (?, ?, 'owner')
-                              ON CONFLICT(command_name, user_id) DO UPDATE SET access_type = 'owner'`,
-                        args: [commandName, targetId]
-                    });
-
-                    message.reply(`✅ Transferred OWNERSHIP of custom command **${commandName}** to **${targetName}**`);
-                } else {
-                    // Update access table
-                    await db.execute({
-                        sql: `INSERT INTO custom_command_access (command_name, user_id, access_type)
-                              VALUES (?, ?, ?)
-                              ON CONFLICT(command_name, user_id) DO UPDATE SET access_type = ?`,
-                        args: [commandName, targetId, level, level]
-                    });
-
-                    message.reply(`✅ Gave **${targetName}** **${level.toUpperCase()}** access to **${commandName}**`);
-                }
-                break;
-            }
-
-            default:
-                message.reply('Unknown type! Use: bal, drug, ditem, weapon, item, credits, vault');
+            message.reply(`✅ Gave **${targetName}** the **${inputType.toUpperCase()} Bundle** (${contents.length} items)`);
+            return;
         }
+
+        // 3. Smart Item Lookup (ID, Name, Alises)
+        const aliases: Record<string, string> = {
+            'conj': 'p7', 'conjuror': 'p7',
+            'stat': 'p6', 'statistician': 'p6',
+            'inv': 'p9', 'investor': 'p9',
+            'junkie': 'p8',
+            'gull': 'p10', 'seagull': 'p10',
+            'donor': 'p12', 'recruit': 'p13'
+        };
+
+        let itemId = aliases[inputType] || inputType;
+
+        // Verify if it's a valid item in data/items.ts
+        let foundItem = items[itemId];
+        if (!foundItem) {
+            // Search by name
+            const search = Object.values(items).find(i => i.name.toLowerCase() === inputType || i.id.toLowerCase() === inputType);
+            if (search) {
+                foundItem = search;
+                itemId = search.id;
+            }
+        }
+
+        if (foundItem) {
+            await db.execute({
+                sql: 'INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, ?) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + ?',
+                args: [targetId, itemId, amount.toString(), amount.toString()]
+            });
+            const emoji = foundItem.emoji || '📦';
+            message.reply(`✅ Gave **${targetName}** ${emoji} **${formatBigNumber(amount)}x ${foundItem.name}**`);
+            return;
+        }
+
+        // 4. Fallback for Custom Commands (Special prefix maybe? Or just try?)
+        // Custom command logic usually uses specific table, but here we can just fallback to unknown.
+        message.reply(`❌ Could not find an item or currency named "**${inputType}**". Use \`~give\` for help.`);
     },
 };
 

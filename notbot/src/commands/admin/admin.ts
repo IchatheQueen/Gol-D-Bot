@@ -1,29 +1,28 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
-import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
+import { isAdmin, addAdmin, removeAdmin, getAdmins } from '../../utils/adminUtils';
 
-// Admin IDs - can be modified
-const ADMIN_IDS = ['1331780893995565148'];
+const OWNER_ID = '1331780893995565148';
 
 const command: Command = {
     name: 'admin',
     description: 'Manage admin users',
     execute: async (message: Message, args: string[], client: Client) => {
         // Only the owner can manage admins
-        if (message.author.id !== '1331780893995565148') {
+        if (message.author.id !== OWNER_ID) {
             message.reply('Only the owner can manage admins.');
             return;
         }
 
         const action = args[0]?.toLowerCase();
-        const targetUser = message.mentions.users.first();
+        const targetUser = message.mentions.users.first() || (args[1] ? { id: args[1], username: args[1] } : null);
 
         if (!action) {
             const embed = new EmbedBuilder()
                 .setTitle('🔧 Admin Management')
                 .setDescription(
-                    '`~admin add <@user>` - Add admin\n' +
-                    '`~admin remove <@user>` - Remove admin\n' +
+                    '`~admin add <@user|ID>` - Add admin\n' +
+                    '`~admin remove <@user|ID>` - Remove admin\n' +
                     '`~admin list` - List all admins'
                 )
                 .setColor('#ff0000');
@@ -34,42 +33,42 @@ const command: Command = {
         switch (action) {
             case 'add': {
                 if (!targetUser) {
-                    message.reply('Please mention a user to add!');
+                    message.reply('Please mention a user or provide an ID to add!');
                     return;
                 }
-                if (!ADMIN_IDS.includes(targetUser.id)) {
-                    ADMIN_IDS.push(targetUser.id);
+                const success = await addAdmin(targetUser.id);
+                if (success) {
                     message.reply(`✅ Added **${targetUser.username}** as admin.`);
                 } else {
-                    message.reply(`${targetUser.username} is already an admin.`);
+                    message.reply(`Failed to add **${targetUser.username}** as admin.`);
                 }
                 break;
             }
 
             case 'remove': {
                 if (!targetUser) {
-                    message.reply('Please mention a user to remove!');
+                    message.reply('Please mention a user or provide an ID to remove!');
                     return;
                 }
-                if (targetUser.id === '1331780893995565148') {
+                if (targetUser.id === OWNER_ID) {
                     message.reply('Cannot remove the owner!');
                     return;
                 }
-                const index = ADMIN_IDS.indexOf(targetUser.id);
-                if (index > -1) {
-                    ADMIN_IDS.splice(index, 1);
+                const success = await removeAdmin(targetUser.id);
+                if (success) {
                     message.reply(`✅ Removed **${targetUser.username}** from admins.`);
                 } else {
-                    message.reply(`${targetUser.username} is not an admin.`);
+                    message.reply(`Failed to remove **${targetUser.username}** from admins.`);
                 }
                 break;
             }
 
             case 'list': {
-                const adminList = ADMIN_IDS.map(id => `<@${id}>`).join('\n');
+                const adminIds = await getAdmins();
+                const adminList = adminIds.map(id => `<@${id}>`).join('\n') || 'No admins';
                 const embed = new EmbedBuilder()
                     .setTitle('👑 Admin List')
-                    .setDescription(adminList || 'No admins')
+                    .setDescription(adminList)
                     .setColor('#ff0000');
                 message.reply({ embeds: [embed] });
                 break;
@@ -81,6 +80,4 @@ const command: Command = {
     },
 };
 
-// Export ADMIN_IDS for other commands to use
-export { ADMIN_IDS };
 export default command;

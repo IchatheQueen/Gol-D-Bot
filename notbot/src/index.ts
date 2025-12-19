@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, Message as DiscordMessage, EmbedBuilder } from 'discord.js';
+import { Client, GatewayIntentBits, Events, Message as DiscordMessage, EmbedBuilder, TextChannel } from 'discord.js';
 import dotenv from 'dotenv';
 import db, { initDatabase } from './database/db';
 import { processShortcuts } from './utils/shortcuts';
@@ -14,6 +14,7 @@ dotenv.config();
 interface ExtendedClient extends Client {
     activeWalletDrops: Map<string, { amount: number; timestamp: number; claimedBy?: string }>;
     emojiOverrides: Map<string, string>;
+    commands: any;
 }
 
 const client = new Client({
@@ -21,6 +22,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers, // Needed for booster detection
     ],
 }) as ExtendedClient;
 
@@ -28,9 +30,11 @@ const PREFIX = '~';
 const COOLDOWN_MS = 5000; // 5 seconds
 const EXEMPT_USER_ID = '1331780893995565148';
 const WALLET_DROP_CHANCE = 0.02; // 2% chance per message
+const MAIN_GUILD_ID = '1341830866657083402';
 
 // Store last command timestamp per user
 const userCooldowns = new Map<string, number>();
+const userLsdLastAction = new Map<string, number>();
 
 // Store active wallet drop per channel (attach to client so grab command can access)
 client.activeWalletDrops = new Map<string, { amount: number; timestamp: number; claimedBy?: string }>();
@@ -39,7 +43,7 @@ client.emojiOverrides = new Map<string, string>();
 import { loadCommands } from './handlers/commandHandler';
 
 const commands = loadCommands(client);
-(client as any).commands = commands;
+client.commands = commands;
 
 async function getBlacklistRecord(userId: string): Promise<any> {
     const result = await db.execute({
@@ -61,6 +65,14 @@ async function getStunTimeRemaining(userId: string): Promise<number | null> {
     return null;
 }
 
+async function getActiveDrug(userId: string, drugType: string): Promise<any> {
+    const result = await db.execute({
+        sql: 'SELECT * FROM drug_effects WHERE user_id = ? AND drug_type = ? AND expires_at > ?',
+        args: [userId, drugType, Date.now()]
+    });
+    return result.rows[0] || null;
+}
+
 // Load emoji overrides
 async function loadEmojiOverrides() {
     try {
@@ -76,15 +88,41 @@ async function loadEmojiOverrides() {
 
 client.once(Events.ClientReady, async (c: any) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
-    console.log(`Ready! Logged in as ${c.user.tag}`);
     await loadEmojiOverrides();
     await startEventLoop(client);
+});
+
+// Booster Detection
+client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
+    if (newMember.guild.id !== MAIN_GUILD_ID) return;
+
+    // Check if they just started boosting
+    if (!oldMember.premiumSince && newMember.premiumSince) {
+        console.log(`${newMember.user.tag} just started boosting! Giving perks...`);
+
+        // Grant Premium perk in DB
+        await db.execute({
+            sql: 'UPDATE users SET is_premium = 1 WHERE id = ?',
+            args: [newMember.id]
+        });
+
+        // Optional: Send a thank you message
+        const welcomeChannel = newMember.guild.systemChannel;
+        if (welcomeChannel) {
+            const embed = new EmbedBuilder()
+                .setTitle('💎 Server Booster Perk Activated!')
+                .setDescription(`Thank you for boosting, ${newMember}! You have been granted **Premium** status on SlotBot. Enjoy your exclusive perks!`)
+                .setColor('#f47fff');
+            await welcomeChannel.send({ embeds: [embed] });
+        }
+    }
 });
 
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (message.author.bot) return;
 
-    const blacklistRecord = await getBlacklistRecord(message.author.id);
+    const userId = message.author.id;
+    const blacklistRecord = await getBlacklistRecord(userId);
     if (blacklistRecord) {
         if (message.content.startsWith(PREFIX)) {
             const embed = new EmbedBuilder()
@@ -102,12 +140,40 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         return;
     }
 
-    if (message.author.id !== EXEMPT_USER_ID) {
-        const stunTimeRemaining = await getStunTimeRemaining(message.author.id);
+    if (userId !== EXEMPT_USER_ID) {
+        const stunTimeRemaining = await getStunTimeRemaining(userId);
         if (stunTimeRemaining !== null) {
             const minutes = Math.floor(stunTimeRemaining / 60000);
             const seconds = Math.floor((stunTimeRemaining % 60000) / 1000);
             message.reply(`⛓️ You are still stunned! Time remaining: **${minutes}m ${seconds}s**`);
+            return;
+        }
+    }
+
+    const args = message.content.slice(PREFIX.length).trim().split(/ +/);
+    const commandName = args.shift()?.toLowerCase();
+    if (!commandName) return;
+
+    // LSD Rate Limit & Fail Chance
+    const lsdEffect = await getActiveDrug(userId, 'lsd');
+    if (lsdEffect) {
+        const lastAction = userLsdLastAction.get(userId) || 0;
+        const lsdTimeLeft = lastAction + 14000 - Date.now();
+
+        if (lsdTimeLeft > 0) {
+            const seconds = Math.ceil(lsdTimeLeft / 1000);
+            await (message.channel as any).send(`You must wait ${seconds} seconds before using another SlotBot command as a result of your LSD`);
+            return;
+        }
+
+        // 1/3 fail chance
+        if (Math.random() < 0.33) {
+            userLsdLastAction.set(userId, Date.now());
+            const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
+            const failEmbed = new EmbedBuilder()
+                .setDescription(`${displayName} (@${message.author.username}) has misjudged their surroundings and fallen on their face`)
+                .setColor('#2b2d31');
+            await message.reply({ embeds: [failEmbed] });
             return;
         }
     }
@@ -139,23 +205,19 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 
-    const args = message.content.slice(PREFIX.length).trim().split(/ +/);
-    const commandName = args.shift()?.toLowerCase();
-    if (!commandName) return;
-
-    const processedArgs = processShortcuts(args, message.author.id);
+    const processedArgs = processShortcuts(args, userId);
 
     const exemptCommands = ['retreat', 'select', 'shoot'];
-    if (message.author.id !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
+    if (userId !== EXEMPT_USER_ID && !exemptCommands.includes(commandName)) {
         const now = Date.now();
-        const lastCommand = userCooldowns.get(message.author.id) || 0;
+        const lastCommand = userCooldowns.get(userId) || 0;
         const timeLeft = lastCommand + COOLDOWN_MS - now;
 
         if (timeLeft > 0) {
             return;
         }
 
-        userCooldowns.set(message.author.id, now);
+        userCooldowns.set(userId, now);
     }
 
     // Check for alias/skin
@@ -175,8 +237,6 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             const aliasArgs = alias.arguments ? alias.arguments.split(' ') : [];
             finalArgs = [...aliasArgs, ...processedArgs];
 
-            // Mapping strict aliases to Skin IDs
-            // This is hardcoded for now as requested, but could be DB driven later
             const skinMap: Record<string, number> = {
                 'kitten': 1,
                 'warrior': 2,
@@ -184,42 +244,47 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
                 'goon': 69
             };
 
-            // Check if this alias maps to a skin
             if (skinMap[commandName]) {
                 const targetSkinId = skinMap[commandName];
-
-                // Check if user has ACCESS to this skin/alias
-                // We check 'custom_command_access' OR ownership
                 const accessCheck = await db.execute({
                     sql: `
                         SELECT 1 FROM custom_command_ownership WHERE command_name = ? AND owner_id = ?
                         UNION
                         SELECT 1 FROM custom_command_access WHERE command_name = ? AND user_id = ?
                     `,
-                    args: [commandName, message.author.id, commandName, message.author.id]
+                    args: [commandName, userId, commandName, userId]
                 });
 
-                // Also specific catch for admins or if it's open (but user implied restriction)
-                // For now, if they have access, we force the skin.
-                if (accessCheck.rows.length > 0 || message.author.id === EXEMPT_USER_ID) {
+                if (accessCheck.rows.length > 0 || userId === EXEMPT_USER_ID) {
                     forcedSkinId = targetSkinId;
                 }
-                // If they don't have access, we still run the command (e.g. ~cat) but WITHOUT the skin override?
-                // Or do we block? "users who has access ... can use custom command calls"
-                // If they don't have access, it just behaves like normal ~cat (using their equipped skin).
             }
         }
     } catch (err) {
         console.error('Error checking aliases:', err);
     }
 
-    const command = commands.get(finalCommandName);
+    const command = client.commands.get(finalCommandName);
     if (command) {
         try {
             if (command.execute) {
-                // Pass forcedSkinId as the 4th argument (client is 3rd)
                 await command.execute(message, finalArgs, client, forcedSkinId);
                 incrementCommandCount();
+
+                // If on LSD, refresh cooldowns AFTER successful execution
+                if (lsdEffect) {
+                    userLsdLastAction.set(userId, Date.now());
+                    const refreshList = [
+                        'shoot_pistol', 'shoot_rifle', 'shoot_crossbow', 'shoot_speaker', 'shoot_flamethrower',
+                        'hex', 'boost', 'dispense', 'steal', 'decondition'
+                    ];
+                    for (const cd of refreshList) {
+                        await db.execute({
+                            sql: 'DELETE FROM cooldowns WHERE user_id = ? AND command = ?',
+                            args: [userId, cd]
+                        });
+                    }
+                }
             }
         } catch (error) {
             console.error(error);

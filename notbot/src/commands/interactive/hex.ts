@@ -11,7 +11,6 @@ import { resolveTarget } from '../../utils/resolveTarget';
 const command: Command = {
     name: 'hex',
     description: 'Hex a user to steal money and stun them',
-    aliases: ['haunt'],
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
         const targetResolved = await resolveTarget(message, args, client);

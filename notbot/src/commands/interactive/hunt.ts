@@ -19,8 +19,13 @@ const command: Command = {
             return;
         }
 
+        if (pet.health < 10) { // Threshold for "too injured"
+            message.reply(`Your [Lvl ${pet.level}] Cat is too injured to go hunting right now!`);
+            return;
+        }
+
         if (isPetDead(pet)) {
-            message.reply('Your cat is dead 💀. You must revive it with `~revive` before it can hunt!');
+            message.reply(`Your [Lvl ${pet.level}] Cat is dead 💀. You must revive it first!`);
             return;
         }
 

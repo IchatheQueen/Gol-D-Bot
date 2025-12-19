@@ -16,7 +16,7 @@ const categories = {
             { id: 'weed', hint: 'Hint: Buy more in the `~blackmarket`' },
             { id: 'opioid', hint: 'Hint: Buy more in the `~blackmarket`' },
             { id: 'steroid', hint: 'Hint: Buy more in the `~blackmarket`' },
-            // cocaine ignored
+            { id: 'cocaine', hint: 'Hint: Earn more via the `~mine`' },
             { id: 'anesthetics', hint: 'Hint: Buy more in the `~blackmarket`' },
             { id: 'lsd', hint: 'Hint: Buy more in the `~blackmarket`' },
         ]
@@ -68,24 +68,22 @@ const command: Command = {
                 const itemDef = items[itemEntry.id];
                 if (itemDef) {
                     const amount = getAmount(itemEntry.id);
-                    // Use resolveEmoji to ensure custom emojis work cross-server
                     const emoji = resolveEmoji(client, itemDef.emoji) || '📦';
 
                     if (categoryKey === 'weapons') {
-                        // Weapons style: Emoji Name Status
                         const status = amount > 0n ? '✅' : '❌';
                         description += `${emoji} **${itemDef.name}** ${status}\n`;
                     } else {
-                        // Standard style: Emoji Name | Amount
-                        description += `${emoji} **${itemDef.name}** | ${formatBigNumber(amount)}\n`;
+                        description += `${emoji} ${itemDef.name} | ${formatBigNumber(amount)}\n`;
                     }
-                    description += `<:hint:1449971693085786162> ${itemEntry.hint}\n`;
+                    description += `👁️ ${itemEntry.hint}\n`;
                 }
             }
 
+            const displayName = message.guild?.members.cache.get(userId)?.displayName || target.username;
             const embed = new EmbedBuilder()
-                .setTitle(`${target.username} (@${target.username})'s Inventory`)
-                .setColor('#2f3136')
+                .setTitle(`${displayName} (@${target.username})'s Inventory`)
+                .setColor('#2b2d31')
                 .setDescription(description);
 
             return embed;

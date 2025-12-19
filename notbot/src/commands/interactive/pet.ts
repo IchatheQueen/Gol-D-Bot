@@ -39,17 +39,23 @@ const command: Command = {
             return;
         }
 
-        // Reduce cooldown by 1/3
-        const reduction = Math.floor(timeLeft / 3);
-        const newTimestamp = Number(feedCooldown.timestamp) + reduction;
+        // Set cooldown to exactly 10 minutes from now (or reduce to 10 mins)
+        // Screenshot implies "reduced its feeding cooldown to 10 minutes"
+        const tenMins = 10 * 60 * 1000;
+        const newTimestamp = Date.now() - (60 * 60 * 1000) + tenMins; // Set so timestamp + 1h = now + 10m
 
         await db.execute({
             sql: 'UPDATE cooldowns SET timestamp = ? WHERE user_id = ? AND command = ?',
             args: [newTimestamp, userId, 'feed']
         });
 
-        const newTimeLeft = Math.ceil((Number(feedCooldown.timestamp) + (30 * 60 * 1000) - Date.now() - reduction) / 60000);
+        const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
+        const embed = {
+            description: `${displayName} (@${message.author.username}) has pet their [Lvl ${pet.level}] Cat and reduced its feeding cooldown to 10 minutes`,
+            color: 0x2b2d31
+        };
 
+        message.reply({ embeds: [embed] });
     },
 };
 

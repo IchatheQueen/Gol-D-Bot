@@ -35,10 +35,10 @@ const command: Command = {
         // Add Pills to Inventory
         await addInventoryItem(userId, 'cat_pill', BigInt(count));
 
-        // Matching Screenshot: "@User has collected 💊 <amount> from their 🏭"
+        const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
         const embed = new EmbedBuilder()
-            .setDescription(`${message.author} has collected 💊 ${count} from their 🏭`)
-            .setColor('#2F3136');
+            .setDescription(`${displayName} (@${message.author.username}) has collected 💊 ${count} from their 🏭`)
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

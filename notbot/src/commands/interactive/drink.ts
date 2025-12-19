@@ -19,9 +19,10 @@ const command: Command = {
         await removeInventoryItem(userId, 'beer', 1n);
 
         // Flavor message per screenshot
+        const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
         const embed = new EmbedBuilder()
-            .setDescription(`${message.author} has loaded themselves with 🍺 and taken a nice long nap`)
-            .setColor('#2F3136');
+            .setDescription(`${displayName} (@${message.author.username}) has loaded themselves with 🍺 and taken a nice long nap`)
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
 

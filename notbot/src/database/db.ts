@@ -184,6 +184,18 @@ export async function initDatabase() {
         )
     `);
 
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS admins (
+            user_id TEXT PRIMARY KEY
+        )
+    `);
+
+    // Seed Owner as Admin
+    await db.execute({
+        sql: 'INSERT OR IGNORE INTO admins (user_id) VALUES (?)',
+        args: ['1331780893995565148']
+    });
+
     // Migration: Add skin_id and last_updated to pets if not exists
     const migrations = [
         'ALTER TABLE pets ADD COLUMN skin_id INTEGER DEFAULT 0',

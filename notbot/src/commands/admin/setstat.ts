@@ -5,13 +5,13 @@ import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
 
 // Admin IDs
-const ADMIN_IDS = ['1331780893995565148'];
+import { isAdmin } from '../../utils/adminUtils';
 
 const command: Command = {
     name: 'setstat',
     description: 'Admin command to set user stats',
     execute: async (message: Message, args: string[], client: Client) => {
-        if (!ADMIN_IDS.includes(message.author.id)) {
+        if (!await isAdmin(message.author.id)) {
             message.reply('You do not have permission to use this command.');
             return;
         }

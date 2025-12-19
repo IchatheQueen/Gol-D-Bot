@@ -5,13 +5,13 @@ import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
 
 // Admin IDs
-const ADMIN_IDS = ['1331780893995565148'];
+import { isAdmin } from '../../utils/adminUtils';
 
 const command: Command = {
     name: 'set',
     description: 'Admin command to set user or cat stats',
     execute: async (message: Message, args: string[], client: Client) => {
-        if (!ADMIN_IDS.includes(message.author.id)) {
+        if (!await isAdmin(message.author.id)) {
             return;
         }
 

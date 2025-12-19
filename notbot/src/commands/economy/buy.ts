@@ -17,7 +17,7 @@ const command: Command = {
         const amount = parseBigNumber(amountStr || '1') || 1n;
 
         if (!itemId) {
-            message.reply(`You must specify an **ID** under the format of \`~buy <id> <amount>\`\n<:hint:1449971693085786162> Hint: IDs are numerical, but names also work! E.g: ~buy beer`);
+            message.reply(`You must specify an **ID** under the format of \`~buy <id> <amount>\` \n👁️ Hint: IDs are numerical, but names also work! E.g; ~buy beer`);
             return;
         }
 
@@ -39,23 +39,23 @@ const command: Command = {
 
         // Check Bar Membership for Beer purchases
         if (currency === 'beer' || itemId === '2') {
-             // Also restrict buying Beer itself if logic was "cannot buy beer without membership"
-             if (itemId === '2') {
-                  const membershipAmount = await getInventoryItem(message.author.id, '1');
-                  if (membershipAmount < 1n) {
-                       message.reply('You need a **Bar Membership** (ID: 1) to buy Beer! Buy it from the `~pub`.');
-                       return;
-                  }
-             }
+            // Also restrict buying Beer itself if logic was "cannot buy beer without membership"
+            if (itemId === '2') {
+                const membershipAmount = await getInventoryItem(message.author.id, '1');
+                if (membershipAmount < 1n) {
+                    message.reply('You need a **Bar Membership** (ID: 1) to buy Beer! Buy it from the `~pub`.');
+                    return;
+                }
+            }
 
             // Existing logic for currency == 'beer' (buying WITH beer)
-             if (currency === 'beer') {
+            if (currency === 'beer') {
                 const membershipAmount = await getInventoryItem(message.author.id, '1');
                 if (membershipAmount < 1n) {
                     message.reply('You need a **Bar Membership** (ID: 1) to buy items with Beer! Buy it from the `~pub`.');
                     return;
                 }
-             }
+            }
         }
 
         // Check Balance
@@ -131,19 +131,12 @@ const command: Command = {
         }
 
         const itemEmoji = resolveEmoji(client, itemDef.emoji || '📦');
-        let currencyEmoji = '';
-        switch (currency) {
-            case 'beer': currencyEmoji = '🍺'; break;
-            case 'cash': currencyEmoji = '$'; break;
-            case 'diamond': currencyEmoji = '💎'; break;
-            case 'weed': currencyEmoji = resolveEmoji(client, '1445946808982569071'); break;
-            case 'opioid': currencyEmoji = resolveEmoji(client, '<:opioid:1447325599554211940>'); break;
-            case 'pills': currencyEmoji = '💊'; break;
-        }
+        const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
+        const embed = new EmbedBuilder()
+            .setDescription(`${displayName} (@${message.author.username}) has successfully ordered ${itemEmoji} ${formatBigNumber(amount)}! Enjoy :3`)
+            .setColor('#2b2d31');
 
-        // "shows how much the amount of it cost and not what you bought want it the other way around"
-        // Interpret: Show Cost then Item
-        message.reply(`You spent **${currencyEmoji}${formatBigNumber(totalPrice)}** to buy **${formatBigNumber(amount)}x ${itemEmoji} ${itemDef.name}**.`);
+        message.reply({ embeds: [embed] });
     },
 };
 
