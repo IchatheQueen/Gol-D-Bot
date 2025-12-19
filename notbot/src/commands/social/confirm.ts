@@ -43,9 +43,9 @@ const command: Command = {
         // Create Recruitment Link
         try {
             await db.execute({
-                sql: `INSERT INTO recruitments (recruiter_id, target_id, tag, created_at) VALUES (?, ?, ?, ?)
-                      ON CONFLICT(recruiter_id, tag) DO UPDATE SET target_id = ?, created_at = ?`,
-                args: [request.recruiter_id, userId, request.tag, Date.now(), userId, Date.now()]
+                sql: `INSERT INTO recruits (owner_id, recruit_id, keyword, created_at) VALUES (?, ?, ?, ?)
+                      ON CONFLICT(owner_id, recruit_id) DO UPDATE SET keyword = ?, created_at = ?`,
+                args: [request.recruiter_id, userId, request.tag, Date.now(), request.tag, Date.now()]
             });
 
             // Delete used code

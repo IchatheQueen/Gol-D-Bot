@@ -162,10 +162,20 @@ export async function initDatabase() {
     await runCustomRoleMigration();
     await runRecruitMigration();
     await runClanMigration();
-    await runClanMigration();
     await runAchievementMigration();
     await runPremiumMigration();
     await runGeneratorMigration();
+
+    // Marriages Table
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS marriages (
+            user1_id TEXT NOT NULL,
+            user2_id TEXT NOT NULL,
+            level INTEGER DEFAULT 1,
+            timestamp INTEGER NOT NULL,
+            PRIMARY KEY (user1_id, user2_id)
+        )
+    `);
 
     // Custom Command Ownership
     await db.execute(`
