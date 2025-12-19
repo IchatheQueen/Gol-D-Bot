@@ -3,8 +3,6 @@ import db from '../../database/db';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
-
-// Admin IDs
 import { isAdmin } from '../../utils/adminUtils';
 
 const command: Command = {
@@ -55,7 +53,7 @@ const command: Command = {
         switch (category) {
             case 'bal':
             case 'balance': {
-                const amount = parseBigNumber(args[2]?.replace(/,/g, '') || '0') ?? 0n;
+                const amount = parseBigNumber(args[2] || '0') ?? 0n;
                 await getUser(targetId);
                 await updateUser(targetId, { balance: amount });
                 message.reply(`✅ Set **${targetUser.username}**'s balance to 💵 ${formatBigNumber(amount)}`);
@@ -63,7 +61,7 @@ const command: Command = {
             }
 
             case 'vault': {
-                const amount = parseBigNumber(args[2]?.replace(/,/g, '') || '0') ?? 0n;
+                const amount = parseBigNumber(args[2] || '0') ?? 0n;
                 await getUser(targetId);
                 await updateUser(targetId, { vault: amount });
                 message.reply(`✅ Set **${targetUser.username}**'s vault to 🏦 ${formatBigNumber(amount)}`);
@@ -72,13 +70,10 @@ const command: Command = {
 
             case 'credits':
             case 'dcred': {
-                const amount = parseInt(args[2]?.replace(/,/g, '')) || 0;
+                const amount = parseBigNumber(args[2] || '0') ?? 0n;
                 await getUser(targetId);
-                await db.execute({
-                    sql: 'UPDATE users SET credits = ? WHERE id = ?',
-                    args: [amount, targetId]
-                });
-                message.reply(`✅ Set **${targetUser.username}**'s credits to 💎 ${amount.toLocaleString()}`);
+                await updateUser(targetId, { credits: amount });
+                message.reply(`✅ Set **${targetUser.username}**'s credits to 💎 ${formatBigNumber(amount)}`);
                 break;
             }
 
@@ -97,8 +92,8 @@ const command: Command = {
                     sql: 'SELECT * FROM pets WHERE user_id = ?',
                     args: [targetId]
                 });
-                const pet = petCheck.rows[0];
-                if (!pet) {
+                const row = petCheck.rows[0];
+                if (!row) {
                     message.reply(`${targetUser.username} doesn't have a cat!`);
                     return;
                 }
@@ -117,12 +112,13 @@ const command: Command = {
                     });
                     message.reply(`✅ Set **${targetUser.username}**'s cat name to **${value}**`);
                 } else {
-                    const numValue = parseInt(value.replace(/,/g, '')) || 0;
+                    const amount = parseBigNumber(value) ?? 0n;
+                    const numValue = Number(amount);
                     await db.execute({
                         sql: `UPDATE pets SET ${stat} = ? WHERE user_id = ?`,
                         args: [numValue, targetId]
                     });
-                    message.reply(`✅ Set **${targetUser.username}**'s cat ${stat} to **${numValue.toLocaleString()}**`);
+                    message.reply(`✅ Set **${targetUser.username}**'s cat ${stat} to **${formatBigNumber(amount)}**`);
                 }
                 break;
             }

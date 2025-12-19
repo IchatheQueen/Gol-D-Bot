@@ -3,8 +3,6 @@ import db from '../../database/db';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
-
-// Admin IDs
 import { isAdmin } from '../../utils/adminUtils';
 
 const command: Command = {
@@ -38,7 +36,9 @@ const command: Command = {
                 return;
             }
 
-            const [level, hunger, thirst, energy, health, experience, credits, strength, agility, intellect, endurance, metabolism] = statParts.map(v => parseInt(v) || 0);
+            // Using parseBigNumber for each part to ensure consistency, though parseInt would also work for simple numbers
+            const stats = statParts.map(v => Number(parseBigNumber(v) || 0n));
+            const [level, hunger, thirst, energy, health, experience, credits, strength, agility, intellect, endurance, metabolism] = stats;
 
             // Check if pet exists
             const petCheck = await db.execute({
