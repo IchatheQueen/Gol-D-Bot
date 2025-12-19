@@ -4,7 +4,7 @@ import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
 import { sqrtBigInt } from '../../utils/bigMath';
-import { formatBigNumber } from '../../utils/bigNumbers';
+import { formatBigNumber, parseBigNumber } from '../../utils/bigNumbers';
 
 const command: Command = {
     name: 'fund',
