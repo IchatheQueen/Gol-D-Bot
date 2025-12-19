@@ -12,12 +12,17 @@ const command: Command = {
     name: 'exch',
     description: 'Exchange items in the Black Market',
     execute: async (message: Message, args: string[], client: Client) => {
-        const id = args[0];
+        let id = args[0];
         const amount = parseBigNumber(args[1] || '1') || 1n;
 
         if (!id) {
-            message.reply('You must specify an ID for this command to work!\n👁️ Hint: IDs are numerical, but names also work! E.g; ~exch weed');
+            message.reply('You must specify an ID for this command to work!\n👁️ Hint: IDs are numerical! E.g; ~exch 001');
             return;
+        }
+
+        // Pad ID if numeric to match blackMarketItems keys (001, 002, etc)
+        if (/^\d+$/.test(id)) {
+            id = id.padStart(3, '0');
         }
 
         const item = blackMarketItems[id];
@@ -27,39 +32,51 @@ const command: Command = {
         }
 
         const user = await getUser(message.author.id);
-        const totalCostBig = BigInt(item.price) * BigInt(amount);
+        const itemPriceBig = BigInt(item.price.toString());
+        const totalCostBig = itemPriceBig * BigInt(amount);
 
-        // Deduct payment first
-        if (item.currency === 'cash') {
+        // Deduct payment
+        if (item.currency === 'complex' && item.paymentItems) {
+            for (const p of item.paymentItems) {
+                const totalReq = p.amount * BigInt(amount);
+                const userOwned = await getInventoryItem(message.author.id, p.id);
+                if (userOwned < totalReq) {
+                    message.reply(`You don't have enough ${p.id}! Need ${totalReq}, have ${userOwned}.`);
+                    return;
+                }
+                await removeInventoryItem(message.author.id, p.id, totalReq);
+            }
+        } else if (item.currency === 'cash') {
             if (user.balance < totalCostBig) {
                 message.reply(`You don't have enough cash! Cost: 💵 ${formatBigNumber(totalCostBig)}`);
                 return;
             }
             await updateUser(message.author.id, { balance: user.balance - totalCostBig });
-        } else if (item.currency === 'weed') {
-            const weedAmount = await getInventoryItem(message.author.id, '1');
-            if (weedAmount < totalCostBig) {
-                message.reply(`You don't have 🌿 ${formatBigNumber(totalCostBig)}... (${totalCostBig.toString().length} digits)`);
-                return;
+        } else {
+            // Mapping for other currencies to inventory IDs
+            const currencyMap: Record<string, string> = {
+                'weed': '1',
+                'opioid': 'opioid',
+                'steroid': 'steroid',
+                'counterfeit_cash': 'counterfeit_cash'
+            };
+            const invId = currencyMap[item.currency];
+            if (invId) {
+                const userOwned = await getInventoryItem(message.author.id, invId);
+                if (userOwned < totalCostBig) {
+                    message.reply(`You don't have enough ${item.currency}! Cost: ${formatBigNumber(totalCostBig)}`);
+                    return;
+                }
+                await removeInventoryItem(message.author.id, invId, totalCostBig);
             }
-            await removeInventoryItem(message.author.id, '1', totalCostBig);
-        } else if (item.currency === 'opioid') {
-            const opioidAmount = await getInventoryItem(message.author.id, '3');
-            if (opioidAmount < totalCostBig) {
-                message.reply(`You don't have 💊 ${formatBigNumber(totalCostBig)}... (${totalCostBig.toString().length} digits)`);
-                return;
-            }
-            await removeInventoryItem(message.author.id, '3', totalCostBig);
         }
 
         // Scam chance: 30% normally
         let scamChance = 0.30;
         if (Math.random() < scamChance) {
-            // SCAMMED!
-            const currencyEmoji = item.currency === 'cash' ? '💵' : item.currency === 'weed' ? '🌿' : '💊';
             const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
             const embed = new EmbedBuilder()
-                .setDescription(`${displayName} (@${message.author.username}) has paid ${currencyEmoji} ${formatBigNumber(totalCostBig)}... (${totalCostBig.toString().length} digits) and gotten scammed!`)
+                .setDescription(`${displayName} (@${message.author.username}) has paid for ${item.name} and gotten scammed!`)
                 .setColor('#2b2d31');
             message.reply({ embeds: [embed] });
             return;
@@ -68,10 +85,9 @@ const command: Command = {
         // Add item to inventory
         await addInventoryItem(message.author.id, item.id, BigInt(amount));
 
-        const itemEmoji = resolveEmoji(client, item.emoji || '📦');
         const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
         const embed = new EmbedBuilder()
-            .setDescription(`${displayName} (@${message.author.username}) has successfully purchased ${itemEmoji} ${formatBigNumber(BigInt(amount))}... (${BigInt(amount).toString().length} digits)! ~druga`)
+            .setDescription(`${displayName} (@${message.author.username}) has successfully purchased ${item.emoji} ${formatBigNumber(BigInt(amount))} ${item.name}!`)
             .setColor('#2b2d31');
         message.reply({ embeds: [embed] });
     },

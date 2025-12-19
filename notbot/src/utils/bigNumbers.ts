@@ -69,26 +69,51 @@ export function parseBigNumber(input: string): bigint | null {
 /**
  * Format a BigInt or large number for display
  * Under 21 digits: full number with commas
- * Over 21 digits: shows first 21 digits with commas, then &X where X is hidden digit count
- * Example: 123,456,789,012,345,678,901&120 (21 shown + 120 hidden = 141 total)
+ * Over 21 digits: shows first 21 digits with commas, then (TotalDigits digits)
  */
-export function formatBigNumber(amount: bigint | number | string): string {
+export function formatBigNumber(amount: bigint | number | string, options: { full?: boolean } = {}): string {
     const numStr = amount.toString().replace(/[^0-9-]/g, '');
     const isNegative = numStr.startsWith('-');
     const absNumStr = isNegative ? numStr.slice(1) : numStr;
     const digitCount = absNumStr.length;
 
-    // Add commas to a string
     const addCommas = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    if (digitCount <= 21) {
+    if (digitCount <= 21 || options.full) {
         return (isNegative ? '-' : '') + addCommas(absNumStr);
     }
 
-    // Over 21 digits - show first 21 digits with commas, then (TotalDigits digits)
     const first21 = absNumStr.slice(0, 21);
-    // const hiddenCount = digitCount - 21; // Unused now
     return (isNegative ? '-' : '') + `${addCommas(first21)}... (${digitCount} digits)`;
+}
+
+/**
+ * Format a number using shorthand (k, m, b, t, q)
+ * Used for XP denominators and compact UI
+ */
+export function formatShorthand(amount: bigint | number | string): string {
+    const big = BigInt(amount.toString().replace(/[^0-9-]/g, '') || '0');
+    const abs = big < 0n ? -big : big;
+
+    if (abs < 1000n) return big.toString();
+
+    const units = [
+        { suffix: 'k', value: 1000n },
+        { suffix: 'm', value: 1000000n },
+        { suffix: 'b', value: 1000000000n },
+        { suffix: 't', value: 1000000000000n },
+        { suffix: 'q', value: 1000000000000000n }
+    ];
+
+    let unit = units[0];
+    for (const u of units) {
+        if (abs >= u.value) unit = u;
+        else break;
+    }
+
+    const val = Number(abs * 1000n / unit.value) / 1000;
+    const formatted = val % 1 === 0 ? val.toFixed(0) : val.toString();
+    return (big < 0n ? '-' : '') + formatted + unit.suffix;
 }
 
 /**

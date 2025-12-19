@@ -25,8 +25,8 @@ const command: Command = {
             return;
         }
 
-        const min = Math.max(1, Math.floor(gen.stat_efficiency / 2));
-        const max = Math.max(1, gen.stat_efficiency);
+        const min = gen.efficiency_level || 1;
+        const max = min * 2;
         const count = Math.floor(Math.random() * (max - min + 1)) + min;
 
         // Update Claim Time

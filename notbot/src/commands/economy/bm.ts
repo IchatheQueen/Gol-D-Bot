@@ -10,27 +10,46 @@ const command: Command = {
     description: 'View the Black Market',
     aliases: ['blackmarket'],
     execute: async (message: Message, args: string[], client: Client) => {
-        const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
-        const drugs = '[ID: **10**] 💊 **Pill** - Price: 💵 **1Q**\n└ Used to grow your cat\n' +
-            '[ID: **11**] 💉 **Cat Pill** - Price: 💵 **2Q**\n└ Grow your cat even more!\n' +
-            '[ID: **5**] 🧬 **DNA** - Price: 💵 **50Q**\n└ Change your cats appearance';
-        const drugsCont = '[ID: **12**] 🍭 **LSD** - Price: 💵 **50Q**\n└ Makes your cat and you go on a trip';
-        const farming = '[ID: **100**] 💧 **Water** - Price: 💵 **500B**\n└ Water your crops\n' +
-            '[ID: **101**] 💩 **Fertilizer** - Price: 💵 **1T**\n└ Make them grow faster';
-        const counterfeit = '[ID: **200**] 📜 **Counterfeit Paper** - Price: 🌿 **50**\n└ Paper for counterfeit cash\n' +
-            '[ID: **201**] ☁️ **Special Ink** - Price: 🌿 **100**\n└ Ink for counterfeit cash';
+        const items = Object.entries(blackMarketItems);
+
+        const drugs = items.filter(([_, item]) => item.type === 'drug' && parseInt(item.id) <= 6)
+            .map(([id, item]) => `[${id}] ${item.emoji} ${item.name} - ${item.description} -- Price: ${item.currency === 'cash' ? '💵' : item.currency === 'weed' ? '🌿' : '💊'} ${formatBigNumber(item.price)}`)
+            .join('\n');
+
+        const drugs2 = items.filter(([_, item]) => item.type === 'drug' && parseInt(item.id) > 6)
+            .map(([id, item]) => `[${id}] ${item.emoji} ${item.name} - ${item.description} -- Price: 🌿 ${formatBigNumber(item.price)}`)
+            .join('\n');
+
+        const farming = items.filter(([_, item]) => item.type === 'farming')
+            .map(([id, item]) => `[${id}] ${item.emoji} ${item.name} - ${item.description} -- Price: ${item.currency === 'weed' ? '🌿' : '💊'} ${formatBigNumber(item.price)}`)
+            .join('\n');
+
+        const counterfeit = items.filter(([_, item]) => item.type === 'counterfeit')
+            .map(([id, item]) => {
+                let priceStr = '';
+                if (item.currency === 'complex' && item.paymentItems) {
+                    priceStr = item.paymentItems.map(p => {
+                        const emoji = p.id === 'ink' ? '☁️' : '📜';
+                        return `${emoji} ${p.amount}`;
+                    }).join(' & ');
+                } else {
+                    const emoji = item.currency === 'weed' ? '🌿' : item.currency === 'counterfeit_cash' ? '💵' : '💵';
+                    priceStr = `${emoji} ${formatBigNumber(item.price)}`;
+                }
+                return `[${id}] ${item.emoji} ${item.name} - ${item.description} -- Price: ${priceStr}`;
+            })
+            .join('\n');
 
         const embed = new EmbedBuilder()
-            .setTitle('🕵️ | SlotBot Black Market')
-            .setDescription('`~exch <id> <amount>` to make a trade\n⚠️ Be careful! This shop may scam you!\n👁️ Hint: The id is the number in brackets next to the item! E.g: [ID: 1] is 1')
-            .setColor('#2b2d31');
-
-        embed.addFields(
-            { name: 'Drugs', value: drugs },
-            { name: 'Drugs (Cont.)', value: drugsCont },
-            { name: 'Farming', value: farming },
-            { name: 'Counterfeit', value: counterfeit }
-        );
+            .setTitle('Black Market')
+            .setDescription('Welcome to the black market! `~exch <id> <amount>` to make a trade. Be careful though, the people here cannot be trusted...')
+            .setColor('#2b2d31')
+            .addFields(
+                { name: 'Drugs', value: drugs || 'None' },
+                { name: 'Drugs (1024 char limit :/)', value: drugs2 || 'None' },
+                { name: 'Farming', value: farming || 'None' },
+                { name: 'Counterfeit', value: counterfeit || 'None' }
+            );
 
         message.reply({ embeds: [embed] });
     },

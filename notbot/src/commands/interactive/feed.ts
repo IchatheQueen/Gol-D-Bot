@@ -3,7 +3,7 @@ import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 import { resolveEmoji } from '../../utils/resolveEmoji';
-import { updatePetStats, isPetDead } from '../../utils/petUtils';
+import { updatePetStats, isPetDead, addPetBuff } from '../../utils/petUtils';
 
 const VALID_FOODS = ['beer', 'energy drink', 'coffee', 'opioid', 'steroid', 'medicine', 'pill', 'p', 'c', 'cat_pill'];
 
@@ -33,8 +33,10 @@ const command: Command = {
             const cooldownTime = 1 * 60 * 60 * 1000;
             if (now - lastFed < cooldownTime) {
                 const diff = cooldownTime - (now - lastFed);
-                const minutes = Math.ceil(diff / 60000);
-                message.reply(`Your pet is still full! Wait **${minutes} minutes** before feeding it again.`);
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                message.reply(`Your cat is ignoring you... try again in **${timeStr}**`);
                 return;
             }
         }
@@ -93,27 +95,38 @@ const command: Command = {
                 return;
             }
             const gen = genCheck.rows[0] as any;
-            const healthBuff = 12 * gen.health_level;
-            const hungerBuff = 9 * gen.hunger_level;
-            const thirstBuff = 15 * gen.thirst_level;
-            const energyBuff = 12 * gen.energy_level;
+            const potency = gen.potency_level || 1;
+            const efficiency = gen.efficiency_level || 1;
+
+            const healthBuff = 12 * (gen.health_level || 1);
+            const hungerBuff = 9 * (gen.hunger_level || 1);
+            const thirstBuff = 15 * (gen.thirst_level || 1);
+            const energyBuff = 12 * (gen.energy_level || 1);
 
             await db.execute({
                 sql: `UPDATE pets SET 
-                       hunger = MIN(100, hunger + ?),
-                       thirst = MIN(100, thirst + ?),
-                       energy = MIN(100, energy + ?),
+                       hunger = hunger + ?,
+                       thirst = thirst + ?,
+                       energy = energy + ?,
                        health = MIN(max_health, health + ?)
                        WHERE user_id = ?`,
                 args: [hungerBuff, thirstBuff, energyBuff, healthBuff, userId]
             });
-            restoreMsg = `restored hunger, thirst, energy, and health`;
+            restoreMsg = `restored 🌯 hunger, 💧 thirst, 🔋 energy, and 🧒 health`;
         } else if (itemId === 'cat_pill') {
             await db.execute({
-                sql: 'UPDATE pets SET thirst = MIN(100, thirst + 8), energy = MIN(100, energy + 20) WHERE user_id = ?',
+                sql: 'UPDATE pets SET thirst = thirst + 8, energy = energy + 20 WHERE user_id = ?',
                 args: [userId]
             });
+            await addPetBuff(userId, 'intellect', 2, 60 * 60 * 1000);
+            await addPetBuff(userId, 'strength', 2, 60 * 60 * 1000);
             restoreMsg = `restored 💧 8 and 🔋 20 as well as doubled its intellect & strength for an hour`;
+        } else if (itemId === 'opioid') {
+            await addPetBuff(userId, 'endurance', 5, 60 * 60 * 1000);
+            restoreMsg = `quintupled its endurance for an hour`;
+        } else if (itemId === 'steroid') {
+            await addPetBuff(userId, 'strength', 3, 60 * 60 * 1000);
+            restoreMsg = `tripled its strength for an hour`;
         } else if (itemId === 'medicine') {
             await db.execute({
                 sql: 'UPDATE pets SET health = MIN(max_health, health + 250) WHERE user_id = ?',
@@ -122,7 +135,7 @@ const command: Command = {
             restoreMsg = `restored 💖 250`;
         } else if (itemId === 'beer') {
             await db.execute({
-                sql: 'UPDATE pets SET thirst = MIN(100, thirst + 20) WHERE user_id = ?',
+                sql: 'UPDATE pets SET thirst = thirst + 20 WHERE user_id = ?',
                 args: [userId]
             });
             restoreMsg = `restored 💧 20 but they look a bit wobbly`;
@@ -134,7 +147,7 @@ const command: Command = {
             restoreMsg = `restored 🔋 100 but they are now very thirsty`;
         } else if (itemId === 'coffee') {
             await db.execute({
-                sql: 'UPDATE pets SET thirst = MIN(100, thirst + 8), energy = MIN(100, energy + 20) WHERE user_id = ?',
+                sql: 'UPDATE pets SET thirst = thirst + 8, energy = energy + 20 WHERE user_id = ?',
                 args: [userId]
             });
             restoreMsg = `restored 💧 8 and 🔋 20`;

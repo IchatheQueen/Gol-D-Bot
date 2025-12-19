@@ -148,14 +148,34 @@ export async function initDatabase() {
         )
     `);
 
-    // Generators Table
+    // Pet Buffs (Duration-based multipliers)
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS pet_buffs (
+            user_id TEXT NOT NULL,
+            stat TEXT NOT NULL,
+            multiplier REAL NOT NULL,
+            expires_at INTEGER NOT NULL,
+            PRIMARY KEY (user_id, stat)
+        )
+    `);
+
+    // Generators Table (Expanded)
     await db.execute(`
         CREATE TABLE IF NOT EXISTS generators (
             user_id TEXT PRIMARY KEY,
             level INTEGER DEFAULT 1,
-            slots INTEGER DEFAULT 1,
-            production_rate INTEGER DEFAULT 1,
-            storage_capacity INTEGER DEFAULT 100,
+            invested TEXT DEFAULT '0',
+            credits INTEGER DEFAULT 0,
+            potency_level INTEGER DEFAULT 1,
+            efficiency_level INTEGER DEFAULT 1,
+            health_level INTEGER DEFAULT 1,
+            hunger_level INTEGER DEFAULT 1,
+            thirst_level INTEGER DEFAULT 1,
+            energy_level INTEGER DEFAULT 1,
+            strength_level INTEGER DEFAULT 1,
+            agility_level INTEGER DEFAULT 1,
+            intellect_level INTEGER DEFAULT 1,
+            endurance_level INTEGER DEFAULT 1,
             last_collection INTEGER DEFAULT 0
         )
     `);

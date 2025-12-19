@@ -7,65 +7,51 @@ const command: Command = {
     description: 'Improve generator stats using points',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
-        const type = args[0]?.toLowerCase(); // stat
-        const amountStr = args[1]; // amount
-        const amount = parseInt(amountStr);
+        const type = args[0]?.toLowerCase();
+        const amount = parseInt(args[1] || '1');
 
-        const statMap: any = {
-            'effi': 'stat_efficiency', 'efficiency': 'stat_efficiency',
-            'pot': 'stat_potency', 'potency': 'stat_potency',
-            'health': 'stat_health', 'hunger': 'stat_hunger',
-            'thirst': 'stat_thirst', 'energy': 'stat_energy', 'ene': 'stat_energy',
-            'str': 'stat_strength', 'strength': 'stat_strength',
-            'agi': 'stat_agility', 'agility': 'stat_agility',
-            'int': 'stat_intellect', 'intellect': 'stat_intellect',
-            'end': 'stat_endurance', 'endurance': 'stat_endurance',
-            'meta': 'stat_metabolism', 'metabolism': 'stat_metabolism'
-        };
-
-        const displayMap: any = {
-            'stat_efficiency': 'efficiency',
-            'stat_potency': 'potency',
-            'stat_health': 'health',
-            'stat_hunger': 'hunger',
-            'stat_thirst': 'thirst',
-            'stat_energy': 'energy',
-            'stat_strength': 'strength',
-            'stat_agility': 'agility',
-            'stat_intellect': 'intellect',
-            'stat_endurance': 'endurance',
-            'stat_metabolism': 'metabolism'
-        };
-
-        const dbCol = statMap[type];
-
-        if (!dbCol || !amount || amount <= 0) {
+        if (!type || isNaN(amount) || amount <= 0) {
             message.reply('Usage: `~improve <stat> <amount>`');
             return;
         }
 
-        let genRes = await db.execute({ sql: 'SELECT * FROM generators WHERE user_id = ?', args: [userId] });
+        const statMap: Record<string, string> = {
+            'effi': 'efficiency_level', 'efficiency': 'efficiency_level',
+            'pot': 'potency_level', 'potency': 'potency_level',
+            'health': 'health_level', 'hunger': 'hunger_level',
+            'thirst': 'thirst_level', 'energy': 'energy_level',
+            'str': 'strength_level', 'strength': 'strength_level',
+            'agi': 'agility_level', 'agility': 'agility_level',
+            'int': 'intellect_level', 'intellect': 'intellect_level',
+            'end': 'endurance_level', 'endurance': 'endurance_level'
+        };
+
+        const dbCol = statMap[type];
+        if (!dbCol) {
+            message.reply('Invalid stat. Valid: potency, efficiency, health, hunger, thirst, energy, strength, agility, intellect, endurance');
+            return;
+        }
+
+        let genRes = await db.execute({ sql: 'SELECT credits FROM generators WHERE user_id = ?', args: [userId] });
         if (genRes.rows.length === 0) {
             message.reply('You don\'t have a generator.');
             return;
         }
         const gen = genRes.rows[0] as any;
 
-        if (gen.points < amount) {
-            message.reply(`Not enough points. You have ${gen.points}.`);
+        if (gen.credits < amount) {
+            message.reply(`Not enough credits. You have ${gen.credits}.`);
             return;
         }
 
         await db.execute({
-            sql: `UPDATE generators SET ${dbCol} = ${dbCol} + ?, points = points - ? WHERE user_id = ?`,
+            sql: `UPDATE generators SET ${dbCol} = ${dbCol} + ?, credits = credits - ? WHERE user_id = ?`,
             args: [amount, amount, userId]
         });
 
-        const displayStat = displayMap[dbCol];
-
         const embed = new EmbedBuilder()
-            .setDescription(`${message.author} has improved their pills' ${displayStat} boost by ${amount} points`)
-            .setColor('#2F3136');
+            .setDescription(`${message.author.username} (@${message.author.username}) has improved their pills' ${type} boost by ${amount} points`)
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },
