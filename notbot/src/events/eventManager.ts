@@ -20,6 +20,7 @@ const EVENT_DURATION = 15 * 60 * 1000; // 15 Mins
 const INACTIVITY_TIMEOUT = 3 * 60 * 60 * 1000; // 3 Hours
 const MAIN_GUILD_ID = '1341830866657083402';
 const PING_ROLE_ID = '1393121278499754085';
+const EVENT_CHANNEL_ID = '1393116733379710997';
 
 let lastActivity = Date.now();
 let lastInactivityPing = 0;
@@ -126,7 +127,14 @@ async function startRandomEvent(client: Client) {
     }
 
     client.guilds.cache.forEach(guild => {
-        // Find best channel: system channel, or 'general', or first text channel
+        // Try the specific event channel first
+        const specificChannel = guild.channels.cache.get(EVENT_CHANNEL_ID);
+        if (specificChannel && specificChannel.isTextBased()) {
+            (specificChannel as TextChannel).send({ embeds: [embed] }).catch(() => { });
+            return;
+        }
+
+        // Fallback: system channel, or 'general', or first text channel
         const channel = guild.systemChannel ||
             guild.channels.cache.find(c => (c.name.includes('general') || c.name.includes('chat')) && c.isTextBased()) ||
             guild.channels.cache.find(c => c.isTextBased());
