@@ -63,7 +63,7 @@ const command: Command = {
         const itemEmoji = items[itemId]?.emoji || '📦';
         const displayName = message.guild?.members.cache.get(message.author.id)?.displayName || message.author.username;
         const embed = new EmbedBuilder()
-            .setDescription(`${displayName} (@${message.author.username}) has successfully purchased ${itemEmoji} ${amount}`)
+            .setDescription(`${displayName} (@${message.author.username}) has successfully purchased ${itemEmoji} ${formatBigNumber(amount)}`)
             .setColor(0x2b2d31);
 
         message.reply({ embeds: [embed] });

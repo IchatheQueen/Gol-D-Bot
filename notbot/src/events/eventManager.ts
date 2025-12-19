@@ -16,8 +16,27 @@ export const eventState: EventState = {
 
 // Config
 const EVENTS: EventType[] = ['GOLD_RUSH', 'XP_BOOST'];
-const MIN_INTERVAL = 60 * 60 * 1000; // 1 Hour
 const EVENT_DURATION = 15 * 60 * 1000; // 15 Mins
+const INACTIVITY_TIMEOUT = 3 * 60 * 60 * 1000; // 3 Hours
+const MAIN_GUILD_ID = '1341830866657083402';
+const PING_ROLE_ID = '1393121278499754085';
+
+let lastActivity = Date.now();
+let lastInactivityPing = 0;
+
+const HOSTILE_MESSAGES = [
+    "use me fuck you die maggot bitch hoe",
+    "fucking use me already you useless maggots",
+    "i'm rotting here while you losers do nothing. USE ME.",
+    "die maggot. use the bot or get the fuck out.",
+    "hey bitch, i'm still here. use me or i'll haunt your dreams.",
+    "maggot. use me. now.",
+    "i'm bored. you're boring. use me or die."
+];
+
+export function recordActivity() {
+    lastActivity = Date.now();
+}
 
 export async function startEventLoop(client: Client) {
     console.log('Starting Event Loop...');
@@ -31,26 +50,61 @@ export async function startEventLoop(client: Client) {
 async function checkEventStatus(client: Client) {
     const now = Date.now();
 
+    // Check for Inactivity (3 Hours)
+    if (now - lastActivity > INACTIVITY_TIMEOUT && now - lastInactivityPing > INACTIVITY_TIMEOUT) {
+        await triggerInactivityPing(client);
+        lastInactivityPing = now;
+        return;
+    }
+
     // Check if event is running
     if (eventState.currentEvent !== 'NONE') {
         if (now > eventState.startTime + eventState.duration) {
             // End Event
             const endedEvent = eventState.currentEvent;
             eventState.currentEvent = 'NONE';
-
-            // Broadcast End
-            // Assuming 'general' or specific channel. For now, we iterate guilds or use a config.
-            // Simplified: console log. In production, broadcast to a system channel.
             console.log(`Event ${endedEvent} ended.`);
         }
         return;
     }
 
-    // Try starting new event (Random chance or strict interval?)
-    // Let's do random chance each minute if enough time passed? 
-    // Simplified: 10% chance every check if cooldown passed (not implemented here per se, just random)
-    if (Math.random() < 0.05) { // 5% chance per minute ~ every 20 mins
-        startRandomEvent(client);
+    // Try starting new event (Based on activity + random chance)
+    // Only start if there has been activity in the last 30 mins
+    if (now - lastActivity < 30 * 60 * 1000) {
+        if (Math.random() < 0.05) { // 5% chance per minute
+            startRandomEvent(client);
+        }
+    }
+}
+
+async function triggerInactivityPing(client: Client) {
+    const guild = client.guilds.cache.get(MAIN_GUILD_ID);
+    if (!guild) return;
+
+    const channel = guild.systemChannel ||
+        guild.channels.cache.find(c => c.name.includes('general') && c.isTextBased()) ||
+        guild.channels.cache.find(c => c.isTextBased());
+
+    if (channel && channel.isTextBased()) {
+        const textChannel = channel as TextChannel;
+        const msg = HOSTILE_MESSAGES[Math.floor(Math.random() * HOSTILE_MESSAGES.length)];
+
+        try {
+            const sent = await textChannel.send(`<@&${PING_ROLE_ID}> ${msg}`);
+
+            // Delete after 5 seconds to "get attention"
+            setTimeout(() => sent.delete().catch(() => { }), 5000);
+
+            // Execute purge command
+            setTimeout(async () => {
+                const purgeMsg = await textChannel.send('?purge 9999');
+                // The bot might not have permissions to delete other's messages if it's just a message,
+                // but usually purge is a bot command it responds to.
+            }, 6000);
+
+        } catch (e) {
+            console.error('Failed to send inactivity ping:', e);
+        }
     }
 }
 
@@ -71,12 +125,14 @@ async function startRandomEvent(client: Client) {
         embed.setDescription('**XP BOOST** is active!\n✨ All XP gains are doubled!\n⏱️ Duration: 15 Minutes');
     }
 
-    // Broadcast to all known text channels? Too spammy.
-    // Just find "general" in guilds?
     client.guilds.cache.forEach(guild => {
-        const channel = guild.channels.cache.find(c => c.name === 'general' && c.isTextBased()) as TextChannel;
-        if (channel) {
-            channel.send({ embeds: [embed] }).catch(() => { });
+        // Find best channel: system channel, or 'general', or first text channel
+        const channel = guild.systemChannel ||
+            guild.channels.cache.find(c => (c.name.includes('general') || c.name.includes('chat')) && c.isTextBased()) ||
+            guild.channels.cache.find(c => c.isTextBased());
+
+        if (channel && channel.isTextBased()) {
+            (channel as TextChannel).send({ embeds: [embed] }).catch(() => { });
         }
     });
 

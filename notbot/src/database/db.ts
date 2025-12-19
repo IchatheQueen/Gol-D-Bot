@@ -7,6 +7,9 @@ import { run as runClanMigration } from './migrations/create_clan_tables';
 import { run as runAchievementMigration } from './migrations/create_achievement_tables';
 import { run as runPremiumMigration } from './migrations/add_premium_column';
 import { run as runGeneratorMigration } from './migrations/create_generators';
+import { run as runUserSettingsMigration } from './migrations/create_user_settings';
+import { run as runBioMigration } from './migrations/add_bio_column';
+import { run as runLastFedMigration } from './migrations/add_last_fed_to_pets';
 
 // Turso connection - uses environment variables
 // TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set
@@ -165,6 +168,9 @@ export async function initDatabase() {
     await runAchievementMigration();
     await runPremiumMigration();
     await runGeneratorMigration();
+    await runUserSettingsMigration();
+    await runBioMigration();
+    await runLastFedMigration();
 
     // Marriages Table
     await db.execute(`

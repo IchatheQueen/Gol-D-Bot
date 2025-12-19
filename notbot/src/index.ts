@@ -5,7 +5,7 @@ import { processShortcuts } from './utils/shortcuts';
 import { EmbedUtils } from './utils/embeds';
 import { incrementCommandCount } from './commands/utility/stats';
 
-import { startEventLoop, getEventMultiplier } from './events/eventManager';
+import { startEventLoop, getEventMultiplier, recordActivity } from './events/eventManager';
 import fs from 'fs';
 import path from 'path';
 
@@ -120,6 +120,7 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
 
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (message.author.bot) return;
+    recordActivity();
 
     const userId = message.author.id;
     const blacklistRecord = await getBlacklistRecord(userId);
