@@ -2,16 +2,20 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import { shopItems } from '../../data/petItems';
 import { Command } from '../../handlers/commandHandler';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { getUserColor } from '../../database/userColor';
 
 const command: Command = {
-    name: 'petshop',
+    // SlotBot calls this ~gshop, a holdover from when the pet was a goose.
+    // Cat bot, so: ~cshop. Old names kept as aliases so nobody's muscle
+    // memory breaks.
+    name: 'cshop',
     description: 'Shop for cat related items',
-    aliases: ['catshop'],
+    aliases: ['petshop', 'catshop'],
     execute: async (message: Message, args: string[], client: Client) => {
         const embed = new EmbedBuilder()
             .setTitle('🐈 | Cat Shop')
-            .setDescription('`~gbuy <id> <amount>` to buy from here')
-            .setColor('#2f3136');
+            .setDescription('`~cbuy <id> <amount>` to buy from here')
+            .setColor(getUserColor(message.author.id));
 
         let refreshments = '';
         let toys = '';

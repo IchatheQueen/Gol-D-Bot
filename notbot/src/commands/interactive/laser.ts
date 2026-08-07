@@ -4,12 +4,39 @@ import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem, removeInventoryItem } from '../../database/inventory';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveTarget } from '../../utils/resolveTarget';
+import { isImmuneToAttacks } from '../../database/drugEffects';
 
 const command: Command = {
     name: 'laser',
     description: 'Use your cat\'s laser to destroy a target item',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
+
+        // Resolve Target FIRST before deducting costs
+        const targetResolved = await resolveTarget(message, args, client, 0);
+        if (!targetResolved) {
+            message.reply('Usage: `~laser <target>`');
+            return;
+        }
+
+        const targetId = targetResolved.id;
+
+        if (targetId === userId) {
+            message.reply('You cannot laser yourself!');
+            return;
+        }
+
+        const targetUser = await client.users.fetch(targetId).catch(() => null);
+        if (targetUser?.bot) {
+            message.reply('You cannot laser bots!');
+            return;
+        }
+
+        if (await isImmuneToAttacks(targetId, 'laser')) {
+            message.reply(`??? <@${targetId}> is immune to attacks right now!`);
+            return;
+        }
 
         // Get pet
         const petCheck = await db.execute({
@@ -27,8 +54,6 @@ const command: Command = {
         const targetItem = pet.target_item || 'balance';
 
         // Cost: Energy and Pills
-        // "Consumes Cat Pills and Cat Energy"
-        // Let's assume 1 Pill and Energy based on Strength/Endurance
         const energyCost = Math.max(10, 50 - pet.endurance);
         const pillCost = 1;
 
@@ -37,14 +62,14 @@ const command: Command = {
             return;
         }
 
-        // Check pills (user inventory or user stats? User has 'pills' column)
+        // Check pills
         const userCheck = await db.execute({
             sql: 'SELECT pills FROM users WHERE id = ?',
             args: [userId]
         });
         const user = userCheck.rows[0] as any;
 
-        if (user.pills < pillCost) {
+        if (!user || user.pills < pillCost) {
             message.reply('You need pills to use the laser!');
             return;
         }
@@ -59,48 +84,31 @@ const command: Command = {
             args: [pillCost, userId]
         });
 
-        // Effect: Disintegrates 100% of target item
+        // Effect: Disintegrates item or balance
         let resultMessage = '';
+        const targetName = targetUser ? targetUser.username : targetId;
 
-        // We need a target user for this to make sense.
-        // The command description says "~shoot <target>", but ~laser doesn't specify args in the prompt.
-        // Assuming ~laser <target>
-        const targetUser = message.mentions.users.first();
-        const targetId = targetUser ? targetUser.id : args[0];
-
-        if (!targetId) {
-            message.reply('Usage: `~laser <target>`');
-            return;
-        }
-
-        if (targetItem === 'balance') {
+        if (targetItem === 'balance' || targetItem === 'bal') {
             const targetData = await getUser(targetId);
-            // Destroy based on strength? Or 100%?
-            // "Disintegrates 100% of the item"
-            // Let's cap it at 50% for balance to be somewhat fair, or 100% if user insists.
-            // User said "Disintegrates 100% of the item".
-            // I'll do 100% but maybe it fails often?
-            // Let's do (10% * Strength) capped at 100% for now.
             const strengthPct = BigInt(Math.min(100, pet.strength * 10));
             const damage = (targetData.balance * strengthPct) / 100n;
 
             await updateUser(targetId, { balance: targetData.balance - damage });
-            resultMessage = `🕹️ **LASER BEAM!**\nYour cat disintegrated 💵 ${formatBigNumber(damage)} (${strengthPct}% efficiency) from ${targetUser?.username || targetId}!`;
+            resultMessage = `??? **LASER BEAM!**\nYour cat disintegrated ?? ${formatBigNumber(damage)} (${strengthPct}% efficiency) from ${targetName}!`;
         } else {
-            // Target is an item ID
             const targetInvAmount = await getInventoryItem(targetId, targetItem);
 
             if (targetInvAmount > 0n) {
-                const destroyed = targetInvAmount; // 100%
+                const destroyed = targetInvAmount;
                 await removeInventoryItem(targetId, targetItem, destroyed);
-                resultMessage = `🕹️ **LASER BEAM!**\nYour cat disintegrated ALL ${targetItem} (${destroyed}) from ${targetUser?.username || targetId}!`;
+                resultMessage = `??? **LASER BEAM!**\nYour cat disintegrated ALL ${targetItem} (${destroyed}) from ${targetName}!`;
             } else {
-                resultMessage = `🕹️ **LASER BEAM!**\nYour cat fired at ${targetUser?.username || targetId}'s ${targetItem}, but they didn't have any!`;
+                resultMessage = `??? **LASER BEAM!**\nYour cat fired at ${targetName}'s ${targetItem}, but they didn't have any!`;
             }
         }
 
         const embed = new EmbedBuilder()
-            .setTitle('🕹️ Cat Laser Attack')
+            .setTitle('??? Cat Laser Attack')
             .setDescription(resultMessage)
             .setColor('#ff00ff');
 

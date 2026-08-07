@@ -16,7 +16,7 @@ const command: Command = {
                 `\`~collect <type>\` to collect briefcases from your pool of kidnapped\n\n` +
                 `😂 **EnderMomandNates** | ${count.toLocaleString()}... (${count.toString().length} digits)`
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

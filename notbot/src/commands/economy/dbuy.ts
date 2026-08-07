@@ -34,7 +34,7 @@ const command: Command = {
         const price = BigInt(itemDef.price);
 
         if (user.credits < price) {
-            message.reply(`You need **💎 ${formatBigNumber(price)}** credits to buy **${itemDef.name}**! You have **💎 ${formatBigNumber(user.credits)}**.`);
+            message.reply(`You need **💚 ${formatBigNumber(price)}** credits to buy **${itemDef.name}**! You have **💚 ${formatBigNumber(user.credits)}**.`);
             return;
         }
 
@@ -68,8 +68,8 @@ const command: Command = {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle('💎 Purchase Successful')
-            .setDescription(`You bought **${itemDef.name}** for **💎 ${formatBigNumber(price)}**!${extraMsg}`)
+            .setTitle('💚 Purchase Successful')
+            .setDescription(`You bought **${itemDef.name}** for **💚 ${formatBigNumber(price)}**!${extraMsg}`)
             .setColor(getUserColor(message.author.id));
 
         message.reply({ embeds: [embed] });

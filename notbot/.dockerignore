@@ -1,0 +1,18 @@
+# Never bake secrets into the image — these go in via `fly secrets set`.
+.env
+.env.*
+
+# Local database files; production uses Turso.
+*.db
+*.sqlite
+*.sqlite3
+
+node_modules
+dist
+scripts
+
+npm-debug.log*
+*.log
+.git
+.vscode
+.idea

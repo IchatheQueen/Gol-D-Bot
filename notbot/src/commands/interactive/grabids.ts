@@ -35,12 +35,12 @@ const command: Command = {
         if (newState === 1) {
             const embed = new EmbedBuilder()
                 .setDescription(`@${message.author.username}'s [Lvl ${pet.level}] ${pet.name} will now grab attackers' IDs`)
-                .setColor('#2f3136');
+                .setColor('#2b2d31');
             message.reply({ embeds: [embed] });
         } else {
             const embed = new EmbedBuilder()
                 .setDescription(`@${message.author.username}'s [Lvl ${pet.level}] ${pet.name} will no longer grab attackers' IDs`)
-                .setColor('#2f3136');
+                .setColor('#2b2d31');
             message.reply({ embeds: [embed] });
         }
     },

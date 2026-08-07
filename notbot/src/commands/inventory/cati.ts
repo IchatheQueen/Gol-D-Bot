@@ -54,7 +54,7 @@ const command: Command = {
         const embed = new EmbedBuilder()
             .setTitle(`[Lvl ${pet.level}] ${pet.name}'s Stash`) // Flavor title
             .setDescription(description)
-            .setColor('#2F3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

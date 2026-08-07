@@ -14,8 +14,8 @@ const command: Command = {
         const embed = new EmbedBuilder()
             .setAuthor({ name: `@${message.author.username}'s Credits`, iconURL: message.author.displayAvatarURL() })
             .setTitle(`@${message.author.username}'s Credits`)
-            .setDescription(`PREMIUM CURRENCY\n\`~dcred help\` to get more information\n\n**Available Credit**\n💎 ${formatBigNumber(credits)}`)
-            .setColor('#2F3136');
+            .setDescription(`PREMIUM CURRENCY\n\`~dcred help\` to get more information\n\n**Available Credit**\n💚 ${formatBigNumber(credits)}`)
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

@@ -1,8 +1,9 @@
 import { Message, Client } from 'discord.js';
 import { getInventoryItem, removeInventoryItem, addInventoryItem } from '../../database/inventory';
-import { getUser, updateUser } from '../../database/economy';
+import { getUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { TIPPED_ARROWS } from './tipped';
 
 const briefcases = ['employee', 'richkid', 'oldlady', 'nitro', 'ender'];
 
@@ -47,18 +48,21 @@ const command: Command = {
         const money = BigInt(Math.floor(Math.random() * (max - min)) + min);
         const user = await getUser(message.author.id);
 
-        // Special Loot for Employee: Tipped Arrows
+        // Special Loot for Employee: Tipped Arrows. Grants a specific type —
+        // the old generic 'tipped_arrow' id was never read by ~tipped.
         let specialLootMsg = '';
         if (type === 'employee') {
             const arrowCount = Math.floor(Math.random() * 2); // 0 or 1
 
             if (arrowCount > 0) {
-                await addInventoryItem(message.author.id, 'tipped_arrow', BigInt(arrowCount));
+                const droppable = TIPPED_ARROWS.filter(a => a.id !== 'tipped_normal' && !('perk' in a));
+                const arrow = droppable[Math.floor(Math.random() * droppable.length)];
+                await addInventoryItem(message.author.id, arrow.id, BigInt(arrowCount));
+                specialLootMsg = `${arrow.emoji} ${arrowCount} ${arrow.name} along with `;
             }
-            specialLootMsg = `🏹 ${arrowCount} along with `;
         }
 
-        await updateUser(message.author.id, { balance: user.balance + money });
+        await adjustFunds(message.author.id, { balance: money });
         await removeInventoryItem(message.author.id, itemId, 1n);
 
         message.reply(`${message.author} has opened an ${type}'s briefcase and found ${specialLootMsg || ''}💵 ${formatBigNumber(money)}!`);

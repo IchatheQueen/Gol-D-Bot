@@ -1,8 +1,11 @@
+import { resolveTarget } from '../../utils/resolveTarget';
+import { isImmuneToAttacks } from '../../database/drugEffects';
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
-import { getUser, updateUser } from '../../database/economy';
+import { getUser, updateUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem, removeInventoryItem } from '../../database/inventory';
+import { getUserColor } from '../../database/userColor';
 import { sendCombatDM } from '../../utils/combatNotify';
 import { formatBigNumber } from '../../utils/bigNumbers';
 import { resolveEmoji } from '../../utils/resolveEmoji';
@@ -57,6 +60,11 @@ const command: Command = {
         });
         if (stunCheck.rows.length > 0) {
             message.reply('You are stunned and cannot attack!');
+            return;
+        }
+
+        if (await isImmuneToAttacks(targetId, user.selected_weapon || 'pistol')) {
+            message.reply(`??? <@${targetId}> is immune to attacks right now!`);
             return;
         }
 
@@ -125,12 +133,16 @@ const command: Command = {
         }
 
         // Get target display name
-        const attackerTag = `${message.author.username}#${message.author.discriminator}`;
-        const targetTag = targetUser ? `${targetUser.username}#${targetUser.discriminator}` : targetId;
+        const attackerTag = message.member?.displayName || message.author.username;
+        const targetMember = targetUser ? message.guild?.members.cache.get(targetUser.id) : null;
+        const targetTag = targetUser ? (targetMember?.displayName || targetUser.username) : targetId;
 
         let resultMessage = '';
         let totalStolen = 0n;
         let totalDamage = 0n;
+        // Pistol reports as a staggered sequence of separate messages instead
+        // of one embed, so the shot plays out beat by beat.
+        let staggerPistol = false;
 
         if (weaponId === 'pistol') {
             // Pistol: Steals 6-18%, Disintegrates 9-54%
@@ -140,7 +152,7 @@ const command: Command = {
             totalStolen = (targetData.balance * stealPct) / 100n;
             totalDamage = (targetData.balance * destroyPct) / 100n;
 
-            resultMessage = `${attackerTag} has shot ${targetTag} with their ${weaponEmoji}, stealing 💵 ${formatBigNumber(totalStolen)} and disintegrating another 💵 ${formatBigNumber(totalDamage)}`;
+            staggerPistol = true;
         }
         else if (weaponId === 'rifle') {
             // Check for 'obliterate' alias
@@ -343,8 +355,15 @@ const command: Command = {
                 totalDamage = targetData.balance - totalStolen;
             }
 
-            await updateUser(targetId, { balance: targetData.balance - totalStolen - totalDamage });
-            await updateUser(userId, { balance: user.balance + totalStolen });
+            // Debit the victim atomically so two simultaneous shots can't take
+            // the same money twice; only credit what was actually removed.
+            const taken = await adjustFunds(targetId, { balance: -(totalStolen + totalDamage) });
+            if (taken) {
+                await adjustFunds(userId, { balance: totalStolen });
+            } else {
+                totalStolen = 0n;
+                totalDamage = 0n;
+            }
         }
 
         // Set Cooldown
@@ -353,7 +372,34 @@ const command: Command = {
             args: [userId, cooldownKey, Date.now()]
         });
 
-        if (resultMessage) {
+        // Summary used for the victim's DM. Built independently of
+        // resultMessage, which some weapons deliberately leave empty — those
+        // victims previously received a blank DM that silently failed to send.
+        let dmSummary = resultMessage;
+
+        if (staggerPistol) {
+            const remaining = targetData.balance - totalStolen - totalDamage;
+            const lines = [
+                `${attackerTag} has opened fire on ${targetTag} using their ${weaponEmoji}`,
+                `The rounds tear straight through ${targetTag}'s pockets`,
+                `💵 ${formatBigNumber(totalStolen)} has been moved to ${attackerTag}'s account`,
+                `💵 ${formatBigNumber(totalDamage)} disintegrated in the crossfire`,
+                `${targetTag} is left with 💵 ${formatBigNumber(remaining < 0n ? 0n : remaining)}`,
+            ];
+
+            // First line replies to the command, the rest land as their own
+            // messages so the sequence plays out beat by beat.
+            await message.reply({ embeds: [new EmbedBuilder().setDescription(lines[0]).setColor(getUserColor(userId))] });
+
+            for (const line of lines.slice(1)) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                await (message.channel as any).send({
+                    embeds: [new EmbedBuilder().setDescription(line).setColor(getUserColor(userId))]
+                });
+            }
+
+            dmSummary = lines.join('\n');
+        } else if (resultMessage) {
             const embed = new EmbedBuilder()
                 .setDescription(resultMessage)
                 .setColor('#ff0000');
@@ -361,9 +407,17 @@ const command: Command = {
             message.reply({ embeds: [embed] });
         }
 
+        if (!dmSummary) {
+            // Weapons that stream their own play-by-play (e.g. the rifle loop)
+            // still owe the victim a summary.
+            dmSummary = `${attackerTag} attacked you with their ${weaponEmoji}`
+                + (totalStolen > 0n ? `, taking 💵 ${formatBigNumber(totalStolen)}` : '')
+                + (totalDamage > 0n ? ` and disintegrating 💵 ${formatBigNumber(totalDamage)}` : '');
+        }
+
         // DM the target about the attack
         if (targetId !== userId) {
-            await sendCombatDM(client, targetId, resultMessage);
+            await sendCombatDM(client, targetId, dmSummary);
         }
     },
 };

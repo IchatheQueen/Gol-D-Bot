@@ -14,7 +14,7 @@ export const blackMarketItems: Record<string, BlackMarketItem> = {
     '002': { id: 'cash_12b', name: '12B', emoji: '💵', price: '1', currency: 'weed', description: 'Sell your weed to someone else', type: 'drug' },
     '003': { id: 'opioid', name: 'Opioid', emoji: '💊', price: '10000000', currency: 'weed', description: 'Immune to ~shoot & ~beatup ; clears all existing cooldowns; reduces all new cooldowns by half while active; lasts for 30 min', type: 'drug' },
     '004': { id: 'weed_10m', name: '10M Weed', emoji: '🌿', price: '1', currency: 'opioid', description: 'Sell opioids to someone else', type: 'drug' },
-    '005': { id: 'steroid', name: 'Steroid', emoji: '💉', price: '18000000', currency: 'opioid', description: 'Immune to ~hex ; lowers chance of getting scammed; lasts for 30 min', type: 'drug' },
+    '005': { id: 'steroid', name: 'Steroid', emoji: '💉', price: '18000000', currency: 'opioid', description: 'Immune to ~hex & ~boost ; lowers chance of getting scammed; lasts for 30 min', type: 'drug' },
     '006': { id: 'weed_18m', name: '18M Weed', emoji: '🌿', price: '1', currency: 'steroid', description: 'Sell steroids to someone else', type: 'drug' },
     '007': { id: 'anesthetic', name: 'Anesthetic', emoji: '💉', price: '300000000', currency: 'weed', description: 'Puts you to sleep... immune to all attacks', type: 'drug' },
     '008': { id: 'lsd', name: 'LSD', emoji: '🌀', price: '450000000', currency: 'weed', description: 'Lasts for 15 minutes; commands display INCORRECT numbers', type: 'drug' },

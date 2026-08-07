@@ -1,5 +1,5 @@
 import { Message, Client } from 'discord.js';
-import { getUser, updateUser } from '../../database/economy';
+import { getUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
 
@@ -57,10 +57,15 @@ const command: Command = {
 
         const finalAmount = creditsToAdd * 50000n;
 
-        await updateUser(message.author.id, {
-            balance: user.balance - finalAmount,
-            credits: currentCredits + creditsToAdd,
+        const ok = await adjustFunds(message.author.id, {
+            balance: -finalAmount,
+            credits: creditsToAdd,
         });
+
+        if (!ok) {
+            message.reply('You do not have enough money in your wallet.');
+            return;
+        }
 
         message.reply(`Deposited 💵 $${formatBigNumber(finalAmount)} into your vault as 🍥 ${creditsToAdd} credit(s).`);
     },

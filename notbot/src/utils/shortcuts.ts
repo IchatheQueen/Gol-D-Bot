@@ -1,20 +1,16 @@
 // Shortcuts utility for processing command arguments
 
+import { expandDigitShorthand } from './bigNumbers';
+
 export function processShortcuts(args: string[], userId: string): string[] {
     return args.map(arg => {
-        // Number shortcuts with & (e.g., 1&5 = 10000, 123456&10 = 1234560000)
+        // Number shortcuts with & (e.g., 1&5 = 10000, 123456&10 = 1234560000).
+        // Shares one BigInt implementation with parseBigNumber so the two can
+        // no longer disagree, and so huge inputs don't degrade into "1e+24".
         if (arg.includes('&')) {
-            const match = arg.match(/^(\d+(?:\.\d+)?)&(\d+)$/);
-            if (match) {
-                const base = parseFloat(match[1]);
-                const totalDigits = parseInt(match[2]);
-                const currentDigits = match[1].replace('.', '').length;
-                const zerosToAdd = totalDigits - currentDigits;
-
-                if (zerosToAdd >= 0) {
-                    const result = base * Math.pow(10, zerosToAdd);
-                    return Math.floor(result).toString();
-                }
+            const expanded = expandDigitShorthand(arg);
+            if (expanded !== null) {
+                return expanded.toString();
             }
         }
 

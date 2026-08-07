@@ -1,3 +1,4 @@
+import { resolveTarget } from '../../utils/resolveTarget';
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { getUser, updateUser } from '../../database/economy';
@@ -15,7 +16,7 @@ const command: Command = {
         }
 
         const category = args[0]?.toLowerCase();
-        const targetUser = message.mentions.users.first();
+        const targetUser = await resolveTarget(message, args, client, 1);
 
         if (!category) {
             const embed = new EmbedBuilder()

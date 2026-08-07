@@ -1,5 +1,5 @@
 import { Message, Client } from 'discord.js';
-import { getUser, updateUser } from '../../database/economy';
+import { adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { resolveTarget } from '../../utils/resolveTarget';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
@@ -33,9 +33,12 @@ const command: Command = {
             return;
         }
 
-        const sender = await getUser(message.author.id);
+        // Debit first, atomically. This both checks and takes the funds in one
+        // compare-and-swap, so two concurrent ~pay calls can't spend the same
+        // money twice.
+        const debited = await adjustFunds(message.author.id, { balance: -amount });
 
-        if (sender.balance < amount) {
+        if (!debited) {
             message.reply('You do not have enough money in your wallet.');
             return;
         }
@@ -44,9 +47,7 @@ const command: Command = {
         const isBotOrOwner = targetId === client.user?.id || targetId === BOT_OWNER_ID;
 
         if (isBotOrOwner) {
-            // Special handling: money gets "burned"
-            await updateUser(message.author.id, { balance: sender.balance - amount });
-
+            // Money is already gone from the sender — it just gets burned.
             const targetName = target.username;
 
             await message.reply(
@@ -61,11 +62,14 @@ const command: Command = {
                 `Keep your pocket change to yourself, peasant`
             );
         } else {
-            // Normal transfer
-            const receiver = await getUser(targetId);
-
-            await updateUser(message.author.id, { balance: sender.balance - amount });
-            await updateUser(targetId, { balance: receiver.balance + amount });
+            // Normal transfer — sender is already debited, so credit the
+            // receiver and refund if that fails for any reason.
+            try {
+                await adjustFunds(targetId, { balance: amount });
+            } catch (err) {
+                await adjustFunds(message.author.id, { balance: amount });
+                throw err;
+            }
 
             message.reply(`Sent 💵 $${formatBigNumber(amount)} to ${target.username}`);
 

@@ -33,7 +33,7 @@ const command: Command = {
                 `${resolveEmoji(client, rifleDef.emoji)} **${rifleDef.name}s** | ${rifle.toLocaleString()}\n` +
                 `${resolveEmoji(client, propaneDef.emoji)} **${propaneDef.name}** | ${propane.toLocaleString()}`
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

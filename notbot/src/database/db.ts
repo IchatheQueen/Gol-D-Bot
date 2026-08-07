@@ -10,6 +10,8 @@ import { run as runGeneratorMigration } from './migrations/create_generators';
 import { run as runUserSettingsMigration } from './migrations/create_user_settings';
 import { run as runBioMigration } from './migrations/add_bio_column';
 import { run as runLastFedMigration } from './migrations/add_last_fed_to_pets';
+import { run as runTippedArrowMigration } from './migrations/unify_tipped_arrows';
+import { run as runSettingsColumnsMigration } from './migrations/add_settings_columns';
 
 // Turso connection - uses environment variables
 // TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set
@@ -191,6 +193,8 @@ export async function initDatabase() {
     await runUserSettingsMigration();
     await runBioMigration();
     await runLastFedMigration();
+    await runTippedArrowMigration();
+    await runSettingsColumnsMigration();
 
     // Marriages Table
     await db.execute(`

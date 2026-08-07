@@ -11,17 +11,24 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
 
-        // Check if user has Statistician
+        // Statistician unlocks the balance variables. Plain arithmetic stays
+        // available to everyone — this command used to be shadowed by a basic
+        // calculator of the same name, so non-donators had ~calc regardless.
         const statAmount = await getInventoryItem(userId, 'p6');
-        if (statAmount < 1n) {
-            message.reply('You need the **Statistician** donator item to use this command! Check `~dshop`.');
-            return;
-        }
+        const hasStatistician = statAmount >= 1n;
 
         const expression = args.join(' ');
 
         if (!expression) {
-            message.reply('Usage: `~calc <expression>`\nExample: `~calc allmoney / 10000`\n\nVariables: `allmoney` (total balance), `bal` (balance), `vault` (vault)');
+            const usage = hasStatistician
+                ? 'Usage: `~calc <expression>`\nExample: `~calc allmoney / 10000`\n\nVariables: `allmoney` (total balance), `bal` (balance), `vault` (vault)'
+                : 'Usage: `~calc <expression>`\nExample: `~calc 2 + 2`\n\nUnlock the `allmoney`, `bal` and `vault` variables with the **Statistician** donator item — check `~dshop`.';
+            message.reply(usage);
+            return;
+        }
+
+        if (!hasStatistician && /allmoney|bal|vault/i.test(expression)) {
+            message.reply('You need the **Statistician** donator item to use balance variables in `~calc`! Check `~dshop`.');
             return;
         }
 

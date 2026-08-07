@@ -1,6 +1,16 @@
 import { Message, Client } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
+import { getUserColor } from '../../database/userColor';
+
+// Base feed cooldown. Previously the check below used 30m while the reduction
+// math assumed 1h, so petting moved the timer by the wrong amount.
+const FEED_COOLDOWN_MS = 30 * 60 * 1000;
+
+// "Reduce your pets feeding cooldown by 1/3" — so the remaining time is scaled
+// to 2/3, not cut by a flat amount. (24m remaining -> 16m, as the real bot shows.)
+const PET_REDUCTION_NUMERATOR = 2n;
+const PET_REDUCTION_DENOMINATOR = 3n;
 
 const command: Command = {
     name: 'pet',
@@ -16,7 +26,8 @@ const command: Command = {
         const pet = petCheck.rows[0] as any;
 
         if (!pet) {
-            message.reply('You don\'t have a cat!');
+            // Plain text, not an embed — matches how rejections render.
+            message.reply('You do not have a pet [Lvl 1] Cat; `~adopt` to adopt one!');
             return;
         }
 
@@ -32,27 +43,32 @@ const command: Command = {
             return;
         }
 
-        const timeLeft = Number(feedCooldown.timestamp) + (30 * 60 * 1000) - Date.now(); // Assuming 30m base cooldown
+        const timeLeft = Number(feedCooldown.timestamp) + FEED_COOLDOWN_MS - Date.now();
 
         if (timeLeft <= 0) {
             message.reply('Feed cooldown already expired!');
             return;
         }
 
-        // Set cooldown to exactly 10 minutes from now (or reduce to 10 mins)
-        // Screenshot implies "reduced its feeding cooldown to 10 minutes"
-        const tenMins = 10 * 60 * 1000;
-        const newTimestamp = Date.now() - (60 * 60 * 1000) + tenMins; // Set so timestamp + 1h = now + 10m
+        // Petting takes time off the remaining feed cooldown; the reply reports
+        // whatever is actually left, which is why real output varies (e.g. 16m)
+        // rather than always naming a fixed number.
+        const reducedTimeLeft = Math.max(
+            0,
+            Number((BigInt(Math.floor(timeLeft)) * PET_REDUCTION_NUMERATOR) / PET_REDUCTION_DENOMINATOR)
+        );
+        const newTimestamp = Date.now() - FEED_COOLDOWN_MS + reducedTimeLeft;
 
         await db.execute({
             sql: 'UPDATE cooldowns SET timestamp = ? WHERE user_id = ? AND command = ?',
             args: [newTimestamp, userId, 'feed']
         });
 
+        const minutesLeft = Math.ceil(reducedTimeLeft / (60 * 1000));
         const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
         const embed = {
-            description: `${displayName} (@${message.author.username}) has pet their [Lvl ${pet.level}] Cat and reduced its feeding cooldown to 10 minutes`,
-            color: 0x2b2d31
+            description: `${displayName} (@${message.author.username}) has pet their [Lvl ${pet.level}] Cat and reduced its feeding cooldown to ${minutesLeft} minutes`,
+            color: getUserColor(userId)
         };
 
         message.reply({ embeds: [embed] });

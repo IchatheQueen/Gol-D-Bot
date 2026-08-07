@@ -1,5 +1,5 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
-import { getUser, updateUser } from '../../database/economy';
+import { adjustFunds } from '../../database/economy';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
@@ -11,9 +11,11 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const channelId = message.channel.id;
 
-        // Check DB for active drop
+        // Claim the drop by deleting it and reading the amount back in one
+        // statement. Only one caller can win the DELETE, so two people typing
+        // ~grab at the same moment can no longer both get paid.
         const result = await db.execute({
-            sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
+            sql: 'DELETE FROM wallet_drops WHERE channel_id = ? RETURNING amount',
             args: [channelId]
         });
 
@@ -27,19 +29,9 @@ const command: Command = {
             return;
         }
 
-        // Atomic delete and reward (prevents race conditions better)
-        // Or check if already claimed (though we just delete it upon claim)
-
-        // Delete the drop
-        await db.execute({
-            sql: 'DELETE FROM wallet_drops WHERE channel_id = ?',
-            args: [channelId]
-        });
-
         // Add money to user
         const amount = BigInt(drop.amount as string);
-        const user = await getUser(message.author.id);
-        await updateUser(message.author.id, { balance: user.balance + amount });
+        await adjustFunds(message.author.id, { balance: amount });
 
         // Send success message
         const embed = new EmbedBuilder()

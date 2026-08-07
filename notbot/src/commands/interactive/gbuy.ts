@@ -8,8 +8,10 @@ import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 
 const command: Command = {
-    name: 'gbuy',
-    description: 'Buy items from the pet shop',
+    // Renamed from ~gbuy (goose-era) to pair with ~cshop. Old name kept as an alias.
+    name: 'cbuy',
+    description: 'Buy items from the cat shop',
+    aliases: ['gbuy'],
     execute: async (message: Message, args: string[], client: Client) => {
         const id = args[0];
         const amount = parseBigNumber(args[1] || '1') || 1n;

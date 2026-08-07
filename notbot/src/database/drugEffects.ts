@@ -67,8 +67,9 @@ export async function isImmuneToAttacks(userId: string, attackType: string): Pro
         return true;
     }
 
-    // Steroid makes you immune to Hex
-    if (await hasActiveDrugEffect(userId, 'ster') && attackType.toLowerCase() === 'hex') {
+    // Steroid makes you immune to: Hex, Boost
+    const steroidImmune = ['hex', 'boost'];
+    if (await hasActiveDrugEffect(userId, 'ster') && steroidImmune.includes(attackType.toLowerCase())) {
         return true;
     }
 

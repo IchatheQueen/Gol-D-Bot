@@ -67,7 +67,7 @@ const command: Command = {
 
             const embed = new EmbedBuilder()
                 .setDescription(`${message.author} has stolen a ${typeName} ${emoji}! \`~briefcases\``)
-                .setColor('#2F3136'); // Dark gray/black from screenshot
+                .setColor('#2b2d31'); // Dark gray/black from screenshot
 
             message.reply({ embeds: [embed] });
         } else {

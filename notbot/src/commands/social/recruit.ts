@@ -19,7 +19,7 @@ const command: Command = {
             const embed = new EmbedBuilder()
                 .setTitle(`@${message.author.username}'s Recruit List [${recruits.rows.length} / 7]`) // Limit 7 hardcoded for now
                 .setDescription('Get **+3** more slots for your recruit limit and much more with 🪙 **Gold**\n(`~patreon`).\n\n')
-                .setColor('#2f3136');
+                .setColor('#2b2d31');
 
             if (recruits.rows.length === 0) {
                 embed.setDescription(embed.data.description + 'No recruits found.');
@@ -172,7 +172,7 @@ const command: Command = {
                 '~~`~recruit toggle` to toggle requests on or off. (Default is off)~~\n' +
                 'Sub command moved to `~settings`!'
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
         message.reply({ embeds: [helpEmbed] });
     },
 };

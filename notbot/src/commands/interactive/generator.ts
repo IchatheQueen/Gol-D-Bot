@@ -13,6 +13,17 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
 
+        if (args[0]?.toLowerCase() === 'help') {
+            message.reply(
+                'Usage:\n' +
+                '`~fund <amount>` - Invest money\n' +
+                '`~improve <stat> <amount>` - Use credits\n' +
+                '`~dispense` - Collect pills\n' +
+                '`~rollback <stat> <amount>` - Refund stats'
+            );
+            return;
+        }
+
         // Check ownership first
         const { getInventoryItem } = await import('../../database/inventory'); // Dynamic import or add to top
         const generatorAmount = await getInventoryItem(userId, 'pill_generator');
@@ -106,7 +117,7 @@ const command: Command = {
 
         const embed = new EmbedBuilder()
             .setTitle('🗜️ | Cat Pill Generator') // Clamp?
-            .setDescription(`Built by ${message.author.username} (@${message.author.username})\n\`GAYgen help\` for some help`)
+            .setDescription(`Built by ${message.author.username} (@${message.author.username})\n\`~gen help\` for some help`)
             .setColor(getUserColor(userId))
             .addFields(
                 {
@@ -130,10 +141,9 @@ const command: Command = {
                         `🥓 Metabolism - ${gen.level} [${gen.level}x]`, // Added Metabolism to match Pet screenshot style if needed, though Generator screenshot didn't show it explicitly initially? Wait, "Endurance" was last line in screenshot. I'll stick to screenshot.
                     inline: false
                 }
-            )
-            .setFooter({ text: 'Spice up your cat with a cosmetic skin via ~market' }); // Copied from pet screenshot, maybe not applicable to generator? Screenshot doesn't show footer. Removed.
-
-        // Actually screenshot does NOT have footer about market. It ends at Endurance.
+            );
+        // No footer — the generator embed ends at Endurance, and the ~market
+        // command it used to point at does not exist.
 
         await message.reply({ embeds: [embed] });
     }

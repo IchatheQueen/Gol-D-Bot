@@ -1,3 +1,5 @@
+import { resolveTarget } from '../../utils/resolveTarget';
+import { isImmuneToAttacks } from '../../database/drugEffects';
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { getUser, updateUser } from '../../database/economy';
@@ -54,6 +56,11 @@ const command: Command = {
 
         if (targetPet && targetPet.protection === 1) {
             message.reply('The target has protection enabled and cannot be attacked!');
+            return;
+        }
+
+        if (await isImmuneToAttacks(targetId, 'attack')) {
+            message.reply('The target is immune to attacks right now!');
             return;
         }
 

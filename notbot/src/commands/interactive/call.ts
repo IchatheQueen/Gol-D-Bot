@@ -90,7 +90,7 @@ const command: Command = {
         // "x (@user) [Lvl 25] Spirit has let out a shriek and called the other Mindless Titans to come shield and protect it, allowing it to rest and regain 🖤 12, 🍷 15, 💀 9, and 🔥 12"
         const embed = new EmbedBuilder()
             .setDescription(`${message.author.username} (${message.author}) [Lvl ${pet.level}] ${pet.name} has let out a shriek and called the other Mindless Titans to come shield and protect it, allowing it to rest and regain 🖤 ${healthBuff}, 🍷 ${thirstBuff}, 💀 ${hungerBuff}, and 🔥 ${energyBuff}`)
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

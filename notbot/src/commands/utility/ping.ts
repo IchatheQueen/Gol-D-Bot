@@ -15,7 +15,7 @@ const command: Command = {
                 { name: 'Latency', value: `${latency}ms`, inline: true },
                 { name: 'API Latency', value: `${apiLatency}ms`, inline: true }
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         sent.edit({ content: null, embeds: [embed] });
     },

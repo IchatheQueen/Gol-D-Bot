@@ -1,3 +1,4 @@
+import { resolveTarget } from '../../utils/resolveTarget';
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
@@ -8,7 +9,7 @@ const command: Command = {
     name: 'dtransfer',
     description: 'Transfer a premium item to another user',
     execute: async (message: Message, args: string[], client: Client) => {
-        const targetUser = message.mentions.users.first();
+        const targetUser = await resolveTarget(message, args, client, 0);
         const itemNameOrId = args.slice(1).join(' ');
 
         if (!targetUser || !itemNameOrId) {

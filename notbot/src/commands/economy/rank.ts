@@ -1,3 +1,4 @@
+import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
@@ -7,7 +8,7 @@ const command: Command = {
     name: 'rank',
     description: 'Check your rank',
     execute: async (message: Message, args: string[], client: Client) => {
-        const targetUser = message.mentions.users.first() || message.author;
+        const targetUser = await resolveTargetOrSelf(message, args, client, 0);
         const targetId = targetUser.id;
 
         // Fetch all users to calculate rank
@@ -31,7 +32,7 @@ const command: Command = {
                 `**Rank**: #${rank > 0 ? rank : 'Unranked'}\n` +
                 `**Balance**: 💵 ${formatBigNumber(balance)}`
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

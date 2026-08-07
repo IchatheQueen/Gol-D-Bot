@@ -20,7 +20,7 @@ const command: Command = {
 
             const embed = new EmbedBuilder()
                 .setTitle('👥 User Database (Top 10)')
-                .setColor('#2f3136');
+                .setColor('#2b2d31');
 
             let description = '';
             for (const user of users) {
@@ -66,7 +66,7 @@ const command: Command = {
                     { name: 'Credits', value: `🍥 ${credits}`, inline: true },
                     { name: 'Pills', value: `💊 ${user.pills}`, inline: true }
                 )
-                .setColor('#2f3136');
+                .setColor('#2b2d31');
 
             message.reply({ embeds: [embed] });
             return;

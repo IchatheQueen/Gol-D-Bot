@@ -22,7 +22,7 @@ const command: Command = {
                 `[ 0x ⬛ ] - bet x 2\n` +
                 `[ ⬜ ⬜ ⬜ ] - bet x 1`
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

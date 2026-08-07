@@ -1,4 +1,36 @@
 /**
+ * Expands the `X&Y` digit shorthand documented by ~shortcuts, where Y is the
+ * total digit count of the result rather than a count of zeros:
+ *
+ *   1&5        -> 10000          (5 digits total)
+ *   123456&10  -> 1234560000     (10 digits total)
+ *   1.5&5      -> 1500
+ *
+ * Done entirely in BigInt. The previous float version (base * Math.pow(10, n))
+ * lost precision and produced strings like "1e+24" for large inputs.
+ * Returns null if the input is not valid shorthand.
+ */
+export const MAX_SHORTHAND_DIGITS = 3000;
+
+export function expandDigitShorthand(input: string): bigint | null {
+    const match = input.match(/^(\d+(?:\.\d+)?)&(\d+)$/);
+    if (!match) return null;
+
+    const [, baseStr, digitsStr] = match;
+    const totalDigits = parseInt(digitsStr, 10);
+    // ~shortcuts: "The maximum number of digits you can enter is 3000".
+    if (!isFinite(totalDigits) || totalDigits > MAX_SHORTHAND_DIGITS) return null;
+
+    const digitsOnly = baseStr.replace('.', '');
+    const fractionDigits = baseStr.includes('.') ? baseStr.split('.')[1].length : 0;
+    const zerosToAdd = totalDigits - digitsOnly.length - fractionDigits;
+
+    if (zerosToAdd < 0) return null;
+
+    return BigInt(digitsOnly) * (10n ** BigInt(zerosToAdd));
+}
+
+/**
  * Parse a large number string into BigInt
  * Handles commas, spaces, and validates input
  */
@@ -8,20 +40,12 @@ export function parseBigNumber(input: string): bigint | null {
     // Remove commas and spaces
     let cleaned = input.toLowerCase().replace(/[,\s]/g, '');
 
-    // Handle X&Y notation (trailing zeros)
+    // Handle X&Y notation. Per ~shortcuts, Y is the TOTAL number of digits in
+    // the result, not the count of zeros to append: 1&5 = 10000 (not 100000)
+    // and 123456&10 = 1234560000.
     if (cleaned.includes('&')) {
-        const parts = cleaned.split('&');
-        if (parts.length === 2 && /^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
-            try {
-                const base = BigInt(parts[0]);
-                const exponent = parseInt(parts[1]);
-                if (exponent < 0) return null;
-                if (exponent > 10000) return null;
-                return base * (10n ** BigInt(exponent));
-            } catch {
-                return null;
-            }
-        }
+        const expanded = expandDigitShorthand(cleaned);
+        return expanded === null ? null : expanded;
     }
 
     const multipliers: Record<string, bigint> = {

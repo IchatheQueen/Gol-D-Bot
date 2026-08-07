@@ -4,7 +4,7 @@ const COLORS = {
     SUCCESS: '#FFD700' as ColorResolvable, // Gold
     ERROR: '#FF0055' as ColorResolvable,   // Pinkish Red
     INFO: '#0099FF' as ColorResolvable,    // Blue
-    DEFAULT: '#2F3136' as ColorResolvable  // Dark Gray
+    DEFAULT: '#2b2d31' as ColorResolvable  // Dark Gray
 };
 
 export const EmbedUtils = {

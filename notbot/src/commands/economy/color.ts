@@ -1,7 +1,7 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
-import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem } from '../../database/inventory';
+import { setUserColor } from '../../database/userColor';
 
 const command: Command = {
     name: 'color',
@@ -35,11 +35,7 @@ const command: Command = {
         const colorInt = parseInt(cleanColor, 16);
         const finalColor = `#${cleanColor}`;
 
-        // Upsert into user_colors
-        await db.execute({
-            sql: 'INSERT OR REPLACE INTO user_colors (user_id, color) VALUES (?, ?)',
-            args: [userId, colorInt]
-        });
+        await setUserColor(userId, colorInt);
 
         // Match Screenshot Format:
         // "hammy:3 has successfully updated their color preference to #230000" (in an embed)

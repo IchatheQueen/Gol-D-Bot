@@ -25,7 +25,7 @@ const command: Command = {
                 `🚀 **Nitro** | ${nitro.toLocaleString()}\n` +
                 `🔮 **Ender** | ${ender.toLocaleString()}`
             )
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

@@ -3,9 +3,11 @@ import dotenv from 'dotenv';
 import db, { initDatabase } from './database/db';
 import { processShortcuts } from './utils/shortcuts';
 import { EmbedUtils } from './utils/embeds';
+import { loadUserColors } from './database/userColor';
+import { matchPrefix, loadUserPrefixes } from './database/userSettings';
 import { incrementCommandCount } from './commands/utility/stats';
 
-import { startEventLoop, getEventMultiplier, recordActivity } from './events/eventManager';
+// import { startEventLoop, getEventMultiplier, recordActivity } from './events/eventManager'; // DELETED
 import fs from 'fs';
 import path from 'path';
 
@@ -26,8 +28,9 @@ const client = new Client({
     ],
 }) as ExtendedClient;
 
-const PREFIX = '~';
-const COOLDOWN_MS = 5000; // 5 seconds
+// The default prefix lives in database/userSettings.ts (DEFAULT_PREFIX), since
+// prefix resolution is per-user now.
+const COOLDOWN_MS = 2000; // 2 seconds, matching SlotBot's global rate limit
 const EXEMPT_USER_ID = '1331780893995565148';
 const WALLET_DROP_CHANCE = 0.02; // 2% chance per message
 const MAIN_GUILD_ID = '1341830866657083402';
@@ -89,12 +92,15 @@ async function loadEmojiOverrides() {
 client.once(Events.ClientReady, async (c: any) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
     await loadEmojiOverrides();
-    await startEventLoop(client);
+    await loadUserColors();
+    await loadUserPrefixes();
+    // await startEventLoop(client); // DELETED
 });
 
 // Booster Detection
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
     if (newMember.guild.id !== MAIN_GUILD_ID) return;
+
 
     // Check if they just started boosting
     if (!oldMember.premiumSince && newMember.premiumSince) {
@@ -111,7 +117,7 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
         if (welcomeChannel) {
             const embed = new EmbedBuilder()
                 .setTitle('💎 Server Booster Perk Activated!')
-                .setDescription(`Thank you for boosting, ${newMember}! You have been granted **Premium** status on SlotBot. Enjoy your exclusive perks!`)
+                .setDescription(`Thank you for boosting, ${newMember}! You have been granted **Premium** status on GoldBot. Enjoy your exclusive perks!`)
                 .setColor('#f47fff');
             await welcomeChannel.send({ embeds: [embed] });
         }
@@ -120,12 +126,11 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
 
 client.on(Events.MessageCreate, async (message: DiscordMessage) => {
     if (message.author.bot) return;
-    recordActivity();
 
     const userId = message.author.id;
     const blacklistRecord = await getBlacklistRecord(userId);
     if (blacklistRecord) {
-        if (message.content.startsWith(PREFIX)) {
+        if (matchPrefix(userId, message.content)) {
             const embed = new EmbedBuilder()
                 .setTitle('SERVICE RESTRICTION [X9WY64532]')
                 .setDescription('Sorry, your account has been permanently blacklisted from interacting with this bot.')
@@ -137,7 +142,10 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         return;
     }
 
-    if (!message.content.startsWith(PREFIX)) {
+    // Honours the per-user prefix from ~settings prefix; the default always
+    // works too, so a bad personal prefix can't lock anyone out.
+    const usedPrefix = matchPrefix(userId, message.content);
+    if (!usedPrefix) {
         return;
     }
 
@@ -151,7 +159,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 
-    const args = message.content.slice(PREFIX.length).trim().split(/ +/);
+    const args = message.content.slice(usedPrefix.length).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase();
     if (!commandName) return;
 
@@ -163,7 +171,7 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
 
         if (lsdTimeLeft > 0) {
             const seconds = Math.ceil(lsdTimeLeft / 1000);
-            await (message.channel as any).send(`You must wait ${seconds} seconds before using another SlotBot command as a result of your LSD`);
+            await (message.channel as any).send(`You must wait ${seconds} seconds before using another GoldBot command as a result of your LSD`);
             return;
         }
 
@@ -179,7 +187,9 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         }
     }
 
-    const dropMultiplier = getEventMultiplier('DROP_RATE');
+
+    // const dropMultiplier = getEventMultiplier('DROP_RATE'); // DELETED
+    const dropMultiplier = 1;
     if (Math.random() < (WALLET_DROP_CHANCE * dropMultiplier)) {
         const existingDrop = await db.execute({
             sql: 'SELECT * FROM wallet_drops WHERE channel_id = ?',
@@ -215,7 +225,30 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
         const timeLeft = lastCommand + COOLDOWN_MS - now;
 
         if (timeLeft > 0) {
-            return;
+            // Premium (Gold / server boosters) skips the global cooldown. The
+            // lookup only runs when someone is actually rate limited, so it
+            // stays off the per-message hot path.
+            let isPremium = false;
+            try {
+                const premiumCheck = await db.execute({
+                    sql: 'SELECT is_premium FROM users WHERE id = ?',
+                    args: [userId]
+                });
+                const row = premiumCheck.rows[0] as any;
+                isPremium = Boolean(row && Number(row.is_premium) === 1);
+            } catch {
+                // Treat lookup failure as non-premium.
+            }
+
+            if (!isPremium) {
+                // Tell the user rather than silently dropping the command.
+                const seconds = Math.ceil(timeLeft / 1000);
+                await message.reply(
+                    `You must wait ${seconds} second${seconds === 1 ? '' : 's'} before using another command. ` +
+                    `Consider getting 🟡 GoldBot Gold (\`~patreon\`) or boost \`~support\` to remove this.`
+                );
+                return;
+            }
         }
 
         userCooldowns.set(userId, now);

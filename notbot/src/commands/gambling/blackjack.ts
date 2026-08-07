@@ -93,7 +93,7 @@ const command: Command = {
                         inline: false
                     },
                     {
-                        name: `.${message.author.username}'s cards (${playerValue})`,
+                        name: `${message.author.username}'s cards (${playerValue})`,
                         value: formatHand(playerHand),
                         inline: false
                     }

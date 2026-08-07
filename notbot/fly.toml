@@ -1,0 +1,17 @@
+app = "gol-d-bot"
+primary_region = "ord"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+# Deliberately no [http_service] / [[services]] block. This is a Discord bot:
+# it opens an outbound gateway connection and never accepts inbound traffic.
+# Declaring a service would make Fly health-check a port nothing listens on,
+# and would let the machine auto-stop when no requests arrive.
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

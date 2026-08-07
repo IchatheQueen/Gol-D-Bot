@@ -8,6 +8,10 @@ import { formatBigNumber } from '../../utils/bigNumbers';
 const command: Command = {
     name: 'pub',
     description: 'View the Pub',
+    // ~shop opens the Pub, as ~shortcuts already documented. The mapping was
+    // never wired up: processShortcuts only rewrites arguments, not command
+    // names, so ~shop was a no-op until it became a real alias here.
+    aliases: ['shop'],
     execute: async (message: Message, args: string[], client: Client) => {
         const embedPub = new EmbedBuilder()
             .setTitle('🍺 | The Pub')

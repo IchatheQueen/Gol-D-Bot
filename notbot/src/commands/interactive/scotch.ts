@@ -12,7 +12,7 @@ const alcoholRefreshCooldowns = [
 const command: Command = {
     name: 'scotch',
     description: 'Drink a scotch to refresh cooldowns',
-    aliases: ['drink', 'sip'],
+    aliases: ['sip'],
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
 
@@ -82,7 +82,7 @@ const command: Command = {
         const embed = new EmbedBuilder()
             .setDescription('You have a sip of scotch to regain your composure. Cooldowns have been reset')
             .setImage('https://media1.tenor.com/m/Y8G4WwB4C4kAAAAd/patrick-bateman-drinking.gif') // Patrick Bateman drinking gif from screenshot
-            .setColor('#2f3136');
+            .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });
     },

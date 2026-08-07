@@ -1,16 +1,25 @@
 
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { Command } from '../../handlers/commandHandler';
-import { getUserColor } from '../../database/userColor';
+import { STATIC_EMBED_COLOR } from '../../database/userColor';
+
+// Base URL of the public site that hosts /terms and /privacy. Set WEBSITE_URL
+// in the environment to turn the policy lines into real links.
+const WEBSITE_URL = process.env.WEBSITE_URL || '';
+
+const policyValue = WEBSITE_URL
+    ? `• [GoldBot's Terms of Service](${WEBSITE_URL}/terms)\n• [GoldBot's Privacy Policy](${WEBSITE_URL}/privacy)`
+    : "• GoldBot's Terms of Service\n• GoldBot's Privacy Policy";
 
 const command: Command = {
     name: 'help',
     description: 'Get help with GoldBot commands',
     execute: async (message: Message, args: string[], client: Client) => {
+        // No title: the embed opens straight into the backup-code warning.
+        // Static colour rather than the per-user ~color value.
         const embed = new EmbedBuilder()
-            .setTitle('⚠️ GoldBot Help')
             .setDescription('⚠️ Generate a backup code in case of account loss via `~backupcode` in Private Messages!')
-            .setColor(getUserColor(message.author.id))
+            .setColor(STATIC_EMBED_COLOR)
             .addFields(
                 {
                     name: 'Commands',
@@ -29,12 +38,12 @@ const command: Command = {
                 },
                 {
                     name: 'GoldBot',
-                    value: 'If you still have questions or simply wish to be informed of GoldBot\'s updates the moment they\'re released, you\'re always welcome to visit GoldBot\'s support server and have a chill interview with some other users and simply chill there and procrastinate your homework. You can use `~support` for an invite',
+                    value: 'If you still have questions or simply wish to be informed about GoldBot\'s updates the moment they\'re released, you\'re always welcome to visit GoldBot\'s support server and have a nice chat with some other users or simply chill there and procrastinate your homework. You can use `~support` for an invite',
                     inline: false
                 },
                 {
                     name: 'GoldBot Policies',
-                    value: '• GoldBot\'s Terms of Service\n• GoldBot\'s Privacy Policy',
+                    value: policyValue,
                     inline: false
                 }
             );

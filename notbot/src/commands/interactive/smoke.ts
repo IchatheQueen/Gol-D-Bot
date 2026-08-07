@@ -9,6 +9,13 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
 
+        // Check weed inventory
+        const weedAmount = await getInventoryItem(userId, 'weed');
+        if (weedAmount < 1n) {
+            message.reply('You do not have any ?? **Weed** to smoke!');
+            return;
+        }
+
         // Check cooldown (2 hours)
         const cooldownTime = 2 * 60 * 60 * 1000;
         const cooldownCheck = await db.execute({
@@ -37,7 +44,7 @@ const command: Command = {
 
         const displayName = message.guild?.members.cache.get(userId)?.displayName || message.author.username;
         const embed = new EmbedBuilder()
-            .setDescription(`${displayName} (@${message.author.username}) has rolled up a blunt of 🌿 and smoked it`)
+            .setDescription(`${displayName} (@${message.author.username}) has rolled up a blunt of ?? and smoked it`)
             .setColor('#2b2d31');
 
         message.reply({ embeds: [embed] });

@@ -1,6 +1,7 @@
+import { isImmuneToAttacks } from '../../database/drugEffects';
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
-import { getUser, updateUser } from '../../database/economy';
+import { getUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
@@ -67,12 +68,16 @@ const command: Command = {
             return;
         }
 
+        if (await isImmuneToAttacks(targetUser.id, 'hex')) {
+            message.reply(`??? <@${targetUser.id}> is immune to hexes right now!`);
+            return;
+        }
+
         const targetData = await getUser(targetUser.id);
-        const user = await getUser(userId);
 
         // Steal 1-3% of target's balance using BigInt
         const stealPct = BigInt(Math.floor(Math.random() * 3) + 1); // 1-3
-        const stolen = (targetData.balance * stealPct) / 100n;
+        const potentialSteal = (targetData.balance * stealPct) / 100n;
 
         // Stun for 10 minutes (implied by screenshot)
         const stunMinutes = 10;
@@ -85,10 +90,16 @@ const command: Command = {
             args: [targetUser.id, expiresAt, 'Hexed', userId]
         });
 
-        // Transfer money
+        // Transfer money. Debit atomically first — if the target has spent it
+        // since we read their balance, the debit refuses and nothing is minted.
+        let stolen = potentialSteal;
         if (stolen > 0n) {
-            await updateUser(targetUser.id, { balance: targetData.balance - stolen });
-            await updateUser(userId, { balance: user.balance + stolen });
+            const taken = await adjustFunds(targetUser.id, { balance: -stolen });
+            if (taken) {
+                await adjustFunds(userId, { balance: stolen });
+            } else {
+                stolen = 0n;
+            }
         }
 
         // Set cooldown
