@@ -135,12 +135,10 @@ const command: Command = {
         let pet = await updatePetStats(message.author.id);
 
         if (!pet) {
-            await db.execute({
-                sql: 'INSERT INTO pets (user_id) VALUES (?)',
-                args: [message.author.id]
-            });
-            pet = (await updatePetStats(message.author.id))!;
-            message.reply('You adopted a new cat!');
+            // Adoption is explicit via ~adopt; commands no longer silently
+            // create a cat for you.
+            message.reply('You do not have a pet [Lvl 1] Cat; `~adopt` to adopt one!');
+            return;
         }
 
         const skinId = forcedSkinId !== undefined ? forcedSkinId : (pet.skin_id || 0);

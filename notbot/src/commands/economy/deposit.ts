@@ -1,14 +1,19 @@
-import { Message, Client } from 'discord.js';
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
+import { getUserColor } from '../../database/userColor';
+import { getVaultTier, vaultCapacity } from '../../database/vault';
+import { userTag } from '../../utils/userTag';
 
 const command: Command = {
     name: 'deposit',
-    description: 'Deposit money into your vault as credits',
+    description: 'Puts money into your vault',
+    usage: '~deposit <amount>',
     aliases: ['dep'],
     execute: async (message: Message, args: string[], client: Client) => {
-        const user = await getUser(message.author.id);
+        const userId = message.author.id;
+        const user = await getUser(userId);
         const amountStr = args[0];
 
         if (!amountStr) {
@@ -16,11 +21,20 @@ const command: Command = {
             return;
         }
 
-        let amount = 0n;
+        const tier = await getVaultTier(userId);
+        const capacity = vaultCapacity(tier);
+        const room = capacity - user.vault;
+
+        if (room <= 0n) {
+            message.reply(`Your vault is full! Use \`~upgrade\` to raise its capacity.`);
+            return;
+        }
+
+        let amount: bigint;
         if (amountStr.toLowerCase() === 'all') {
             amount = user.balance;
         } else {
-            amount = parseBigNumber(amountStr) || 0n;
+            amount = parseBigNumber(amountStr) ?? 0n;
         }
 
         if (amount <= 0n) {
@@ -28,46 +42,33 @@ const command: Command = {
             return;
         }
 
-        if (user.balance < amount) {
+        if (amount > user.balance) {
             message.reply('You do not have enough money in your wallet.');
             return;
         }
 
-        // Convert to credits (50,000 per credit)
-        const credits = amount / 50000n;
+        // Clamp to remaining storage rather than refusing outright.
+        const clamped = amount > room ? room : amount;
 
-        if (credits === 0n) {
-            message.reply('You need at least $50,000 to create 1 credit.');
-            return;
-        }
-
-        // Check max credits (20)
-        const maxCredits = 20n;
-        const currentCredits = user.credits || 0n;
-
-        if (currentCredits >= maxCredits) {
-            message.reply(`Your vault is full! Maximum: ${maxCredits} credits.`);
-            return;
-        }
-
-        let creditsToAdd = credits;
-        if (currentCredits + credits > maxCredits) {
-            creditsToAdd = maxCredits - currentCredits;
-        }
-
-        const finalAmount = creditsToAdd * 50000n;
-
-        const ok = await adjustFunds(message.author.id, {
-            balance: -finalAmount,
-            credits: creditsToAdd,
-        });
+        const ok = await adjustFunds(userId, { balance: -clamped, vault: clamped });
 
         if (!ok) {
             message.reply('You do not have enough money in your wallet.');
             return;
         }
 
-        message.reply(`Deposited 💵 $${formatBigNumber(finalAmount)} into your vault as 🍥 ${creditsToAdd} credit(s).`);
+        const embed = new EmbedBuilder()
+            .setDescription(`${userTag(message)} has successfully vaulted 💵 ${formatBigNumber(clamped)}.`)
+            .setColor(getUserColor(userId));
+
+        if (clamped < amount) {
+            embed.setDescription(
+                `${userTag(message)} has successfully vaulted 💵 ${formatBigNumber(clamped)}.\n\n` +
+                `⚠️ We've automatically adjusted the amount to account for your remaining storage!`
+            );
+        }
+
+        message.reply({ embeds: [embed] });
     },
 };
 

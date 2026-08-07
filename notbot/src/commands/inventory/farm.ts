@@ -31,8 +31,8 @@ const command: Command = {
         const cropList = [
             { id: '102', label: 'Cannabis', emoji: '🌱' },
             { id: '103', label: 'Opium', emoji: '🌹' }, // Using items.ts emoji if possible, but matching screenshot emoji
-            { id: '105', label: 'Cotton', emoji: '🌿' },
-            { id: '104', label: 'Linen', emoji: '🌾' }
+            { id: '104', label: 'Cotton', emoji: '🌿' },
+            { id: '105', label: 'Linen', emoji: '🌾' }
         ];
 
         const barnList = [

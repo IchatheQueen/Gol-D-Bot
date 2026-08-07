@@ -12,6 +12,7 @@ import { run as runBioMigration } from './migrations/add_bio_column';
 import { run as runLastFedMigration } from './migrations/add_last_fed_to_pets';
 import { run as runTippedArrowMigration } from './migrations/unify_tipped_arrows';
 import { run as runSettingsColumnsMigration } from './migrations/add_settings_columns';
+import { run as runVaultTierMigration } from './migrations/add_vault_tier';
 
 // Turso connection - uses environment variables
 // TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set
@@ -195,6 +196,7 @@ export async function initDatabase() {
     await runLastFedMigration();
     await runTippedArrowMigration();
     await runSettingsColumnsMigration();
+    await runVaultTierMigration();
 
     // Marriages Table
     await db.execute(`

@@ -5,11 +5,21 @@ import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 
 // Plant definitions
+/**
+ * Yields and timers here must match what the black market advertises when
+ * these plants are sold (see data/blackMarketItems.ts). They previously did
+ * not: 104 and 105 were swapped, so buying a Cotton Plant harvested linen,
+ * and every yield/timer disagreed with its shop description.
+ */
 export const plants: Record<string, { harvestItem: string; harvestAmount: number; harvestTime: number; riskFactor: number }> = {
-    '102': { harvestItem: 'weed', harvestAmount: 3, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 }, // Weed
-    '103': { harvestItem: 'opioid', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.20 }, // Opioid
-    '104': { harvestItem: 'linen', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
-    '105': { harvestItem: 'cotton', harvestAmount: 1, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
+    // Cannabis Plant — "Harvested every 6 hours; yields 🌿 2"
+    '102': { harvestItem: 'weed', harvestAmount: 2, harvestTime: 6 * 60 * 60 * 1000, riskFactor: 0.10 },
+    // Opium Poppy — "Harvested every 20 hours; yields 💊 1"
+    '103': { harvestItem: 'opioid', harvestAmount: 1, harvestTime: 20 * 60 * 60 * 1000, riskFactor: 0.20 },
+    // Cotton Plant — "Harvested once every 12 hours; yields ☁️ 2"
+    '104': { harvestItem: 'cotton', harvestAmount: 2, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
+    // Linen Plant — "Harvested once every 8 hours; yields 📜 4"
+    '105': { harvestItem: 'linen', harvestAmount: 4, harvestTime: 8 * 60 * 60 * 1000, riskFactor: 0.10 },
 };
 
 const command: Command = {

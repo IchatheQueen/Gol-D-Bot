@@ -146,5 +146,7 @@ export const items: Record<string, Item> = {
     'auto_feeder': { id: 'auto_feeder', name: 'Auto-Feeder', price: 10, currency: 'diamond', emoji: '🦾', description: 'Automatically feeds your pet when hunger is low (Passive)', type: 'collectible' },
     'cat_pill': { id: 'cat_pill', name: 'Cat Pill', price: 0, emoji: '💊', description: 'A pill from the generator. Use to boost stats!', type: 'consumable' },
     'nitro_briefcase': { id: 'nitro_briefcase', name: 'Nitro Briefcase', price: 0, emoji: '🎒', description: 'A rare briefcase containing Nitro gifts or premium tokens.', type: 'consumable' },
-    'cocaine': { id: 'cocaine', name: 'Cocaine', price: 5000, emoji: '🌫️', description: 'Highly addictive stimulant.', type: 'drug' }
+    'cocaine': { id: 'cocaine', name: 'Cocaine', price: 5000, emoji: '🌫️', description: 'Highly addictive stimulant.', type: 'drug' },
+    'vault_token': { id: 'vault_token', name: 'Vault Token', price: 0, emoji: '🎫', description: "A token used to upgrade your vault's maximum capacity.", type: 'collectible' },
+    'gem': { id: 'gem', name: 'Gem', price: 0, emoji: '💎', description: "Earned from the depths of the mines via ~mine. Buys Miner's Capsules.", type: 'collectible' }
 };

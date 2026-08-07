@@ -34,6 +34,7 @@ async function canBoost(message: Message, userId: string): Promise<boolean> {
 const command: Command = {
     name: 'boost',
     description: 'Stun a user — a perk for boosting the server',
+    usage: '~boost <target>',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
 

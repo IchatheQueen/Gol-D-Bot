@@ -6,6 +6,8 @@ export interface Command {
     name: string;
     description: string;
     aliases?: string[];
+    /** Shown by `~help <command>`. Defaults to `~<name>` when omitted. */
+    usage?: string;
     execute: (message: Message, args: string[], client: Client, ...extras: any[]) => Promise<void> | void;
 }
 

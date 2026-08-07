@@ -1,5 +1,10 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import { adjustFunds } from '../../database/economy';
+import { addInventoryItem } from '../../database/inventory';
+import { VAULT_TOKEN_ITEM } from '../../database/vault';
+
+// Roughly 1 in 5 grabbed wallets also contains a Vault Token.
+const VAULT_TOKEN_DROP_CHANCE = 0.2;
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
@@ -33,9 +38,18 @@ const command: Command = {
         const amount = BigInt(drop.amount as string);
         await adjustFunds(message.author.id, { balance: amount });
 
+        // Vault Tokens "can be earned through hunting, mining, grabbing
+        // wallets and more" — this is the grabbing-wallets path.
+        const lines = [`• 💵 ${formatBigNumber(amount)}`];
+
+        if (Math.random() < VAULT_TOKEN_DROP_CHANCE) {
+            await addInventoryItem(message.author.id, VAULT_TOKEN_ITEM, 1n);
+            lines.push(`• 🎫 1 Vault Token`);
+        }
+
         // Send success message
         const embed = new EmbedBuilder()
-            .setDescription(`@${message.author.username} snatches a wallet and found:\n• 💵 ${formatBigNumber(amount)}`)
+            .setDescription(`@${message.author.username} snatches a wallet and found:\n${lines.join('\n')}`)
             .setColor(getUserColor(message.author.id));
         await message.reply({ embeds: [embed] });
     },

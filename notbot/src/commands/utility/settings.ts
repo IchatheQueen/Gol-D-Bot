@@ -92,6 +92,8 @@ function buildButtons(page: number) {
 const command: Command = {
     name: 'settings',
     description: 'Manage your user settings',
+    // ~notify renders the same settings panel in the reference bot.
+    aliases: ['notify'],
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
         const key = args[0]?.toLowerCase();

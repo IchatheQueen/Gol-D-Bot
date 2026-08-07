@@ -3,6 +3,7 @@ import { getInventory } from '../../database/inventory';
 import { getUser, updateUser } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
+import { userTag } from '../../utils/userTag';
 
 /**
  * Canonical tipped-arrow definitions. Item IDs use the `tipped_` scheme —
@@ -32,6 +33,7 @@ const ALIASES: Record<string, string> = {
 const command: Command = {
     name: 'tipped',
     description: 'Check or equip your tipped arrows',
+    usage: '~tipped [type]',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
         const requested = args[0]?.toLowerCase();
@@ -80,7 +82,7 @@ const command: Command = {
         }).join('\n');
 
         const embed = new EmbedBuilder()
-            .setTitle(`@${message.author.username}'s Tipped Arrows`)
+            .setTitle(`${userTag(message)}'s Tipped Arrows`)
             .setDescription(
                 `Obtain tipped variants from different briefcases via \`~steal\`.\n` +
                 `Equip a tipped arrow type with \`~tipped <type>\`\n` +

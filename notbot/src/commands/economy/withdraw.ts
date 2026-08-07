@@ -1,54 +1,49 @@
-import { Message, Client } from 'discord.js';
+import { Message, Client, EmbedBuilder } from 'discord.js';
 import { getUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
+import { getUserColor } from '../../database/userColor';
+import { userTag } from '../../utils/userTag';
 
 const command: Command = {
     name: 'withdraw',
-    description: 'Withdraw credits from your vault as money',
+    description: 'Takes money out of your vault',
+    usage: '~withdraw <amount>',
     aliases: ['with'],
     execute: async (message: Message, args: string[], client: Client) => {
-        const user = await getUser(message.author.id);
+        const userId = message.author.id;
+        const user = await getUser(userId);
         const amountStr = args[0];
 
         if (!amountStr) {
-            message.reply('Please specify an amount of credits to withdraw.');
+            message.reply('Please specify an amount to withdraw.');
             return;
         }
 
-        let credits = 0n;
-        const currentCredits = user.credits || 0n;
-
+        let amount: bigint;
         if (amountStr.toLowerCase() === 'all') {
-            credits = currentCredits;
+            amount = user.vault;
         } else {
-            credits = parseBigNumber(amountStr) || 0n;
+            amount = parseBigNumber(amountStr) ?? 0n;
         }
 
-        if (credits <= 0n) {
+        if (amount <= 0n) {
             message.reply('Please specify a valid amount.');
             return;
         }
 
-        if (currentCredits < credits) {
-            message.reply('You do not have enough credits in your vault.');
-            return;
-        }
-
-        // Convert credits to money (50,000 per credit)
-        const amount = credits * 50000n;
-
-        const ok = await adjustFunds(message.author.id, {
-            balance: amount,
-            credits: -credits,
-        });
+        const ok = await adjustFunds(userId, { vault: -amount, balance: amount });
 
         if (!ok) {
-            message.reply('You do not have enough credits in your vault.');
+            message.reply('You do not have that much money in your vault.');
             return;
         }
 
-        message.reply(`Withdrew 🍥 ${credits} credit(s) from your vault as 💵 $${formatBigNumber(amount)}.`);
+        const embed = new EmbedBuilder()
+            .setDescription(`${userTag(message)} has withdrawn 💵 ${formatBigNumber(amount)} from their vault.`)
+            .setColor(getUserColor(userId));
+
+        message.reply({ embeds: [embed] });
     },
 };
 

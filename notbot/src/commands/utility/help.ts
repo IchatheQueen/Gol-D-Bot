@@ -15,6 +15,34 @@ const command: Command = {
     name: 'help',
     description: 'Get help with GoldBot commands',
     execute: async (message: Message, args: string[], client: Client) => {
+        // `~help <command>` shows that command's own page.
+        const query = args[0]?.toLowerCase();
+
+        if (query) {
+            const registry = (client as any).commands as Map<string, Command> | undefined;
+            const found = registry?.get(query);
+
+            if (!found) {
+                message.reply('The command you tried does not have a help page, please look in `~commands` for a list of existing commands');
+                return;
+            }
+
+            // Aliases are listed under the canonical name, so include it first.
+            const aliases = [found.name, ...(found.aliases ?? [])].join('\n');
+
+            const commandEmbed = new EmbedBuilder()
+                .setTitle('Command Help')
+                .setDescription(found.description)
+                .setColor(STATIC_EMBED_COLOR)
+                .addFields(
+                    { name: 'Aliases', value: aliases, inline: false },
+                    { name: 'Usage', value: found.usage || `~${found.name}`, inline: false },
+                );
+
+            message.reply({ embeds: [commandEmbed] });
+            return;
+        }
+
         // No title: the embed opens straight into the backup-code warning.
         // Static colour rather than the per-user ~color value.
         const embed = new EmbedBuilder()
