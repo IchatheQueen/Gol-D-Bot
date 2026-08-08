@@ -9,6 +9,7 @@ import { getUserColor } from '../../database/userColor';
 import { sendCombatDM } from '../../utils/combatNotify';
 import { formatBigNumber } from '../../utils/bigNumbers';
 import { resolveEmoji } from '../../utils/resolveEmoji';
+import { rollVaultToken, VAULT_TOKEN_CHANCE_PVP } from '../../database/vault';
 
 const command: Command = {
     name: 'shoot',
@@ -365,6 +366,10 @@ const command: Command = {
                 totalDamage = 0n;
             }
         }
+
+        // PvP can yield Vault Tokens, far more rarely than PvE. This is
+        // deliberately silent — the shot result never mentions the token.
+        await rollVaultToken(userId, VAULT_TOKEN_CHANCE_PVP);
 
         // Set Cooldown
         await db.execute({

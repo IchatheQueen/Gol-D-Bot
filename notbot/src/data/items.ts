@@ -148,5 +148,17 @@ export const items: Record<string, Item> = {
     'nitro_briefcase': { id: 'nitro_briefcase', name: 'Nitro Briefcase', price: 0, emoji: '🎒', description: 'A rare briefcase containing Nitro gifts or premium tokens.', type: 'consumable' },
     'cocaine': { id: 'cocaine', name: 'Cocaine', price: 5000, emoji: '🌫️', description: 'Highly addictive stimulant.', type: 'drug' },
     'vault_token': { id: 'vault_token', name: 'Vault Token', price: 0, emoji: '🎫', description: "A token used to upgrade your vault's maximum capacity.", type: 'collectible' },
-    'gem': { id: 'gem', name: 'Gem', price: 0, emoji: '💎', description: "Earned from the depths of the mines via ~mine. Buys Miner's Capsules.", type: 'collectible' }
+    'gem': { id: 'gem', name: 'Gem', price: 0, emoji: '💎', description: "Earned from the depths of the mines via ~mine. Buys Miner's Capsules.", type: 'collectible' },
+
+    // Seasonal event food. Bought from `~event shop` during the matching
+    // event, but usable year-round once owned. The status effects they grant
+    // are not wired into a buff system yet, so these currently only stack in
+    // the inventory.
+    'candycorn': { id: 'candycorn', name: 'Candycorn', price: 0, emoji: '🍬', description: 'Grants the Trick or Treat effect for 30 minutes.', type: 'consumable' },
+    'candycane': { id: 'candycane', name: 'Candycane', price: 0, emoji: '🍬', description: 'Grants the Sugar Rush effect for 30 minutes.', type: 'consumable' },
+
+    // Event currencies. Held in the inventory so they persist between yearly
+    // occurrences rather than being wiped when an event ends.
+    'soul': { id: 'soul', name: 'Souls', price: 0, emoji: '👻', description: 'Festival of the Lost Souls event currency. Spend via ~event shop.', type: 'collectible' },
+    'gift': { id: 'gift', name: 'Gifts', price: 0, emoji: '🎁', description: 'Holiday Madness event currency. Spend via ~event shop.', type: 'collectible' }
 };

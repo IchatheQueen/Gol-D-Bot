@@ -2,6 +2,7 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import { adjustFunds } from '../../database/economy';
 import { addInventoryItem } from '../../database/inventory';
 import { VAULT_TOKEN_ITEM } from '../../database/vault';
+import { rollEventCurrency } from '../../database/events';
 
 // Roughly 1 in 5 grabbed wallets also contains a Vault Token.
 const VAULT_TOKEN_DROP_CHANCE = 0.2;
@@ -45,6 +46,12 @@ const command: Command = {
         if (Math.random() < VAULT_TOKEN_DROP_CHANCE) {
             await addInventoryItem(message.author.id, VAULT_TOKEN_ITEM, 1n);
             lines.push(`• 🎫 1 Vault Token`);
+        }
+
+        // No-ops outside of a seasonal event window.
+        const found = await rollEventCurrency(message.author.id);
+        if (found) {
+            lines.push(`• ${found.event.currencyEmoji} ${found.amount} ${found.event.currencyName}`);
         }
 
         // Send success message

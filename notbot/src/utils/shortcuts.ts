@@ -17,6 +17,9 @@ export function processShortcuts(args: string[], userId: string): string[] {
         // "All" phrases
         const allPhrases: { [key: string]: string } = {
             'allmoney': 'all',
+            // Resolves against the vault rather than the balance, so ~withdraw
+            // allvault empties the vault while ~withdraw all does not.
+            'allvault': 'all_vault',
             'allbeer': 'all_beer',
             'allweed': 'all_weed',
             'allopioid': 'all_opioid',

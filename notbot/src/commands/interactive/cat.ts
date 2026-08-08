@@ -4,6 +4,8 @@ import { Command } from '../../handlers/commandHandler';
 import { getSkin } from '../../data/catSkins';
 import { updatePetStats } from '../../utils/petUtils';
 import { formatBigNumber, formatShorthand } from '../../utils/bigNumbers';
+import { resolveLeaderboardNames, rankPrefix } from '../../utils/leaderboard';
+import { getUserColor } from '../../database/userColor';
 
 const createProgressBar = (current: bigint, max: bigint, size: number = 10): string => {
     const percent = Number(current * 10000n / max) / 100;
@@ -122,13 +124,49 @@ const runHelp = async (message: Message) => {
     });
 };
 
+/**
+ * Top 10 cats by experience. Ties break on level so a cat that reached the
+ * same XP at a higher level ranks first.
+ */
+const runLeaderboard = async (message: Message, client: Client) => {
+    const result = await db.execute(
+        'SELECT user_id, level, experience FROM pets ORDER BY experience DESC, level DESC LIMIT 10'
+    );
+    const rows = result.rows as unknown as { user_id: string; level: number; experience: number }[];
+
+    const embed = new EmbedBuilder()
+        .setTitle('🐱 Cat Experience Leaderboard')
+        .setColor(getUserColor(message.author.id));
+
+    if (rows.length === 0) {
+        embed.setDescription('No cats have been adopted yet!');
+        await message.reply({ embeds: [embed] });
+        return;
+    }
+
+    const names = await resolveLeaderboardNames(client, rows.map(r => String(r.user_id)));
+
+    embed.setDescription(rows.map((row, i) =>
+        `${rankPrefix(i)} **${names.get(String(row.user_id))}** • [Lvl ${Number(row.level) || 1}] • ✨ ${Number(row.experience) || 0} XP`
+    ).join('\n'));
+
+    await message.reply({ embeds: [embed] });
+};
+
 const command: Command = {
     name: 'cat',
     description: 'Check your cat status',
     aliases: ['petstats', 'spirit', 'naruto'],
     execute: async (message: Message, args: string[], client: Client, forcedSkinId?: number) => {
-        if (args[0]?.toLowerCase() === 'help') {
+        const sub = args[0]?.toLowerCase();
+
+        if (sub === 'help') {
             await runHelp(message);
+            return;
+        }
+
+        if (sub === 'lb' || sub === 'leaderboard') {
+            await runLeaderboard(message, client);
             return;
         }
 

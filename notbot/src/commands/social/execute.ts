@@ -4,6 +4,7 @@ import { Command } from '../../handlers/commandHandler';
 
 const command: Command = {
     name: 'execute',
+    aliases: ['exec'],
     description: 'Execute commands as your recruit',
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;

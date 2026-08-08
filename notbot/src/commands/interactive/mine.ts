@@ -5,6 +5,7 @@ import { getInventoryItem, addInventoryItem } from '../../database/inventory';
 import { getUserColor } from '../../database/userColor';
 import { userTag } from '../../utils/userTag';
 import { VAULT_TOKEN_ITEM } from '../../database/vault';
+import { rollEventCurrency } from '../../database/events';
 
 const PICKAXE_ITEM = '203';
 const MINE_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
@@ -70,6 +71,12 @@ const command: Command = {
         if (Math.random() < VAULT_TOKEN_CHANCE) {
             await addInventoryItem(userId, VAULT_TOKEN_ITEM, 1n);
             lines.push('• 🎫 1 Vault Token');
+        }
+
+        // No-ops outside of a seasonal event window.
+        const found = await rollEventCurrency(userId);
+        if (found) {
+            lines.push(`• ${found.event.currencyEmoji} ${found.amount} ${found.event.currencyName}`);
         }
 
         await db.execute({
