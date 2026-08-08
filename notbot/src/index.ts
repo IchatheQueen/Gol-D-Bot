@@ -44,6 +44,37 @@ client.activeWalletDrops = new Map<string, { amount: number; timestamp: number; 
 client.emojiOverrides = new Map<string, string>();
 
 import { loadCommands } from './handlers/commandHandler';
+import { slashCommands, slashCommandMap } from './slash';
+
+/**
+ * Registers the profile-system slash commands.
+ *
+ * Guild-scoped when GUILD_ID is set, because guild commands appear instantly
+ * while global ones can take up to an hour to propagate. A failure here is
+ * logged rather than thrown — losing /profile should not stop the bot from
+ * serving the ~ commands that are the bulk of it.
+ */
+async function registerSlashCommands(readyClient: Client) {
+    try {
+        const body = slashCommands.map(c => c.data.toJSON());
+        const guildId = process.env.GUILD_ID;
+
+        if (guildId) {
+            const guild = await readyClient.guilds.fetch(guildId).catch(() => null);
+            if (guild) {
+                await guild.commands.set(body);
+                console.log(`Registered ${body.length} slash commands to guild ${guildId}.`);
+                return;
+            }
+            console.warn(`GUILD_ID ${guildId} not reachable; falling back to global slash registration.`);
+        }
+
+        await readyClient.application?.commands.set(body);
+        console.log(`Registered ${body.length} global slash commands (may take up to an hour to appear).`);
+    } catch (e) {
+        console.error('Failed to register slash commands:', e);
+    }
+}
 
 const commands = loadCommands(client);
 client.commands = commands;
@@ -94,6 +125,7 @@ client.once(Events.ClientReady, async (c: any) => {
     await loadEmojiOverrides();
     await loadUserColors();
     await loadUserPrefixes();
+    await registerSlashCommands(c);
     // await startEventLoop(client); // DELETED
 });
 
@@ -327,6 +359,28 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             ).setImage('https://media.tenor.com/V6hW6B7f-jAAAAAC/anime-girl-sorry.gif');
 
             await message.reply({ embeds: [errorEmbed] });
+        }
+    }
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = slashCommandMap.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        await command.execute(interaction, client);
+    } catch (error) {
+        console.error(`Slash command /${interaction.commandName} failed:`, error);
+
+        // The interaction may already be acknowledged, in which case replying
+        // again throws and loses the original error.
+        const payload = { content: 'Something went wrong running that command.', ephemeral: true };
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(payload).catch(() => { });
+        } else {
+            await interaction.reply(payload).catch(() => { });
         }
     }
 });
