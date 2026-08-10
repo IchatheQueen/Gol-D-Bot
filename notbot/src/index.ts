@@ -1,3 +1,10 @@
+// MUST be first: database/db.ts reads TURSO_DATABASE_URL at module load, and
+// module imports are evaluated before any statement in this file. Calling
+// dotenv.config() further down left that variable undefined, so the client
+// silently fell back to the local `file:./slotbot.db` and the bot spent its
+// time writing to a different database than the website reads.
+import 'dotenv/config';
+
 import { Client, GatewayIntentBits, Events, Message as DiscordMessage, EmbedBuilder, TextChannel } from 'discord.js';
 import dotenv from 'dotenv';
 import db, { initDatabase } from './database/db';
