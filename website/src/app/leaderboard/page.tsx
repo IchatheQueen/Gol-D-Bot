@@ -3,23 +3,29 @@ import { formatBigNumber } from "../../lib/utils";
 
 export const revalidate = 60; // Revalidate every minute
 
-export default async function Leaderboard() {
-    const result = await db.execute({
-        sql: "SELECT id, balance, vault, credits FROM users ORDER BY CAST(balance AS INTEGER) DESC LIMIT 100",
-        args: [],
-    });
-    // Note: CAST(balance AS INTEGER) might be risky for HUGE numbers in SQLite if stored as text. 
-    // But Turso/libSQL treats text comparisons for sorting if not cast? 
-    // In bot `rank.ts`, we fetch all and sort in JS because of BigInt.
-    // Ideally we should sort in SQL. stored as TEXT.
-    // `ORDER BY length(balance) DESC, balance DESC` works for positive integers stored as text!
+/** Matches the bot's `~settings lb` display exactly. */
+const HIDDEN_NAME = "[User Hidden]";
 
-    const optimizedResult = await db.execute({
-        sql: "SELECT id, balance, vault, credits FROM users ORDER BY length(balance) DESC, balance DESC LIMIT 100",
+export default async function Leaderboard() {
+    // Balances are stored as TEXT, so they cannot be compared numerically with
+    // a CAST — the values run to hundreds of digits and overflow. Ordering by
+    // length first and then lexically is correct for the plain digit strings
+    // the bot writes.
+    //
+    // The join carries the user's `lb_anon` opt-out. Users who set it via
+    // `~settings lb` are promised they appear as [User Hidden] on leaderboards,
+    // and this page has to honour that the same way `~top` and `~cat lb` do.
+    const result = await db.execute({
+        sql: `SELECT u.id, u.balance, u.vault, u.credits,
+                     COALESCE(s.lb_anon, 0) AS lb_anon
+              FROM users u
+              LEFT JOIN user_settings s ON s.user_id = u.id
+              ORDER BY length(u.balance) DESC, u.balance DESC
+              LIMIT 100`,
         args: []
     });
 
-    const users = optimizedResult.rows as any[];
+    const users = result.rows as any[];
 
     return (
         <div>
@@ -37,15 +43,22 @@ export default async function Leaderboard() {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((user, index) => (
-                            <tr key={user.id} className="thread-item">
+                        {users.map((user, index) => {
+                            const hidden = Number(user.lb_anon) === 1;
+                            return (
+                            // Hidden users are keyed by rank so their id never
+                            // reaches the client, even as a React key.
+                            <tr key={hidden ? `hidden-${index}` : user.id} className="thread-item">
                                 <td style={{ padding: '1rem' }}>{index + 1}</td>
-                                <td style={{ padding: '1rem' }}>{user.id}</td>
+                                <td style={{ padding: '1rem', color: hidden ? 'var(--text-muted)' : undefined }}>
+                                    {hidden ? HIDDEN_NAME : user.id}
+                                </td>
                                 <td style={{ padding: '1rem', color: '#4caf50' }}>${formatBigNumber(user.balance)}</td>
                                 <td style={{ padding: '1rem', color: '#2196f3' }}>${formatBigNumber(user.vault)}</td>
                                 <td style={{ padding: '1rem', color: '#9c27b0' }}>💎 {formatBigNumber(user.credits)}</td>
                             </tr>
-                        ))}
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
