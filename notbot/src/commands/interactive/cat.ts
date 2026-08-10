@@ -146,8 +146,11 @@ const runLeaderboard = async (message: Message, client: Client) => {
 
     const names = await resolveLeaderboardNames(client, rows.map(r => String(r.user_id)));
 
+    // Layout mirrors the reference bot: rank and level on one line, experience
+    // indented beneath it.
     embed.setDescription(rows.map((row, i) =>
-        `${rankPrefix(i)} **${names.get(String(row.user_id))}** • [Lvl ${Number(row.level) || 1}] • ✨ ${Number(row.experience) || 0} XP`
+        `${rankPrefix(i)} lvl${Number(row.level) || 1} - ${names.get(String(row.user_id))}\n` +
+        `└ ✨ ${(Number(row.experience) || 0).toLocaleString('en-US')}`
     ).join('\n'));
 
     await message.reply({ embeds: [embed] });

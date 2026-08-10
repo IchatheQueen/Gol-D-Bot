@@ -4,7 +4,22 @@ import { getUserColor } from '../../database/userColor';
 import { events, getActiveEvent, isEventActive, GameEvent } from '../../data/events';
 import { getEventCurrency, getCosmetics, purchaseEventItem } from '../../database/events';
 
-const NO_EVENT = 'There is no event running right now! Use `~event list` to see past events.';
+/**
+ * Mirrors the reference bot's "No Event Active" panel, which lists the whole
+ * subcommand surface rather than just pointing at `~event list`.
+ */
+function noEventEmbed(userId: string) {
+    return new EmbedBuilder()
+        .setTitle('No Event Active')
+        .setDescription(
+            '`~event list` to view information about all past announced events.\n' +
+            '`~event shop` to view shop items for the active event.\n' +
+            '`~event collectables` to view your collected profile collectables.\n' +
+            '`~event buy <id> <amount>` to purchase from the event shop.\n\n' +
+            'There are no active events happening right now!'
+        )
+        .setColor(getUserColor(userId));
+}
 
 function shopEmbed(event: GameEvent, held: bigint, userId: string) {
     const body = event.shop.map(item =>
@@ -24,8 +39,8 @@ function shopEmbed(event: GameEvent, held: bigint, userId: string) {
 
 const command: Command = {
     name: 'event',
-    description: 'View the active event, its shop, and your collectibles',
-    usage: '~event [shop|buy|list|collectibles]',
+    description: 'View the active event, its shop, and your collectables',
+    usage: '~event [shop|buy|list|collectables]',
     aliases: ['events'],
     execute: async (message: Message, args: string[], client: Client) => {
         const userId = message.author.id;
@@ -46,7 +61,7 @@ const command: Command = {
             return;
         }
 
-        if (sub === 'collectibles') {
+        if (sub === 'collectables' || sub === 'collectibles') {
             const owned = await getCosmetics(userId);
             const embed = new EmbedBuilder()
                 .setTitle(`🎖️ ${message.author.username}'s Event Collectibles`)
@@ -63,14 +78,14 @@ const command: Command = {
         const event = getActiveEvent();
 
         if (sub === 'shop') {
-            if (!event) { message.reply(NO_EVENT); return; }
+            if (!event) { message.reply({ embeds: [noEventEmbed(userId)] }); return; }
             const held = await getEventCurrency(userId, event);
             message.reply({ embeds: [shopEmbed(event, held, userId)] });
             return;
         }
 
         if (sub === 'buy') {
-            if (!event) { message.reply(NO_EVENT); return; }
+            if (!event) { message.reply({ embeds: [noEventEmbed(userId)] }); return; }
 
             const item = event.shop.find(i => i.id === args[1]);
             if (!item) {
@@ -100,7 +115,7 @@ const command: Command = {
             return;
         }
 
-        if (!event) { message.reply(NO_EVENT); return; }
+        if (!event) { message.reply({ embeds: [noEventEmbed(userId)] }); return; }
 
         const held = await getEventCurrency(userId, event);
         const perks = event.perks.length ? `\n\n**Event Perks**\n${event.perks.map(p => `• ${p}`).join('\n')}` : '';
