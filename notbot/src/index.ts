@@ -52,6 +52,7 @@ client.emojiOverrides = new Map<string, string>();
 
 import { loadCommands } from './handlers/commandHandler';
 import { slashCommands, slashCommandMap } from './slash';
+import { isDonateButton, handleDonateButton } from './commands/economy/donate';
 
 /**
  * Registers the profile-system slash commands.
@@ -371,6 +372,17 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
+    // Donate buttons are handled here rather than by a per-message collector
+    // so they keep working indefinitely, including across restarts.
+    if (interaction.isButton() && isDonateButton(interaction.customId)) {
+        try {
+            await handleDonateButton(interaction);
+        } catch (error) {
+            console.error('Donate button failed:', error);
+        }
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = slashCommandMap.get(interaction.commandName);
