@@ -38,6 +38,7 @@ export default function RootLayout({
           <p>&copy; 2025 GoldBot. All rights reserved.</p>
           <div style={{ marginTop: '0.5rem' }}>
             <Link href="/terms" style={{ color: '#72767d', marginRight: '1rem' }}>Terms of Service</Link>
+            <Link href="/purchase-policy" style={{ color: '#72767d', marginRight: '1rem' }}>Purchase Policy</Link>
             <Link href="/privacy" style={{ color: '#72767d' }}>Privacy Policy</Link>
           </div>
         </footer>
