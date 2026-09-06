@@ -3,7 +3,7 @@ import { getUser, adjustFunds } from '../../database/economy';
 import { Command } from '../../handlers/commandHandler';
 import { parseBigNumber, formatBigNumber } from '../../utils/bigNumbers';
 import { getUserColor } from '../../database/userColor';
-import { getVaultTier, vaultCapacity } from '../../database/vault';
+import { getVaultTier, vaultCapacityForUser } from '../../database/vault';
 import { userTag } from '../../utils/userTag';
 
 const command: Command = {
@@ -22,7 +22,9 @@ const command: Command = {
         }
 
         const tier = await getVaultTier(userId);
-        const capacity = vaultCapacity(tier);
+        // Gold members carry extra capacity digits; using the flat tier
+        // capacity here is what made deposits ignore the bonus storage.
+        const capacity = await vaultCapacityForUser(userId, tier);
         const room = capacity - user.vault;
 
         if (room <= 0n) {

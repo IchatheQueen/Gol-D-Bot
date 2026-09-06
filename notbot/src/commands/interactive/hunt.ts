@@ -4,6 +4,9 @@ import { Command } from '../../handlers/commandHandler';
 import { getInventoryItem } from '../../database/inventory';
 import { resolveEmoji } from '../../utils/resolveEmoji';
 import { updatePetStats, isPetDead } from '../../utils/petUtils';
+import { MAX_CAT_LEVEL, GEN_CREDITS_PER_LEVEL, MAX_GEN_CREDITS } from '../../data/progression';
+import { rollVaultToken, VAULT_TOKEN_CHANCE_PVE } from '../../database/vault';
+import { rollEventCurrency } from '../../database/events';
 
 const command: Command = {
     name: 'hunt',
@@ -77,16 +80,39 @@ const command: Command = {
         const currentXp = BigInt(pet.experience) + BigInt(xpGained);
         const nextLevelXp = BigInt(Math.floor(400 * Math.pow(1.5, pet.level - 1 || 0))); // Lvl 1 -> 400
 
-        if (currentXp >= nextLevelXp) {
+        // Past the cap experience still accrues, the cat just stops levelling.
+        const canLevel = pet.level < MAX_CAT_LEVEL;
+
+        if (currentXp >= nextLevelXp && canLevel) {
             await db.execute({
-                sql: 'UPDATE pets SET level = level + 1, experience = 0, credits = credits + 1 WHERE user_id = ?',
+                sql: 'UPDATE pets SET level = level + 1, experience = 0 WHERE user_id = ?',
                 args: [userId]
+            });
+
+            // Generator credits are the level-up reward, and they live on the
+            // generators row — `pets.credits` is not what ~improve spends, so
+            // awarding there handed out credits nobody could use.
+            await db.execute({
+                sql: `UPDATE generators SET credits = MIN(credits + ?, ?) WHERE user_id = ?`,
+                args: [GEN_CREDITS_PER_LEVEL, MAX_GEN_CREDITS, userId]
             });
         } else {
             await db.execute({
                 sql: 'UPDATE pets SET experience = ? WHERE user_id = ?',
                 args: [currentXp.toString(), userId]
             });
+        }
+
+        // Hunting is a PvE source of Vault Tokens.
+        const foundToken = await rollVaultToken(userId, VAULT_TOKEN_CHANCE_PVE);
+        if (foundToken) {
+            catchMsg += ' and 🎫 1 Vault Token';
+        }
+
+        // No-ops outside of a seasonal event window.
+        const found = await rollEventCurrency(userId);
+        if (found) {
+            catchMsg += ` and ${found.event.currencyEmoji} ${found.amount} ${found.event.currencyName}`;
         }
 
         // Set cooldown

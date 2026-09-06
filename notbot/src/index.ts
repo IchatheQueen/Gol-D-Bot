@@ -1,3 +1,10 @@
+// MUST be first: database/db.ts reads TURSO_DATABASE_URL at module load, and
+// module imports are evaluated before any statement in this file. Calling
+// dotenv.config() further down left that variable undefined, so the client
+// silently fell back to the local `file:./slotbot.db` and the bot spent its
+// time writing to a different database than the website reads.
+import 'dotenv/config';
+
 import { Client, GatewayIntentBits, Events, Message as DiscordMessage, EmbedBuilder, TextChannel } from 'discord.js';
 import dotenv from 'dotenv';
 import db, { initDatabase } from './database/db';
@@ -44,6 +51,38 @@ client.activeWalletDrops = new Map<string, { amount: number; timestamp: number; 
 client.emojiOverrides = new Map<string, string>();
 
 import { loadCommands } from './handlers/commandHandler';
+import { slashCommands, slashCommandMap } from './slash';
+import { isDonateButton, handleDonateButton } from './commands/economy/donate';
+
+/**
+ * Registers the profile-system slash commands.
+ *
+ * Guild-scoped when GUILD_ID is set, because guild commands appear instantly
+ * while global ones can take up to an hour to propagate. A failure here is
+ * logged rather than thrown — losing /profile should not stop the bot from
+ * serving the ~ commands that are the bulk of it.
+ */
+async function registerSlashCommands(readyClient: Client) {
+    try {
+        const body = slashCommands.map(c => c.data.toJSON());
+        const guildId = process.env.GUILD_ID;
+
+        if (guildId) {
+            const guild = await readyClient.guilds.fetch(guildId).catch(() => null);
+            if (guild) {
+                await guild.commands.set(body);
+                console.log(`Registered ${body.length} slash commands to guild ${guildId}.`);
+                return;
+            }
+            console.warn(`GUILD_ID ${guildId} not reachable; falling back to global slash registration.`);
+        }
+
+        await readyClient.application?.commands.set(body);
+        console.log(`Registered ${body.length} global slash commands (may take up to an hour to appear).`);
+    } catch (e) {
+        console.error('Failed to register slash commands:', e);
+    }
+}
 
 const commands = loadCommands(client);
 client.commands = commands;
@@ -94,6 +133,7 @@ client.once(Events.ClientReady, async (c: any) => {
     await loadEmojiOverrides();
     await loadUserColors();
     await loadUserPrefixes();
+    await registerSlashCommands(c);
     // await startEventLoop(client); // DELETED
 });
 
@@ -327,6 +367,39 @@ client.on(Events.MessageCreate, async (message: DiscordMessage) => {
             ).setImage('https://media.tenor.com/V6hW6B7f-jAAAAAC/anime-girl-sorry.gif');
 
             await message.reply({ embeds: [errorEmbed] });
+        }
+    }
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+    // Donate buttons are handled here rather than by a per-message collector
+    // so they keep working indefinitely, including across restarts.
+    if (interaction.isButton() && isDonateButton(interaction.customId)) {
+        try {
+            await handleDonateButton(interaction);
+        } catch (error) {
+            console.error('Donate button failed:', error);
+        }
+        return;
+    }
+
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = slashCommandMap.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        await command.execute(interaction, client);
+    } catch (error) {
+        console.error(`Slash command /${interaction.commandName} failed:`, error);
+
+        // The interaction may already be acknowledged, in which case replying
+        // again throws and loses the original error.
+        const payload = { content: 'Something went wrong running that command.', ephemeral: true };
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp(payload).catch(() => { });
+        } else {
+            await interaction.reply(payload).catch(() => { });
         }
     }
 });

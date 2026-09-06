@@ -2,6 +2,7 @@ import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveLeaderboardNames, rankPrefix } from '../../utils/leaderboard';
 
 const command: Command = {
     name: 'top',
@@ -30,20 +31,13 @@ const command: Command = {
             .setTitle('🏆 Richest Users')
             .setColor('#ffd700');
 
+        const names = await resolveLeaderboardNames(client, top10.map(u => u.id));
+
         let description = '';
         for (let i = 0; i < top10.length; i++) {
             const user = top10[i];
-            const discordUser = await client.users.fetch(user.id).catch(() => null);
-            const name = discordUser ? discordUser.username : user.id;
             const bal = formatBigNumber(BigInt(user.balance || '0'));
-
-            let medal = '';
-            if (i === 0) medal = '🥇';
-            else if (i === 1) medal = '🥈';
-            else if (i === 2) medal = '🥉';
-            else medal = `#${i + 1}`;
-
-            description += `${medal} **${name}** • 💵 ${bal}\n`;
+            description += `${rankPrefix(i)} **${names.get(user.id)}** • 💵 ${bal}\n`;
         }
 
         embed.setDescription(description || 'No users found.');

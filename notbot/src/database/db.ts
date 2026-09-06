@@ -11,6 +11,7 @@ import { run as runUserSettingsMigration } from './migrations/create_user_settin
 import { run as runBioMigration } from './migrations/add_bio_column';
 import { run as runLastFedMigration } from './migrations/add_last_fed_to_pets';
 import { run as runTippedArrowMigration } from './migrations/unify_tipped_arrows';
+import { run as runEventMigration } from './migrations/create_event_tables';
 import { run as runSettingsColumnsMigration } from './migrations/add_settings_columns';
 import { run as runVaultTierMigration } from './migrations/add_vault_tier';
 
@@ -195,6 +196,7 @@ export async function initDatabase() {
     await runBioMigration();
     await runLastFedMigration();
     await runTippedArrowMigration();
+    await runEventMigration();
     await runSettingsColumnsMigration();
     await runVaultTierMigration();
 

@@ -15,7 +15,7 @@ const command: Command = {
     execute: async (message: Message, args: string[], client: Client) => {
         const embedPub = new EmbedBuilder()
             .setTitle('🍺 | The Pub')
-            .setDescription('`~buy <id> <amount>` to buy an item\n<:hint:1449971693085786162> Hint: The id is the number in brackets next to the item! E.g: [ID: 1] is 1')
+            .setDescription('`~buy <id> <amount>` to buy an item\n' + resolveEmoji(client, 'hint', '💡') + ' Hint: The id is the number in brackets next to the item! E.g: [ID: 1] is 1')
             .setColor(getUserColor(message.author.id));
 
         // The Bar
@@ -48,7 +48,7 @@ const command: Command = {
         const propane = items['13'];
 
         let weaponsContent = '';
-        weaponsContent += `<:hint:1449971693085786162> Hint: After selecting a weapon, use \`~shoot <target>\` to attack your foe!\n`;
+        weaponsContent += `${resolveEmoji(client, 'hint', '💡')} Hint: After selecting a weapon, use \`~shoot <target>\` to attack your foe!\n`;
         weaponsContent += `[ID: 7] ${resolveEmoji(client, crossbow.emoji || '🏹')} **${crossbow.name}** - Price: 🍺 ${formatBigNumber(crossbow.price)}\n   └ ${crossbow.description}\n`;
         weaponsContent += `[ID: 9] ${resolveEmoji(client, rifle.emoji)} **${rifle.name}** - Price: 🍺 ${formatBigNumber(rifle.price)}\n   └ ${rifle.description}\n`;
         weaponsContent += `[ID: 11] ${resolveEmoji(client, speaker.emoji || '📢')} **${speaker.name}** - Price: 🍺 ${formatBigNumber(speaker.price)}\n   └ ${speaker.description}\n`;

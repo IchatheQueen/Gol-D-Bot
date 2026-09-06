@@ -5,6 +5,7 @@ import { resolveTargetOrSelf } from '../../utils/resolveTarget';
 import { Command } from '../../handlers/commandHandler';
 import { getUserColor } from '../../database/userColor';
 import { formatBigNumber } from '../../utils/bigNumbers';
+import { resolveEmoji } from '../../utils/resolveEmoji';
 
 const command: Command = {
     name: 'balance',
@@ -36,9 +37,15 @@ const command: Command = {
                 .setThumbnail('https://media.tenor.com/r_bft3Qp0ioAAAAi/anime-blush.gif');
         } else {
             const displayName = message.guild?.members.cache.get(userId)?.displayName || target.username;
+            // Resolved rather than hardcoded as <:cat_logo:id>: that id belongs
+            // to a guild this bot isn't in, so Discord rendered it as the
+            // literal text ":cat_logo:". This picks up a ~setemoji override or
+            // a same-named emoji the bot can actually see, and otherwise falls
+            // back to unicode.
+            const logo = resolveEmoji(client, 'cat_logo', '🐱');
             embed.setTitle(`${displayName} (@${target.username})'s balance`)
                 .setDescription(
-                    `<:cat_logo:1449971693085786162> Earn extra rewards by playing in SlotHub ~slothub (Click Me)\n` +
+                    `${logo} Earn extra rewards by playing in SlotHub \`~slothub\` (Click Me)\n` +
                     `💵 ${formatBigNumber(user.balance)}`
                 );
         }

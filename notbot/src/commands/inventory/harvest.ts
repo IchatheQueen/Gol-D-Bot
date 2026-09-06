@@ -1,6 +1,8 @@
 import { Message, Client, EmbedBuilder } from 'discord.js';
 import db from '../../database/db';
 import { getInventory, removeInventoryItem, addInventoryItem } from '../../database/inventory';
+import { rollVaultToken, VAULT_TOKEN_CHANCE_PVE } from '../../database/vault';
+import { rollEventCurrency } from '../../database/events';
 import { Command } from '../../handlers/commandHandler';
 import { items } from '../../data/items';
 
@@ -11,15 +13,24 @@ import { items } from '../../data/items';
  * not: 104 and 105 were swapped, so buying a Cotton Plant harvested linen,
  * and every yield/timer disagreed with its shop description.
  */
+/**
+ * Every crop shares one harvest cooldown.
+ *
+ * Crops used to each carry their own timer (6h/20h/12h/8h). That was unified
+ * to a flat 12 hours, then cut to 6 and again to 3 as compensation for the
+ * vault rework's upgrade costs and the money-maker investment cap.
+ */
+export const HARVEST_COOLDOWN_MS = 3 * 60 * 60 * 1000;
+
 export const plants: Record<string, { harvestItem: string; harvestAmount: number; harvestTime: number; riskFactor: number }> = {
-    // Cannabis Plant — "Harvested every 6 hours; yields 🌿 2"
-    '102': { harvestItem: 'weed', harvestAmount: 2, harvestTime: 6 * 60 * 60 * 1000, riskFactor: 0.10 },
-    // Opium Poppy — "Harvested every 20 hours; yields 💊 1"
-    '103': { harvestItem: 'opioid', harvestAmount: 1, harvestTime: 20 * 60 * 60 * 1000, riskFactor: 0.20 },
-    // Cotton Plant — "Harvested once every 12 hours; yields ☁️ 2"
-    '104': { harvestItem: 'cotton', harvestAmount: 2, harvestTime: 12 * 60 * 60 * 1000, riskFactor: 0.10 },
-    // Linen Plant — "Harvested once every 8 hours; yields 📜 4"
-    '105': { harvestItem: 'linen', harvestAmount: 4, harvestTime: 8 * 60 * 60 * 1000, riskFactor: 0.10 },
+    // Cannabis Plant — yields 🌿 2
+    '102': { harvestItem: 'weed', harvestAmount: 2, harvestTime: HARVEST_COOLDOWN_MS, riskFactor: 0.10 },
+    // Opium Poppy — yields 💊 1. Higher risk since it sells for more.
+    '103': { harvestItem: 'opioid', harvestAmount: 1, harvestTime: HARVEST_COOLDOWN_MS, riskFactor: 0.20 },
+    // Cotton Plant — yields ☁️ 2
+    '104': { harvestItem: 'cotton', harvestAmount: 2, harvestTime: HARVEST_COOLDOWN_MS, riskFactor: 0.10 },
+    // Linen Plant — yields 📜 4
+    '105': { harvestItem: 'linen', harvestAmount: 4, harvestTime: HARVEST_COOLDOWN_MS, riskFactor: 0.10 },
 };
 
 const command: Command = {
@@ -101,6 +112,19 @@ const command: Command = {
 
         if (harvestDescription === '') {
             harvestDescription = 'Nothing to harvest at this time.';
+        }
+
+        // Harvesting is one of the PvE sources of Vault Tokens. Only roll when
+        // something actually came out of the ground.
+        if (totalHarvested > 0 && await rollVaultToken(userId, VAULT_TOKEN_CHANCE_PVE)) {
+            harvestDescription += `🎫 You found a **Vault Token** among the crops!\n`;
+        }
+
+        if (totalHarvested > 0) {
+            const found = await rollEventCurrency(userId);
+            if (found) {
+                harvestDescription += `${found.event.currencyEmoji} You found **${found.amount} ${found.event.currencyName}** among the crops!\n`;
+            }
         }
 
         embed.setDescription(harvestDescription);

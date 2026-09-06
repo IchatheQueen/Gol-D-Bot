@@ -3,6 +3,37 @@ import db from '../../database/db';
 import { Command } from '../../handlers/commandHandler';
 import { resolveTarget } from '../../utils/resolveTarget';
 
+/** Keywords are typed constantly, so they are kept short and boring. */
+const MAX_KEYWORD_LENGTH = 7;
+
+/**
+ * Checks a keyword before it is written, returning an error string or null.
+ *
+ * Uniqueness is per owner, not global: two people may both use `alt`, but one
+ * person cannot have two alts under it. Not checking this was what let the
+ * remove/rename paths desync the owner's list from the alt's own record.
+ */
+async function validateKeyword(ownerId: string, keyword: string): Promise<string | null> {
+    if (keyword.length > MAX_KEYWORD_LENGTH) {
+        return `Recruit keywords can be at most **${MAX_KEYWORD_LENGTH}** characters.`;
+    }
+
+    if (!/^[a-zA-Z0-9]+$/.test(keyword)) {
+        return 'Recruit keywords must be alphanumerical (english letters & numbers only).';
+    }
+
+    const existing = await db.execute({
+        sql: 'SELECT 1 FROM recruits WHERE owner_id = ? AND keyword = ?',
+        args: [ownerId, keyword]
+    });
+
+    if (existing.rows.length > 0) {
+        return `You already have an alt using the keyword \`${keyword}\`.`;
+    }
+
+    return null;
+}
+
 const command: Command = {
     name: 'recruit',
     description: 'Manage your recruit list (alts)',
@@ -52,6 +83,15 @@ const command: Command = {
                 return;
             }
 
+            const problem = await validateKeyword(userId, newKeyword);
+            if (problem) {
+                message.reply(problem);
+                return;
+            }
+
+            // Renaming in place rather than remove-and-readd: rebuilding the
+            // row would push the alt to the end of the list and break the
+            // slot ordering the recruit limits depend on.
             const result = await db.execute({
                 sql: 'UPDATE recruits SET keyword = ? WHERE owner_id = ? AND keyword = ?',
                 args: [newKeyword, userId, oldKeyword]
@@ -121,15 +161,9 @@ const command: Command = {
                 return;
             }
 
-            // Check if already recruited
-
-            // Check if keyword taken
-            const keywordCheck = await db.execute({
-                sql: 'SELECT * FROM recruits WHERE owner_id = ? AND keyword = ?',
-                args: [userId, keyword]
-            });
-            if (keywordCheck.rows.length > 0) {
-                message.reply(`You already have a recruit with keyword \`${keyword}\`.`);
+            const problem = await validateKeyword(userId, keyword);
+            if (problem) {
+                message.reply(problem);
                 return;
             }
 
